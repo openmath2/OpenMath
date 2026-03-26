@@ -1,0 +1,14 @@
+# OS
+.DS_Store
+
+# Cache / Internal
+.ruff_cache/
+.sisyphus/
+
+# Pre-existing docs (planning phase)
+PITCH.md
+PITCH_OUTLINE.md
+PROPOSAL.md
+PROPOSAL.pdf
+캡스톤디자인_오리엔테이션.pdf
+오픈매쓰_피칭.pdf
