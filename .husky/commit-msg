@@ -1,0 +1,11 @@
+msg="$(head -n1 "$1")"
+
+if [ -z "$msg" ]; then
+  echo "Empty commit message"
+  exit 1
+fi
+
+if [ ${#msg} -gt 72 ]; then
+  echo "First line of commit message must be <= 72 chars (got ${#msg})"
+  exit 1
+fi
