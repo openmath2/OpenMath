@@ -12,12 +12,21 @@
     "test": "pnpm test:node && pnpm test:python",
     "typecheck": "pnpm -F @openmath/agent typecheck",
     "lint:python": "cd packages/math-engine && uv run ruff check .",
-    "prepare": "lefthook install"
+    "prepare": "husky"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
-    "lefthook": "^1.10.10",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.1",
     "typescript": "^5.8.3"
+  },
+  "lint-staged": {
+    "packages/agent/**/*.{ts,tsx}": [
+      "bash -c 'pnpm -F @openmath/agent typecheck'"
+    ],
+    "packages/math-engine/**/*.py": [
+      "bash -c 'cd packages/math-engine && uv run ruff check .'"
+    ]
   },
   "packageManager": "pnpm@9.15.4",
   "engines": {
