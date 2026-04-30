@@ -10,7 +10,9 @@ opencode.json
 .envrc
 
 # Local-only directories (planning docs, deliverables, generation scripts)
-docs/
+docs/*
+!docs/specs
+!docs/specs/**
 deliverables/
 
 # Node.js
