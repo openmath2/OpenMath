@@ -1,18 +1,10 @@
-import { serve } from "@hono/node-server";
+// Placeholder. Implementation removed during spec-driven reset
+// (tag: bootstrap-snapshot). See `docs/specs/architecture.md` first.
 
-import { createApp } from "./app.js";
-import { initializeLLMClient } from "./config/llm.js";
+export const status = "awaiting-spec" as const;
 
-initializeLLMClient();
-
-const app = createApp();
-const port = Number(process.env.PORT) || 3000;
-
-console.log(`OpenMath Agent running on http://localhost:${port}`);
-
-serve({
-  fetch: app.fetch,
-  port,
-});
-
-export default app;
+if (import.meta.url === `file://${process.argv[1]}`) {
+  console.log(
+    "[openmath/agent] No implementation yet. See docs/specs/architecture.md.",
+  );
+}
