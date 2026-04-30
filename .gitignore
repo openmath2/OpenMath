@@ -5,10 +5,27 @@
 .ruff_cache/
 .sisyphus/
 
-# Pre-existing docs (planning phase)
-PITCH.md
-PITCH_OUTLINE.md
-PROPOSAL.md
-PROPOSAL.pdf
-캡스톤디자인_오리엔테이션.pdf
-오픈매쓰_피칭.pdf
+# Workspace config
+opencode.json
+.envrc
+
+# Local-only directories (planning docs, deliverables, generation scripts)
+docs/
+deliverables/
+
+# Node.js
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+
+# Environment
+.env
+.env.local
+*.env
+!.env.example
