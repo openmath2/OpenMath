@@ -1,0 +1,19 @@
+{
+  "name": "openmath",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm -F @openmath/agent dev",
+    "build": "pnpm -F @openmath/agent build",
+    "dev:math": "cd packages/math-engine && uv run python run.py",
+    "dev:all": "concurrently \"pnpm dev\" \"pnpm dev:math\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=22"
+  }
+}
