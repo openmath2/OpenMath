@@ -37,6 +37,15 @@ OpenMath is an AI system that generates *isomorphic math problems* — problems 
 | [AI Hub](https://aihub.or.kr/) — Problem-Solving Process | ~20,000 | Detailed solving workflows |
 | Regional exam archives + CSAT | ~10,000 | OCR-structured exam problems |
 
+## Development
+
+```bash
+pnpm install
+pnpm dev:all
+```
+
+Node.js agent runs on `:3000`, Python math engine on `:8000`. See [CONTRIBUTING.md](CONTRIBUTING.md) for branch strategy, hooks, and PR workflow.
+
 ## Team
 
 Built by **CAU Capstone Design Team 3** at Chung-Ang University.

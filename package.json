@@ -6,10 +6,17 @@
     "dev": "pnpm -F @openmath/agent dev",
     "build": "pnpm -F @openmath/agent build",
     "dev:math": "cd packages/math-engine && uv run python run.py",
-    "dev:all": "concurrently \"pnpm dev\" \"pnpm dev:math\""
+    "dev:all": "concurrently \"pnpm dev\" \"pnpm dev:math\"",
+    "test:node": "pnpm -F @openmath/agent test",
+    "test:python": "cd packages/math-engine && uv run pytest",
+    "test": "pnpm test:node && pnpm test:python",
+    "typecheck": "pnpm -F @openmath/agent typecheck",
+    "lint:python": "cd packages/math-engine && uv run ruff check .",
+    "prepare": "lefthook install"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
+    "lefthook": "^1.10.10",
     "typescript": "^5.8.3"
   },
   "packageManager": "pnpm@9.15.4",
