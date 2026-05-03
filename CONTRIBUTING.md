@@ -44,7 +44,7 @@ main                            # 항상 배포 가능한 상태
    cd packages/math-engine && uv run pytest
    ```
 4. push 후 PR 생성
-5. CI 통과 + 1인 이상 리뷰 후 merge
+5. CI 통과 후 merge (리뷰는 권장이지만 강제는 아님)
 
 ## 커밋 메시지
 
@@ -85,7 +85,7 @@ PR 마다 다음이 자동 실행된다:
 
 - PR 없이 직접 push 불가 (admin bypass 제외)
 - CI 전부 통과 필수
-- 1인 이상 review approval 필요
+- review approval은 권장 (강제 아님; 팀 규모상 옵셔널)
 - force push, branch 삭제 금지
 
 로컬 git hook은 1차 방어선이고, GitHub branch protection이 최종 차단선이다.
