@@ -5,4 +5,3 @@ describe("integration placeholder", () => {
     expect(true).toBe(true);
   });
 });
-});
