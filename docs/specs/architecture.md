@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| Status | Draft |
-| Last updated | 2026-04-30 |
+| Status | Proposed |
+| Last updated | 2026-05-18 |
 | Supersedes | — |
 
 이 문서는 OpenMath 시스템의 **가장 바깥 경계**를 정의한다.
@@ -25,7 +25,11 @@
 ### 1.3 이해관계자
 > 누가 이 시스템을 어떤 모드로 사용하는지. 인증/권한 모델의 출발점.
 
-- [ ] 정의 필요 (Open Question 1 참조)
+- **1차 사용자**: 학원 수학 강사 (D-3)
+- **2차 사용자**: 학교 수학 교사 (자동 충족 — `docs/product/USER_FLOW.md` §6)
+- **부수 사용자**: 캡스톤 심사위원 (데모 단계)
+
+1차 MVP는 로그인 없는 단일 사용자 도구. 인증·계정·결제는 v2.
 
 ---
 
@@ -63,7 +67,8 @@
 
 ### 3.2 데이터 저장소
 > RAG 검색, 출제전략 저장 등에 필요한 영속 저장소.
-- [ ] 정의 필요 (Open Question 2 참조)
+
+`agent`는 `RagClient` 인터페이스로만 데이터에 접근한다 (D-7). 1차 MVP 구현은 JSONL + 메모리 인덱스. 실제 영속 저장소 (Cube vs Postgres vs pgvector) 선정은 인터페이스 안정 후로 보류 — Q-2 부분 closure.
 
 ---
 
@@ -73,11 +78,10 @@
 - `agent` ↔ `math-engine`: HTTP/JSON, 동기 요청-응답.
 - `agent` ↔ `llm-provider`: HTTPS, OpenAI 호환 API.
 
-### 4.2 미정
-- 클라이언트 ↔ `agent`의 프로토콜 (REST? streaming? SSE?)
-- `agent` 내부 다중 에이전트 간 통신 (in-process? handoff?)
-- 서비스 디스커버리 방식 (현재는 환경변수 `MATH_ENGINE_URL` 하드코딩)
-- [ ] 정의 필요 (Open Question 3 참조)
+### 4.2 결정됨·미정
+- **클라이언트 ↔ `agent`**: SSE 스트리밍 (Hono `streamSSE` + `EventSource`) — D-6
+- **`agent` 내부 멀티 에이전트**: 외부 (β) Orchestrator + 6 Specialists 명명 + 내부 (ε) Hybrid (Generation 노드만 Generator/Critic/Refiner multi-agent, 나머지는 결정론 또는 단일 LLM) — D-5
+- **서비스 디스커버리**: 환경변수 `MATH_ENGINE_URL` 하드코딩 유지 (1차 MVP scope)
 
 ---
 
@@ -130,6 +134,46 @@
 - **채택 사유**: SymPy는 Python 외에 대체가 없고, Node 측 LLM 도구 생태계는
   Python 임베딩보다 별 서비스가 더 단순하다. 배포·테스트 분리 이득.
 
+### D-3. 1차 사용자는 학원 수학 강사
+- **결정**: 1차=학원 강사, 2차=학교 교사. 인증·계정은 1차 MVP out.
+- **대안**: (a) 학교 교사 우선, (b) 학생 자가학습용, (c) 출판사 API 고객, (d) 캡스톤 심사용 데모만.
+- **채택 사유**: 사용 빈도 압도적 (강사 주 1~2회 vs 교사 분기 2회). Pain 첨예 (카톡방 답 유출, 매주 출제 압박). 매스플랫·콴다 매출 데이터로 학원 시장 검증. 강사 흐름이 충족되면 교사 흐름은 90% 자동 충족 (`docs/product/USER_FLOW.md` §6).
+- **Closes**: Q-1
+
+### D-4. LLM 오케스트레이션은 Vercel AI SDK
+- **결정**: `ai` (Vercel AI SDK) + provider 어댑터 (`@ai-sdk/openai`, `@ai-sdk/openai-compatible`)로 LLM 호출 추상화. tool 정의는 `tool({ inputSchema: z... })`, 구조화 출력은 `generateObject`, 스트리밍은 `streamText`.
+- **대안**: (a) OpenAI Agents SDK (0.1.x 앞전 버전 + 6단계 이벤트 노출 어려움), (b) LangGraph (오버스펙 — 우리는 정적 6단계 파이프라인), (c) raw OpenAI SDK (provider 추상화 부재).
+- **채택 사유**: `opencode`·`Cline` 등 production OSS 코딩 에이전트가 채택한 검증된 패턴. provider 추상화로 CLIProxyAPI 통한 Claude/Gemini 라우팅 자연. `streamText`가 D-6 SSE 흐름과 1:1.
+
+### D-5. 검증 6단계는 외부 (β) Orchestrator+Specialists + 내부 (ε) Hybrid
+- **결정**: Orchestrator는 결정론 함수 (state machine). 6 Specialist의 내부 type:
+  - `RAGSpecialist` — 결정론 (인터페이스 D-7)
+  - `IntentSpecialist` — 단일 LLM agent (`generateObject` + Zod)
+  - `GenerationSpecialist` — multi-agent team (Generator + ConstraintCritic + Refiner)
+  - `SympySpecialist` — 결정론 (math-engine HTTP)
+  - `ReSolveSpecialist` — 단일 LLM agent (다른 system prompt + model/temp)
+  - `ObjectiveSpecialist` — 결정론 매칭 + LLM 보조 nuance (LLM은 제안만, 결정 X)
+- **대안**: (α) Generator/Verifier 2-agent only, (β) Pure 6 LLM specialists, (γ) Critic-Refiner only, (δ) Multi-Agent Debate, (ε) Pure Hybrid, (i) Pure 6-function pipeline.
+- **채택 사유**: 결정론 검증 게이트 (LLM은 정답 판단 X)가 D-1 원칙. (β) pure는 agent theater (Oracle 진단 — "specialist가 함수 1개+프롬프트 1개면 이름만 바뀐 함수"). (δ) Debate는 LLM 합의=정답이 D-1 위반. 본 결정은 결정론 게이트 + 진짜 multi-agent (Generation 안) + step bar UX + 모듈러 분업을 모두 충족.
+- **Closes**: Q-6
+
+### D-6. 클라이언트 ↔ agent 프로토콜은 SSE
+- **결정**: Hono `streamSSE` + 클라이언트 `EventSource`. `POST /api/generate`가 `text/event-stream`으로 응답. event 종류: `step` (단계 시작/완료), `result` (최종 문제 묶음), `error` (스테이지·메시지).
+- **대안**: (a) sync REST + 폴링 (step bar 라이브 노출 안됨), (b) job 큐 + 폴링/웹훅 (다중 사용자 동시성 1차 MVP scope 초과), (c) WebSocket (양방향 불필요).
+- **채택 사유**: D-4 `streamText` chunk + D-5 async generator emit이 SSE와 1:1 매칭. 단방향 progress 스트리밍 표준. 프론트 `EventSource` 빌트인.
+- **Closes**: Q-3
+
+### D-7. RAG는 `RagClient` 인터페이스로 추상화, 1차 MVP 구현은 JSONL 메모리 인덱스
+- **결정**: `agent`는 `RagClient` 인터페이스로만 데이터 접근 (`packages/agent/src/tools/rag-client.ts`). 1차 MVP 구현은 정규화 JSONL (2,400건, `math-sample-unified-v1` 스키마) 메모리 로드 + 구조적 필터 (학년·단원·유형·난이도). 실제 영속 저장소 선정은 인터페이스 안정 후 보류.
+- **대안**: (a) Postgres + Cube 즉시 도입, (b) Postgres + pgvector, (c) 파일만 (인터페이스 없이).
+- **채택 사유**: 인터페이스 안정성으로 swap 가능. 1차 MVP 일정 압박 해소. 2,400건은 메모리 200MB 미만으로 충분. "swappable RAG layer"가 발표·논문 학술적 강조점.
+- **Partially closes**: Q-2 (인터페이스 closure, 영속 저장소 구현은 보류)
+
+### D-8. 프롬프트 파일은 `.md` + YAML frontmatter
+- **결정**: `packages/agent/prompts/*.md`. frontmatter에 메타데이터 (id, version, model, temperature, schema 참조, owner, updated). body는 markdown + Handlebars 변수 치환. `prompt-loader.ts`가 파싱해 `generateObject({ model, temperature, system, schema })` 메타로 매핑.
+- **대안**: (a) 순수 `.yaml` (body indentation 묶임), (b) `.ts` template literal (비개발자 마찰), (c) `.prompty` (생태계 작음).
+- **채택 사유**: Claude Code·Cline skill 표준 포맷. git diff 자연. 비개발자가 글 쓰듯 작성. frontmatter `version` 필드로 A/B 테스트 기반.
+
 > 추가 결정은 Open Question을 닫을 때마다 여기에 누적한다.
 
 ---
@@ -138,42 +182,30 @@
 
 > 각 항목은 **하나의 결정**으로 닫힌다. 닫히면 §7로 옮긴다.
 
-### Q-1. 1차 사용자(stakeholder)는 누구인가
-**왜 묻는가**: 인증·요금·UX·SLA의 출발점.
-**선택지 예시**: (a) 교사 — 문제집 제작용, (b) 학생 — 자가학습용,
-(c) 출판사 API 고객, (d) 캡스톤 심사용 데모만.
-**관련 영향**: §1.3, §5.1, §6.
+### ~~Q-1. 1차 사용자(stakeholder)는 누구인가~~ — **Closed by D-3**
+1차=학원 강사, 2차=학교 교사. 근거: `docs/product/USER_FLOW.md` §2.
 
-### Q-2. 데이터 저장소가 필요한가, 있다면 무엇인가
-**왜 묻는가**: RAG·출제전략·생성 이력 어디에 둘지.
-**선택지 예시**: (a) 파일시스템 + YAML/JSON, (b) PostgreSQL + pgvector,
-(c) Cube + 별도 vector store, (d) 메모리만 (캐시 없음).
-**관련 영향**: §3.2, 추후 L1/L2.
+### Q-2. 데이터 저장소가 필요한가, 있다면 무엇인가 — **Partially closed by D-7**
+인터페이스(`RagClient`)는 D-7로 closure. 실제 영속 저장소 구현(Cube vs Postgres vs pgvector vs 파일 only)은 인터페이스 안정 후 [비할당] 담당이 결정.
+**남은 선택지**: (a) JSONL + 메모리 (현재 1차 MVP), (b) PostgreSQL + 단순 SQL, (c) Postgres + Cube 시맨틱 레이어, (d) Postgres + pgvector.
 
-### Q-3. 클라이언트 ↔ agent 프로토콜
-**왜 묻는가**: 생성은 수 초~수십 초 걸릴 수 있다. 동기 REST가 적절한가?
-**선택지 예시**: (a) 동기 REST + 짧은 timeout, (b) SSE 스트리밍,
-(c) job 큐 + polling, (d) WebSocket.
-**관련 영향**: §4, §6.
+### ~~Q-3. 클라이언트 ↔ agent 프로토콜~~ — **Closed by D-6**
+SSE 스트리밍 (Hono `streamSSE`).
 
 ### Q-4. 어디까지가 신뢰 경계인가
 **왜 묻는가**: 입력 검증·rate limit·인증의 위치를 결정.
 **선택지 예시**: (a) `agent`만 외부 노출, `math-engine`은 내부망 한정,
-(b) 둘 다 내부망 한정 (외부에 별도 BFF), (c) 인증 없는 PoC.
+(b) 둘 다 내부망 한정 (외부에 별도 BFF), (c) 인증 없는 PoC (1차 MVP 현재).
 **관련 영향**: §5.1, §6.
 
 ### Q-5. 비용·반복 상한
 **왜 묻는가**: LLM 호출 폭주 방지. 검증 실패 시 몇 회까지 재생성할지.
-**선택지 예시**: (a) 요청당 최대 N회 LLM 호출, (b) 월 비용 상한 + 차단,
+**선택지 예시**: (a) 요청당 최대 N회 LLM 호출 (D-5에서 retry ≤ 3 잠정), (b) 월 비용 상한 + 차단,
 (c) 사용자별 quota, (d) 무제한 (개발 단계).
 **관련 영향**: §5.3, §6.
 
-### Q-6. 다중 에이전트 구조
-**왜 묻는가**: 현재 generator/verifier 두 에이전트가 분리될지, 하나가
-도구만 다르게 쓸지, handoff/orchestrator를 둘지 결정.
-**선택지 예시**: (a) 단일 에이전트 + 도구 다양화, (b) generator/verifier 분리 호출,
-(c) orchestrator 에이전트가 둘을 handoff, (d) 워크플로우 엔진(LangGraph 등).
-**관련 영향**: §3, §4.2, 이후 L1/L2.
+### ~~Q-6. 다중 에이전트 구조~~ — **Closed by D-5**
+외부 (β) Orchestrator + 6 Specialists + 내부 (ε) Hybrid.
 
 ### Q-7. 배포 형태
 **왜 묻는가**: 데모 단계의 배포 형태가 §6 비기능 목표를 좌우.
@@ -189,5 +221,7 @@
 - 프로젝트 README — 시스템 의도와 스택
 - `packages/math-engine/` — `/health`, `/solve`, `/verify`, `/simplify`,
   `/differentiate`, `/limit` 엔드포인트 (현재 main에 구현되어 있음)
-- `packages/agent/` — 현재 placeholder. 구현은 spec 합의 후 재작성
+- `packages/agent/` — D-3~D-8 결정 후 인터페이스·디렉토리 scaffolding 진행. 본인 ([본인])이 scaffolding 구현, 프롬프트(`prompts/*.md`)와 데이터(`data/`)는 [비할당]
+- `docs/specs/domain.md` — L1 도메인 spec (Problem · Solution · Verification · Strategy)
+- `docs/product/` — 사용자 측 기획 5종 + HTML preview (2026-05-07 핸드오프)
 - `bootstrap-snapshot` git tag — spec 이전의 부트스트랩 구현 참조용
