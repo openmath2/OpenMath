@@ -29,29 +29,52 @@ LLMs produce plausible math problems with wrong solutions ([MathTrap300](https:/
 
 | Service | Stack | Role |
 |---------|-------|------|
-| **Agent** | Node.js + Hono + OpenAI Agents SDK | Multi-agent orchestration, LLM tool-use, HTTP API |
-| **Math Engine** | Python + FastAPI + SymPy | Symbolic verification, equation solving, calculus |
+| **Agent** | Node 22 + Hono + Vercel AI SDK + Zod | Verification pipeline orchestration, LLM tool-use, SSE-streamed HTTP API |
+| **Math Engine** | Python 3.11 + FastAPI + SymPy | Symbolic verification, equation solving, calculus |
 
-LLM access is pluggable: direct OpenAI or via [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) for unified Claude/GPT/Gemini routing.
+검증 흐름은 결정론적 6단계 파이프라인 (RAG → Intent → Generate → SymPy → Re-solve → Objective map). LLM은 생성 단계와 독립 재풀이 단계에만 관여하고, 정답 판정은 결코 하지 않는다 — 자세한 결정 근거는 [`docs/specs/architecture.md`](docs/specs/architecture.md), 도메인 개념은 [`docs/specs/domain.md`](docs/specs/domain.md).
+
+LLM access is pluggable: direct OpenAI/Anthropic, or via [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) for unified Claude/GPT/Gemini routing.
+
+## Status
+
+- **`math-engine`** — operational. 5 endpoints (`/solve`, `/verify`, `/simplify`, `/differentiate`, `/limit`) + 19 pytest passing.
+- **`agent`** — scaffolded per spec; 42 TS files with stable interfaces + Zod schemas. Implementations pending (search `throw new Error(".*: not implemented yet")`).
+- **L0 architecture** — Proposed. **L1 domain** — Draft. L2 contracts·L3 modules: TBD.
 
 ## Development
 
 ```bash
-pnpm install         # installs deps + git hooks (lefthook)
+pnpm install         # installs workspace deps + husky git hooks
 pnpm dev:all         # runs both services
-pnpm test            # all tests (Node + Python)
+pnpm test            # Node vitest + Python pytest
+pnpm typecheck       # tsc --noEmit on @openmath/agent
 ```
 
-- Agent: `http://localhost:3000`
+- Agent: `http://localhost:3000` (SSE at `POST /api/generate`)
 - Math Engine: `http://localhost:8000`
 
 ```
 packages/
-├── agent/         # Node.js orchestration
-└── math-engine/   # Python verification
+├── agent/                      # Node 22 — verification pipeline + HTTP/SSE
+│   ├── src/
+│   │   ├── schemas/            # Zod schemas — domain types + invariant guards
+│   │   ├── tools/              # math-engine, RAG, prompt-loader, llm-provider
+│   │   ├── agents/             # Generator · Critic · Refiner · Solver
+│   │   ├── steps/              # 6-step pipeline functions
+│   │   ├── workflows/          # Orchestrator (async generator → SSE)
+│   │   ├── server/             # Hono app + routes
+│   │   ├── policies/           # retry · timeout · acceptance
+│   │   └── config/             # env + default models
+│   ├── prompts/                # .md + YAML frontmatter — hand-off slot
+│   └── data/                   # corpus JSONL + strategy YAML — hand-off slot
+└── math-engine/                # Python — SymPy verification HTTP
+    ├── src/                    # FastAPI app + routers
+    └── tests/                  # pytest (19 tests)
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for branch strategy, hooks, and PR workflow.
+See [AGENTS.md](AGENTS.md) for codebase navigation, conventions, and command cheatsheet.
 
 ## Team
 
