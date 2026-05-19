@@ -70,6 +70,7 @@
 | D-7 | `RagClient` 인터페이스 + JSONL MVP | swap 가능 |
 | D-8 | 프롬프트 = `.md` + YAML frontmatter | hot-reload |
 | D-9 | `packages/web` Next.js 14 + 듀얼-서피스 DESIGN.md | editorial + productivity 한 시스템 |
+| D-10 | 인증 = Better Auth (v2 트리거) | 1차 MVP 는 인증 없음, 캡스톤 데모 후 도입 |
 
 ---
 
