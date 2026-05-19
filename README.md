@@ -31,8 +31,9 @@ LLMs produce plausible math problems with wrong solutions ([MathTrap300](https:/
 |---------|-------|------|
 | **Agent** | Node 22 + Hono + Vercel AI SDK + Zod | Verification pipeline orchestration, LLM tool-use, SSE-streamed HTTP API |
 | **Math Engine** | Python 3.11 + FastAPI + SymPy | Symbolic verification, equation solving, calculus |
+| **Web** | Node 22 + Next.js 14 App Router + Tailwind v4 | Landing + 출제 워크플로우 UI. SSE consumer of `agent` |
 
-검증 흐름은 결정론적 6단계 파이프라인 (RAG → Intent → Generate → SymPy → Re-solve → Objective map). LLM은 생성 단계와 독립 재풀이 단계에만 관여하고, 정답 판정은 결코 하지 않는다 — 자세한 결정 근거는 [`docs/specs/architecture.md`](docs/specs/architecture.md), 도메인 개념은 [`docs/specs/domain.md`](docs/specs/domain.md).
+검증 흐름은 결정론적 6단계 파이프라인 (RAG → Intent → Generate → SymPy → Re-solve → Objective map). LLM은 생성 단계와 독립 재풀이 단계에만 관여하고, 정답 판정은 결코 하지 않는다 — 자세한 결정 근거는 [`docs/specs/architecture.md`](docs/specs/architecture.md), 도메인 개념은 [`docs/specs/domain.md`](docs/specs/domain.md). 프론트 디자인 시스템은 [`packages/web/DESIGN.md`](packages/web/DESIGN.md) (editorial + productivity 듀얼-서피스).
 
 LLM access is pluggable: direct OpenAI/Anthropic, or via [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) for unified Claude/GPT/Gemini routing.
 
@@ -40,19 +41,22 @@ LLM access is pluggable: direct OpenAI/Anthropic, or via [CLIProxyAPI](https://g
 
 - **`math-engine`** — operational. 5 endpoints (`/solve`, `/verify`, `/simplify`, `/differentiate`, `/limit`) + 19 pytest passing.
 - **`agent`** — scaffolded per spec; 42 TS files with stable interfaces + Zod schemas. Implementations pending (search `throw new Error(".*: not implemented yet")`).
-- **L0 architecture** — Proposed. **L1 domain** — Draft. L2 contracts·L3 modules: TBD.
+- **`web`** — Landing page + DESIGN.md spec scaffolded. `pnpm build` green, static prerender. 추가 화면 (S0~S6) 마이그레이션은 FE 담당.
+- **L0 architecture** — Proposed (D-1 ~ D-9). **L1 domain** — Draft. L2 contracts·L3 modules: TBD.
 
 ## Development
 
 ```bash
 pnpm install         # installs workspace deps + husky git hooks
-pnpm dev:all         # runs both services
+pnpm dev:all         # runs all three services (agent · math · web)
 pnpm test            # Node vitest + Python pytest
-pnpm typecheck       # tsc --noEmit on @openmath/agent
+pnpm typecheck       # tsc --noEmit on agent + web
+pnpm build           # production build (agent + web)
 ```
 
 - Agent: `http://localhost:3000` (SSE at `POST /api/generate`)
 - Math Engine: `http://localhost:8000`
+- Web: `http://localhost:3001` (landing)
 
 ```
 packages/
@@ -68,9 +72,16 @@ packages/
 │   │   └── config/             # env + default models
 │   ├── prompts/                # .md + YAML frontmatter — hand-off slot
 │   └── data/                   # corpus JSONL + strategy YAML — hand-off slot
-└── math-engine/                # Python — SymPy verification HTTP
-    ├── src/                    # FastAPI app + routers
-    └── tests/                  # pytest (19 tests)
+├── math-engine/                # Python — SymPy verification HTTP
+│   ├── src/                    # FastAPI app + routers
+│   └── tests/                  # pytest (19 tests)
+└── web/                        # Node 22 — Next.js 14 App Router + Tailwind v4
+    ├── DESIGN.md               # 디자인 시스템 spec (editorial + productivity 듀얼-서피스)
+    ├── app/
+    │   ├── layout.tsx          # root layout + Google Fonts (Fraunces · Inter · Noto KR · Mono)
+    │   ├── globals.css         # Tailwind v4 @theme + DESIGN.md tokens
+    │   └── page.tsx            # `/` 랜딩 composition
+    └── components/landing/     # nav · hero · book-stage · feature-strip · footline
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for branch strategy, hooks, and PR workflow.

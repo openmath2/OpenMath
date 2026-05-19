@@ -21,13 +21,14 @@
 
 | spec | 코드 |
 |---|---|
-| [`docs/specs/architecture.md`](docs/specs/architecture.md) §3 components | `packages/{agent,math-engine}/` |
+| [`docs/specs/architecture.md`](docs/specs/architecture.md) §3 components | `packages/{agent,math-engine,web}/` |
 | [`docs/specs/architecture.md`](docs/specs/architecture.md) §7 D-1 (결정론 게이트) | `packages/agent/src/schemas/verification.schema.ts` `assertVerificationInvariants` |
 | D-4 (Vercel AI SDK) | `packages/agent/src/tools/llm-provider.ts` |
 | D-5 (Specialist 구성) | `packages/agent/src/agents/*`, `packages/agent/src/steps/*` |
 | D-6 (SSE) | `packages/agent/src/server/sse/progress-stream.ts`, `packages/agent/src/server/routes/generate.ts` |
 | D-7 (RagClient) | `packages/agent/src/tools/rag-client.ts` |
 | D-8 (.md frontmatter) | `packages/agent/src/tools/prompt-loader.ts`, `packages/agent/prompts/*.md` |
+| D-9 (Next.js 14 + 듀얼-서피스 디자인) | `packages/web/`, `packages/web/DESIGN.md` |
 | [`docs/specs/domain.md`](docs/specs/domain.md) §2 도메인 | `packages/agent/src/schemas/*.schema.ts` |
 | 불변식 I-V1 ~ I-V5 | `assertVerificationInvariants` |
 | 불변식 I-I1 ~ I-I3 | `IntentSchema.regex` + `assertIntentInvariants` |
@@ -40,16 +41,19 @@
 | 작업 | 명령 |
 |---|---|
 | 의존성 설치 + git hooks | `pnpm install` |
-| 두 서비스 동시 dev | `pnpm dev:all` |
-| agent만 dev | `pnpm dev` |
-| math-engine만 dev | `pnpm dev:math` |
-| Node typecheck | `pnpm -F @openmath/agent typecheck` |
-| Node unit test | `pnpm -F @openmath/agent test` |
+| 세 서비스 동시 dev | `pnpm dev:all` |
+| agent만 dev | `pnpm dev` (`:3000`) |
+| math-engine만 dev | `pnpm dev:math` (`:8000`) |
+| web만 dev | `pnpm dev:web` (`:3001`) |
+| Node typecheck (agent + web) | `pnpm typecheck` |
+| Node unit test (agent) | `pnpm -F @openmath/agent test` |
 | Node integration test | `pnpm -F @openmath/agent test:integration` |
 | Python pytest | `pnpm test:python` |
+| Web build | `pnpm -F @openmath/web build` |
+| DESIGN.md lint | `npx @google/design.md lint packages/web/DESIGN.md` |
 | 전체 테스트 (pre-push) | `pnpm test` |
 
-`pnpm test` = Node + Python. integration은 별도. PR 전엔 셋 다 확인 권장.
+`pnpm test` = Node + Python. integration / web build 는 별도. PR 전엔 모두 확인 권장.
 
 ---
 
@@ -65,6 +69,7 @@
 | D-6 | SSE 스트리밍 | step bar 라이브 노출 |
 | D-7 | `RagClient` 인터페이스 + JSONL MVP | swap 가능 |
 | D-8 | 프롬프트 = `.md` + YAML frontmatter | hot-reload |
+| D-9 | `packages/web` Next.js 14 + 듀얼-서피스 DESIGN.md | editorial + productivity 한 시스템 |
 
 ---
 
@@ -91,8 +96,11 @@ agent 코드를 *건드리지 않고* 동작이 바뀌는 영역.
 | 프롬프트 | `packages/agent/prompts/*.md` | `[비할당]` |
 | 출제 전략 | `packages/agent/data/achievement-standards/*.yaml` | `[비할당]` |
 | RAG corpus | `packages/agent/data/corpus/*.jsonl` | `[비할당]` |
+| 프론트 디자인 토큰 | `packages/web/DESIGN.md` frontmatter | `[비할당]` (FE 디자이너) |
+| 프론트 컴포넌트 | `packages/web/components/**/*.tsx` | `[비할당]` (FE 엔지니어) |
+| 프론트 페이지 (S0~S6) | `packages/web/app/**/page.tsx` | `[비할당]` (FE 엔지니어) |
 
-이 영역의 변경은 `prompt-loader` / `strategy-loader` / `rag-client`가 흡수.
+이 영역의 변경은 `prompt-loader` / `strategy-loader` / `rag-client` / `DESIGN.md` 토큰 시스템이 흡수.
 
 ---
 
