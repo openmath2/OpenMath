@@ -4,13 +4,14 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm -F @openmath/agent dev",
-    "build": "pnpm -F @openmath/agent build",
+    "dev:web": "pnpm -F @openmath/web dev",
+    "build": "pnpm -F @openmath/agent build && pnpm -F @openmath/web build",
     "dev:math": "cd packages/math-engine && uv run python run.py",
-    "dev:all": "concurrently \"pnpm dev\" \"pnpm dev:math\"",
+    "dev:all": "concurrently -n agent,math,web -c blue,green,magenta \"pnpm dev\" \"pnpm dev:math\" \"pnpm dev:web\"",
     "test:node": "pnpm -F @openmath/agent test",
     "test:python": "cd packages/math-engine && uv run pytest",
     "test": "pnpm test:node && pnpm test:python",
-    "typecheck": "pnpm -F @openmath/agent typecheck",
+    "typecheck": "pnpm -F @openmath/agent typecheck && pnpm -F @openmath/web typecheck",
     "lint:python": "cd packages/math-engine && uv run ruff check .",
     "prepare": "husky"
   },
@@ -23,6 +24,9 @@
   "lint-staged": {
     "packages/agent/**/*.{ts,tsx}": [
       "bash -c 'pnpm -F @openmath/agent typecheck'"
+    ],
+    "packages/web/**/*.{ts,tsx}": [
+      "bash -c 'pnpm -F @openmath/web typecheck'"
     ],
     "packages/math-engine/**/*.py": [
       "bash -c 'cd packages/math-engine && uv run ruff check .'"

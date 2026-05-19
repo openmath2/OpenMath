@@ -56,8 +56,9 @@
 
 | 이름 | 스택 | 책임 | 위치 |
 |---|---|---|---|
-| `agent` | Node.js + Hono + OpenAI Agents SDK | LLM 오케스트레이션, HTTP API 노출, 도구 호출 라우팅 | `packages/agent/` |
-| `math-engine` | Python + FastAPI + SymPy | 기호 계산(풀이/동치 검증/단순화/미분/극한)을 HTTP로 제공 | `packages/math-engine/` |
+| `agent` | Node 22 + Hono + Vercel AI SDK + Zod | LLM 오케스트레이션, HTTP API 노출 (SSE), 도구 호출 라우팅 | `packages/agent/` |
+| `math-engine` | Python 3.11 + FastAPI + SymPy | 기호 계산(풀이/동치 검증/단순화/미분/극한)을 HTTP로 제공 | `packages/math-engine/` |
+| `web` | Node 22 + Next.js 14 App Router + Tailwind v4 | 사용자 UI (랜딩 + 출제 워크플로우). `agent`의 SSE 엔드포인트 소비 | `packages/web/` |
 | `llm-provider` | OpenAI 또는 CLIProxyAPI | 추론 모델 제공 (외부 의존) | 외부 |
 
 ### 3.1 컴포넌트 책임 경계
@@ -174,6 +175,11 @@
 - **대안**: (a) 순수 `.yaml` (body indentation 묶임), (b) `.ts` template literal (비개발자 마찰), (c) `.prompty` (생태계 작음).
 - **채택 사유**: Claude Code·Cline skill 표준 포맷. git diff 자연. 비개발자가 글 쓰듯 작성. frontmatter `version` 필드로 A/B 테스트 기반.
 
+### D-9. 프론트엔드는 `packages/web/` — Next.js 14 App Router + 듀얼-서피스 디자인 시스템
+- **결정**: Next.js 14 App Router (React 18 + Server Components) + Tailwind v4 (CSS-first config-less) + Fraunces/Inter/Noto family 폰트. 패키지 위치 `packages/web/` (`pnpm-workspace.yaml` `packages/*` 글롭 자동 인식). 같은 모노레포의 `@openmath/agent` 워크스페이스 dep 으로 Zod 스키마 공유. `agent` 의 SSE 엔드포인트 (`POST /api/generate`) 를 별 origin 으로 소비 — CORS 는 `agent` 가 책임. 디자인 시스템은 `packages/web/DESIGN.md` — 랜딩의 editorial surface (Fraunces + warm ivory + book stack) 와 앱 내부의 productivity surface (Pretendard fallback Inter + 순백 + 검증 카드) 가 공유 토큰 위에서 공존하는 듀얼-서피스 구조. `@google/design.md` lint 통과 (`broken-ref` error 0).
+- **대안**: (a) Vite + React (SSR 없음 → 첫 페인트 늦음, SEO 약함, AI SDK 통합 약함), (b) SvelteKit (팀 친숙도 낮음, 학습 비용), (c) `apps/` + `packages/` 분리 (현재 평면 3 패키지 구조에서 분리 비용 > 가치), (d) Pretendard 단일 시스템 유지 (랜딩의 editorial 권위 표현 못함).
+- **채택 사유**: D-4 Vercel AI SDK 와 1:1 호환 (`ai/react`, `useChat`, SSE consumption hook 기본). Server Components 로 KaTeX SSR (수식이 첫 페인트부터 보임). Tailwind v4 의 CSS-first config 가 DESIGN.md 토큰을 그대로 `@theme` 블록에 매핑 가능. 듀얼-서피스로 랜딩 (D-3 학원 강사 첫 인상 — 신뢰감) 과 앱 내부 (정확/결정론적 출제 도구) 의 voice 둘 다 충족. 기존 `docs/product/DESIGN.md` (Nike fork productivity-only) 는 본 결정으로 superseded → historical reference 로 보존.
+
 > 추가 결정은 Open Question을 닫을 때마다 여기에 누적한다.
 
 ---
@@ -222,6 +228,9 @@ SSE 스트리밍 (Hono `streamSSE`).
 - `packages/math-engine/` — `/health`, `/solve`, `/verify`, `/simplify`,
   `/differentiate`, `/limit` 엔드포인트 (현재 main에 구현되어 있음)
 - `packages/agent/` — D-3~D-8 결정 후 인터페이스·디렉토리 scaffolding 진행. 본인 ([본인])이 scaffolding 구현, 프롬프트(`prompts/*.md`)와 데이터(`data/`)는 [비할당]
+- `packages/web/` — D-9 결정 후 Landing 페이지·DESIGN.md scaffolding. 본인 ([본인])이 boilerplate, 다른 화면 컴포넌트 (S0~S6) 와 새 페이지는 [비할당]
+- `packages/web/DESIGN.md` — UI 디자인 시스템 (editorial + productivity 듀얼-서피스, Landing.html 융화)
 - `docs/specs/domain.md` — L1 도메인 spec (Problem · Solution · Verification · Strategy)
+- `docs/product/DESIGN.md` — superseded by `packages/web/DESIGN.md`, historical 11 화면 mockup spec
 - `docs/product/` — 사용자 측 기획 5종 + HTML preview (2026-05-07 핸드오프)
 - `bootstrap-snapshot` git tag — spec 이전의 부트스트랩 구현 참조용
