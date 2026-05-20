@@ -1,7 +1,8 @@
 import { Nav } from "@/components/landing/nav";
 import { Hero } from "@/components/landing/hero";
 import { FeatureStrip } from "@/components/landing/feature-strip";
-import { Footline } from "@/components/landing/footline";
+import { Faq } from "@/components/landing/faq";
+import { Footer } from "@/components/landing/footer";
 
 export default function HomePage() {
   return (
@@ -9,7 +10,8 @@ export default function HomePage() {
       <Nav />
       <Hero />
       <FeatureStrip />
-      <Footline />
+      <Faq />
+      <Footer />
     </div>
   );
 }

@@ -88,18 +88,45 @@ npx @google/design.md lint DESIGN.md
 
 CSS-first config. JS config 파일 없음. 모든 디자인 토큰은 `app/globals.css` 의 `@theme {}` 블록 안에 CSS variable 로 정의되어, 그대로 Tailwind utility 가 됨 (예: `bg-canvas`, `text-ink-3`, `rounded-pill`).
 
-## 작업 배분
+## 작업 배분 & 진행 상태
 
-| 영역 | 담당 |
-|---|---|
-| boilerplate (이 PR) | **[본인]** |
-| `/` 랜딩 추가 컴포넌트 (footer 4-col, FAQ, etc) | **[비할당]** |
-| 앱 내부 화면 (S0 ~ S6) 마이그레이션 | **[비할당]** |
-| SSE consumption hook | **[비할당]** |
-| KaTeX 수식 렌더링 컴포넌트 | **[비할당]** |
-| `prefers-reduced-motion` 정밀 검증 | **[비할당]** |
+| 영역 | 담당 | 상태 |
+|---|---|---|
+| boilerplate (Landing 1 화면) | **[본인]** | ✅ |
+| `/` 랜딩 추가 컴포넌트 (footer 3-col, FAQ, iPad showcase) | **[비할당]** | ✅ |
+| 앱 내부 화면 (S0 ~ S6) 마이그레이션 | **[비할당]** | ✅ |
+| SSE consumption hook (`hooks/use-verification-stream.ts`) | **[비할당]** | ✅ |
+| KaTeX 수식 렌더링 컴포넌트 (`components/math/latex-renderer.tsx`) | **[비할당]** | ✅ |
+| `prefers-reduced-motion` CSS 규칙 적용 (book-stack 모션 + S4 spinner + intent cards 등) | **[비할당]** | ✅ |
+| `prefers-reduced-motion` 실 OS 토글 QA | **[비할당]** | ⚠️ 미수행 (CSS 만 적용) |
+| `/login`, `/samples` 추가 페이지 (스펙 외, UX 보강) | **[비할당]** | ✅ |
 
 자세한 우선순위는 루트 [`AGENTS.md`](../../AGENTS.md) §9 참조.
+
+## 라우트 맵
+
+| 경로 | 화면 | Surface | 상태 |
+|---|---|---|---|
+| `/` | Landing (Hero + FAQ + Footer + iPad showcase) | editorial | ✅ |
+| `/login` | 로그인 폼 | editorial | ⚠️ mock (실제 인증 없음 — 제출 시 `/app` 로 라우팅) |
+| `/samples` | 검증 통과 예시 3 문항 | editorial | ✅ |
+| `/app` | S0 워크스페이스 (hero-tile + entry cards) | productivity | ✅ |
+| `/app/new/grade` | S1 학년 선택 | productivity | ✅ |
+| `/app/new/topic` | S2 단원 선택 (30 단원 정적 데이터) | productivity | ✅ |
+| `/app/new/intent` | S3 동형 모드 + 평가 차원 | productivity | ✅ |
+| `/app/new/verify` | S4 검증 6 단계 진행 (SSE) | productivity | ✅ |
+| `/app/new/result` | S5 결과 + 채택 | productivity | ⚠️ mock 데이터 (`app/new/result/mock.ts` — agent 미연동) |
+| `/app/new/export` | S6 PDF 출력 (브라우저 print API) | productivity | ⚠️ mock 데이터 기반 |
+
+`mock.ts` 는 URL params (grade/topic/mode/dims/adopted) 로부터 결정적 mock 문항 4 종 (pass / pass-mixed / warn / fail) 을 생성. agent SSE 응답 연동 시 본 모듈을 fetch + parse 호출로 교체.
+
+## 새 dependencies
+
+| 패키지 | 버전 | 용도 |
+|---|---|---|
+| `@microsoft/fetch-event-source` | ^2.0.1 | S4 SSE 수신 (`POST + AbortController` cleanup 지원, 표준 `EventSource` 가 못하는 헤더/메서드 처리) |
+| `katex` | ^0.16.x | LaTeX 수식 렌더 (SSR — `renderToString`, MathML fallback 으로 SR 의미 운반) |
+| `@types/katex` | ^0.16.x | TS 타입 |
 
 ## 관련 문서
 
