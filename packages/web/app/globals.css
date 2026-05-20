@@ -159,7 +159,7 @@
     overflow-wrap: break-word;
   }
   .display-hero em {
-    font-style: italic;
+    font-style: normal;
     font-weight: 300;
     color: var(--color-primary);
   }
