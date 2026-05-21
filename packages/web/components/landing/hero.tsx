@@ -4,7 +4,7 @@ import { BookStage } from "./book-stage";
 export function Hero() {
   return (
     <section className="container-landing relative z-[2] flex flex-col items-center gap-4 pb-10 pt-8 text-center">
-      <div className="relative z-[3] mx-auto flex max-w-[720px] flex-col items-center">
+      <div className="relative z-[3] mx-auto flex max-w-[960px] flex-col items-center">
         <span className="eyebrow">
           <span className="dot" />
           검증된 문제 한 세트
@@ -19,11 +19,11 @@ export function Hero() {
         </p>
 
         <div className="mt-7 flex flex-wrap items-center gap-2.5">
-          <Link href="#start" className="btn btn-primary">
+          <Link href="/app" className="btn btn-primary">
             <span>무료로 시작하기</span>
-            <span>→</span>
+            <span aria-hidden="true">→</span>
           </Link>
-          <Link href="#sample" className="btn btn-ghost">
+          <Link href="/samples" className="btn btn-ghost">
             <span>샘플 문제 보기</span>
           </Link>
         </div>
