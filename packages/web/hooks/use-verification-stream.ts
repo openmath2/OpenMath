@@ -110,7 +110,10 @@ function mapStepStatus(s: WireStepStatus): StepStatus {
 function reducer(state: StreamState, action: Action): StreamState {
   switch (action.type) {
     case "CONNECTING":
-      return { ...state, status: "connecting" };
+      /* 새 stream 시작 시 이전 run 의 step / preview / candidates / error 가
+       * leak 되지 않게 initial state 로 reset 후 status 만 connecting 으로.
+       */
+      return { ...makeInitialState(), status: "connecting" };
     case "STEP": {
       const nextStatus = mapStepStatus(action.status);
       const steps = state.steps.map((s) =>
@@ -247,15 +250,28 @@ export function useVerificationStream(
   const dispatchRef = useRef(dispatch);
   dispatchRef.current = dispatch;
 
-  /* input 의 dims 배열 동일성 비교를 위해 안정 키 생성 */
+  /* input 의 dims 배열 동일성 비교를 위해 안정 키 생성.
+   * inputKey 는 input 의 모든 의미상 식별자를 직렬화하므로 effect deps 로 충분.
+   */
   const dimsKey = input === null ? "" : [...input.dims].sort().join(",");
   const inputKey =
     input === null
       ? null
       : `${input.grade}|${input.topic}|${input.mode}|${dimsKey}|${input.endpoint ?? ""}`;
 
+  /* effect 본문이 input 의 *최신* 값을 읽어야 하지만 deps 로 넣으면 가드가
+   * 무효화되어 부모 re-render 마다 SSE 재연결이 발생한다 (PR #7 리뷰).
+   * ref 로 snapshot 을 항상 최신으로 유지하고 effect 진입 시점에서 한 번 읽는다.
+   */
+  const inputRef = useRef<StreamInput | null>(input);
+  inputRef.current = input;
+
   useEffect(() => {
-    if (input === null || inputKey === null) {
+    if (inputKey === null) {
+      return;
+    }
+    const current = inputRef.current;
+    if (current === null) {
       return;
     }
 
@@ -270,7 +286,7 @@ export function useVerificationStream(
     const controller = new AbortController();
     controllerRef.current = controller;
 
-    const endpoint = input.endpoint ?? defaultEndpoint();
+    const endpoint = current.endpoint ?? defaultEndpoint();
     const url = `${endpoint.replace(/\/$/, "")}/api/generate`;
 
     dispatchRef.current({ type: "CONNECTING" });
@@ -279,10 +295,10 @@ export function useVerificationStream(
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
       body: JSON.stringify({
-        grade: input.grade,
-        topic: input.topic,
-        mode: input.mode,
-        dims: [...input.dims].sort(),
+        grade: current.grade,
+        topic: current.topic,
+        mode: current.mode,
+        dims: [...current.dims].sort(),
       }),
       signal: controller.signal,
       openWhenHidden: true,
@@ -384,7 +400,7 @@ export function useVerificationStream(
         controllerRef.current = null;
       }
     };
-  }, [input, inputKey]);
+  }, [inputKey]);
 
   /* cancel 은 hook 의 외부 API. 사용자가 "취소" 버튼을 눌렀을 때 호출. */
   const cancel = (): void => {

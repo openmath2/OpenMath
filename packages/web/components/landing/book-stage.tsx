@@ -70,13 +70,16 @@ export function BookStage() {
     return () => mq.removeEventListener("change", handler);
   }, []);
 
+  /* setStepIdx 의 functional updater 만 사용하므로 stepIdx 를 deps 에 넣을
+   * 필요가 없다. 넣으면 step 전환마다 timer 가 재생성되어 주기가 어긋난다.
+   */
   useEffect(() => {
     if (reduceMotion) return;
     const id = window.setInterval(() => {
       setStepIdx((i) => (i + 1) % STEPS.length);
     }, 5000);
     return () => window.clearInterval(id);
-  }, [reduceMotion, stepIdx]);
+  }, [reduceMotion]);
 
   const goNext = (): void => setStepIdx((i) => (i + 1) % STEPS.length);
   const goPrev = (): void =>

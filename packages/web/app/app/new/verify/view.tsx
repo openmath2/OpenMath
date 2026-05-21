@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useRef } from "react";
+import { LatexRenderer } from "@/components/math/latex-renderer";
 import {
   type Grade,
   type Topic,
@@ -209,16 +210,10 @@ export function VerifyView({ grade, topic, mode, dims }: Props) {
         </ol>
 
         {showPreview && stream.previewLatex !== null ? (
-          <div
-            className="formula-stage-wrap"
-            role="img"
-            aria-label="생성된 첫 후보 문항 미리보기"
-          >
+          <div className="formula-stage-wrap">
             <div className="formula-stage">
-              <span>
-                <span className="caption">CANDIDATE PREVIEW</span>
-                {stream.previewLatex}
-              </span>
+              <span className="caption">CANDIDATE PREVIEW</span>
+              <LatexRenderer latex={stream.previewLatex} block />
             </div>
           </div>
         ) : null}

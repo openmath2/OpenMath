@@ -89,11 +89,12 @@ export default function SamplesPage() {
                     <span>{badge.text}</span>
                   </span>
                 </header>
-                <div
-                  className="sample-stage"
-                  role="img"
-                  aria-label={`${s.topic} 예시 문항`}
-                >
+                {/* role/aria-label 을 두지 않는다 — LatexRenderer 가
+                 * MathML 을 함께 렌더해 SR 이 수식 자체를 읽을 수 있게 한다.
+                 * 컨테이너에 accessible name 을 부여하면 그 라벨이 fix 되어
+                 * MathML 이 음성에서 누락된다 (PR #7 리뷰).
+                 */}
+                <div className="sample-stage">
                   <LatexRenderer latex={s.questionLatex} block />
                 </div>
                 <div className="sample-meta">

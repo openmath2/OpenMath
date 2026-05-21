@@ -500,7 +500,7 @@
   - `pdf-preview-thumbnail` 은 `role="img"` + `aria-label` "시험지 미리보기 — 중1 일차방정식 3문항, 정답표 포함" 형식의 요약. 안의 텍스트는 `aria-hidden="true"` (preview 라 미니 텍스트는 의미 운반 아님).
   - disclosure-row `<button aria-expanded>` + 펼친 콘텐츠는 `aria-controls` 로 연결.
   - 다운로드 완료 시 `inline-notice-pass` 는 `role="status"` + `aria-live="polite"` — 화면 잔류 후 "PDF 가 다운로드되었습니다" 1회 발화.
-- **다운로드 trigger:** `<a download>` 또는 programmatic `URL.createObjectURL` + click — 둘 다 키보드 사용자에게 brower-native 다운로드 알림이 노출되도록 함.
+- **다운로드 trigger:** `<a download>` 또는 programmatic `URL.createObjectURL` + click — 둘 다 키보드 사용자에게 browser-native 다운로드 알림이 노출되도록 함.
 
 ---
 

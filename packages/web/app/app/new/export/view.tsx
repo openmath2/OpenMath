@@ -6,6 +6,14 @@ import { LatexRenderer } from "@/components/math/latex-renderer";
 import { type Grade, type Topic, gradeLabel } from "../topic/data";
 import type { ResultProblem } from "../result/mock";
 
+function buildDefaultTitle(
+  grade: Grade | null,
+  topic: Topic | null,
+): string {
+  if (grade === null || topic === null) return "";
+  return `${gradeLabel(grade)} ${topic.name} 보강`;
+}
+
 type Props = {
   grade: Grade | null;
   topic: Topic | null;
@@ -83,17 +91,12 @@ function ExamSheet({
 }
 
 export function ExportView({ grade, topic, problems }: Props) {
-  const defaultTitle = useMemo(() => {
-    if (grade === null || topic === null) return "";
-    return `${gradeLabel(grade)} ${topic.name} 보강`;
-  }, [grade, topic]);
-
-  const [options, setOptions] = useState<Options>({
-    title: defaultTitle,
+  const [options, setOptions] = useState<Options>(() => ({
+    title: buildDefaultTitle(grade, topic),
     showDate: true,
     includeAnswers: true,
     shuffle: false,
-  });
+  }));
   const [date, setDate] = useState<string>("");
   const [downloaded, setDownloaded] = useState<boolean>(false);
   const noticeRef = useRef<HTMLDivElement | null>(null);
@@ -218,18 +221,15 @@ export function ExportView({ grade, topic, problems }: Props) {
             <span className="icon" aria-hidden="true">
               ✓
             </span>
-            <span className="body">PDF 가 다운로드되었습니다.</span>
+            <span className="body">
+              인쇄 작업이 종료되었습니다. PDF 를 저장했다면 브라우저의
+              다운로드 폴더에서 파일을 확인할 수 있습니다.
+            </span>
           </div>
         ) : null}
 
         <div className="export-layout">
-          <div
-            className="pdf-preview-thumbnail"
-            role="img"
-            aria-label={`시험지 미리보기 — ${gradeLabel(grade)} ${topic.name} ${problems.length} 문항${
-              options.includeAnswers ? ", 정답표 포함" : ""
-            }`}
-          >
+          <div className="pdf-preview-thumbnail">
             <ExamSheet
               options={options}
               problems={orderedProblems}

@@ -224,6 +224,8 @@ export function ResultView({
                         type="button"
                         className="btn-icon-circular"
                         aria-label="다시 생성"
+                        disabled
+                        aria-describedby={`card-${p.id}-v2note`}
                       >
                         <span aria-hidden="true">↻</span>
                       </button>
@@ -231,6 +233,8 @@ export function ResultView({
                         type="button"
                         className="btn-icon-circular"
                         aria-label="수정"
+                        disabled
+                        aria-describedby={`card-${p.id}-v2note`}
                       >
                         <span aria-hidden="true">✎</span>
                       </button>
@@ -238,9 +242,17 @@ export function ResultView({
                         type="button"
                         className="btn-icon-circular"
                         aria-label="폐기"
+                        disabled
+                        aria-describedby={`card-${p.id}-v2note`}
                       >
                         <span aria-hidden="true">×</span>
                       </button>
+                      <span
+                        id={`card-${p.id}-v2note`}
+                        className="sr-only"
+                      >
+                        v2 에서 도입 예정 — 1차 MVP 에서는 비활성.
+                      </span>
                     </div>
                   </header>
 
@@ -272,11 +284,7 @@ export function ResultView({
                   ) : null}
 
                   <div className="card-body">
-                    <div
-                      className="formula-stage"
-                      role="img"
-                      aria-label={`문항 ${p.number} 본문`}
-                    >
+                    <div className="formula-stage">
                       <LatexRenderer
                         latex={p.questionLatex}
                         block
