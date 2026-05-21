@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Status | Implemented |
+| Status | Draft |
 | Last updated | 2026-05-21 |
 | Depends on | `architecture.md` D-7, `domain.md` §2.1 |
 
@@ -56,7 +56,7 @@ CORPUS_JSONL=/absolute/path/to/rag_problem_generation_dataset/openmath_rag_recor
 
 1. 외부에서 받은 RAG 데이터 폴더 안에 `openmath_rag_records.jsonl`이 있는지 확인한다.
 2. `packages/agent/.env`를 만들거나 실행 환경변수에 `CORPUS_JSONL`을 설정한다.
-3. 값은 파일이 아니라 디렉토리가 아닌, JSONL 파일까지 포함한 절대경로로 둔다.
+3. 값은 디렉토리가 아니라 JSONL 파일명까지 포함한 절대경로로 둔다.
 4. `pnpm -F @openmath/agent test`로 RAG client 단위 테스트를 확인한다.
 
 예시 로컬 `.env`:

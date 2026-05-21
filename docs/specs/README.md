@@ -49,4 +49,4 @@
 
 - L0 `architecture.md` — Draft
 - L1 `domain.md` — Draft
-- L3 `rag-integration.md` — Implemented
+- L3 `rag-integration.md` — Draft
