@@ -66,6 +66,7 @@ export type StreamInput = {
   topic: string;
   mode: "structural" | "conceptual";
   dims: readonly string[];
+  sourceProblemText?: string;
   /** override agent endpoint. defaults to NEXT_PUBLIC_AGENT_URL or localhost:3000 */
   endpoint?: string;
 };
@@ -238,6 +239,17 @@ function defaultEndpoint(): string {
   return env ?? "http://localhost:3000";
 }
 
+function verificationStorageKey(input: StreamInput): string {
+  return [
+    "openmath:verification-result",
+    input.grade,
+    input.topic,
+    input.mode,
+    [...input.dims].sort().join(","),
+    input.sourceProblemText ?? "",
+  ].join("|");
+}
+
 export type UseVerificationStreamResult = StreamState & {
   cancel: () => void;
 };
@@ -257,7 +269,7 @@ export function useVerificationStream(
   const inputKey =
     input === null
       ? null
-      : `${input.grade}|${input.topic}|${input.mode}|${dimsKey}|${input.endpoint ?? ""}`;
+      : `${input.grade}|${input.topic}|${input.mode}|${dimsKey}|${input.sourceProblemText ?? ""}|${input.endpoint ?? ""}`;
 
   /* effect 본문이 input 의 *최신* 값을 읽어야 하지만 deps 로 넣으면 가드가
    * 무효화되어 부모 re-render 마다 SSE 재연결이 발생한다 (PR #7 리뷰).
@@ -299,6 +311,7 @@ export function useVerificationStream(
         topic: current.topic,
         mode: current.mode,
         dims: [...current.dims].sort(),
+        source_problem_text: current.sourceProblemText,
       }),
       signal: controller.signal,
       openWhenHidden: true,
@@ -356,6 +369,14 @@ export function useVerificationStream(
                 message: "result 이벤트 형식 오류",
               });
               throw new FatalStreamError("bad result");
+            }
+            try {
+              window.sessionStorage.setItem(
+                verificationStorageKey(current),
+                JSON.stringify(candidates),
+              );
+            } catch {
+              /* sessionStorage is an optimization for S5/S6 handoff. */
             }
             dispatchRef.current({ type: "RESULT", candidates });
             controller.abort();

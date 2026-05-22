@@ -15,6 +15,7 @@ type Props = {
     mode?: string | string[];
     dims?: string | string[];
     adopted?: string | string[];
+    source?: string | string[];
   };
 };
 
@@ -39,6 +40,7 @@ export default function ExportPage({ searchParams }: Props) {
   const mode = parseMode(pickFirst(searchParams.mode));
   const dims = parseList(pickFirst(searchParams.dims));
   const adoptedIds = parseList(pickFirst(searchParams.adopted));
+  const sourceProblemText = pickFirst(searchParams.source) ?? "";
 
   let problems: ResultProblem[] = [];
   if (topic !== null && mode !== null) {
@@ -47,6 +49,14 @@ export default function ExportPage({ searchParams }: Props) {
   }
 
   return (
-    <ExportView grade={grade} topic={topic} problems={problems} />
+    <ExportView
+      grade={grade}
+      topic={topic}
+      mode={mode}
+      dims={dims}
+      sourceProblemText={sourceProblemText}
+      adoptedIds={adoptedIds}
+      problems={problems}
+    />
   );
 }
