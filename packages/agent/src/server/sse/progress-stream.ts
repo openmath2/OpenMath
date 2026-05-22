@@ -3,10 +3,17 @@
 import type { SSEStreamingApi } from "hono/streaming";
 
 import type { ProgressEvent } from "../../schemas/index.js";
+import { toWireSseEvent } from "./wire-adapter.js";
 
 export async function pipeProgressToSse(
-  _stream: SSEStreamingApi,
-  _events: AsyncGenerator<ProgressEvent, unknown, void>,
+  stream: SSEStreamingApi,
+  events: AsyncGenerator<ProgressEvent, unknown, void>,
 ): Promise<void> {
-  throw new Error("pipeProgressToSse: not implemented yet");
+  for await (const event of events) {
+    const wire = toWireSseEvent(event);
+    await stream.writeSSE({
+      event: wire.event,
+      data: JSON.stringify(wire.data),
+    });
+  }
 }

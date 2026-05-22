@@ -12,3 +12,4 @@ export * from "./rag.schema.js";
 export * from "./source-problem.schema.js";
 export * from "./strategy.schema.js";
 export * from "./verification.schema.js";
+export * from "./wire-format.schema.js";

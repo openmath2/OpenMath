@@ -65,10 +65,165 @@ export interface MathEngineClientOptions {
   baseUrl: string;
   timeoutMs?: number;
   retry?: { attempts: number; backoffMs: number };
+  allowedHosts?: readonly string[];
 }
 
 export function createMathEngineClient(
-  _opts: MathEngineClientOptions,
+  opts: MathEngineClientOptions,
 ): MathEngineClient {
-  throw new Error("createMathEngineClient: not implemented yet");
+  const baseUrl = validateBaseUrl(opts.baseUrl, opts.allowedHosts).replace(/\/$/, "");
+  const timeoutMs = opts.timeoutMs ?? 10_000;
+  const retry = opts.retry ?? { attempts: 1, backoffMs: 0 };
+
+  async function request<T>(
+    path: string,
+    init: RequestInit,
+    parse: (value: unknown) => T,
+  ): Promise<T> {
+    let lastError: Error | null = null;
+    for (let attempt = 1; attempt <= retry.attempts; attempt += 1) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(`${baseUrl}${path}`, {
+          ...init,
+          headers: {
+            "Content-Type": "application/json",
+            ...(init.headers ?? {}),
+          },
+          signal: controller.signal,
+        });
+        if (!res.ok) {
+          const body = await res.text();
+          throw new Error(
+            `math-engine ${path} failed (${res.status}): ${body || res.statusText}`,
+          );
+        }
+        return parse(await res.json());
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+        if (attempt < retry.attempts) {
+          await delay(retry.backoffMs * attempt);
+        }
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+    throw lastError ?? new Error(`math-engine ${path} failed`);
+  }
+
+  function post<T>(
+    path: string,
+    body: unknown,
+    parse: (value: unknown) => T,
+  ): Promise<T> {
+    return request(path, { method: "POST", body: JSON.stringify(body) }, parse);
+  }
+
+  return {
+    health: () => request("/health", { method: "GET" }, parseHealthResponse),
+    solve: (req) => post("/solve", req, parseSolveResponse),
+    verify: (req) => post("/verify", req, parseVerifyResponse),
+    simplify: (req) => post("/simplify", req, parseSimplifyResponse),
+    differentiate: (req) =>
+      post("/differentiate", req, parseDifferentiateResponse),
+    limit: (req) => post("/limit", req, parseLimitResponse),
+  };
+}
+
+function validateBaseUrl(raw: string, allowedHosts?: readonly string[]): string {
+  const url = new URL(raw);
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new Error(`math-engine baseUrl must use http or https (got ${url.protocol})`);
+  }
+  if (isBlockedHost(url.hostname)) {
+    throw new Error(`math-engine baseUrl host is blocked: ${url.hostname}`);
+  }
+  if (allowedHosts !== undefined && !allowedHosts.includes(url.hostname)) {
+    throw new Error(`math-engine baseUrl host is not allowed: ${url.hostname}`);
+  }
+  return url.toString();
+}
+
+function isBlockedHost(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  return host === "169.254.169.254" || host === "0.0.0.0" || host === "metadata.google.internal";
+}
+
+function delay(ms: number): Promise<void> {
+  if (ms <= 0) return Promise.resolve();
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function asObject(value: unknown): Record<string, unknown> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new Error("math-engine response must be an object");
+  }
+  const record: Record<string, unknown> = {};
+  for (const [key, field] of Object.entries(value)) {
+    record[key] = field;
+  }
+  return record;
+}
+
+function readString(value: Record<string, unknown>, key: string): string {
+  const field = value[key];
+  if (typeof field !== "string") {
+    throw new Error(`math-engine response field ${key} must be a string`);
+  }
+  return field;
+}
+
+function readBoolean(value: Record<string, unknown>, key: string): boolean {
+  const field = value[key];
+  if (typeof field !== "boolean") {
+    throw new Error(`math-engine response field ${key} must be a boolean`);
+  }
+  return field;
+}
+
+function readStringArray(value: Record<string, unknown>, key: string): string[] {
+  const field = value[key];
+  if (!Array.isArray(field) || !field.every((item) => typeof item === "string")) {
+    throw new Error(`math-engine response field ${key} must be string[]`);
+  }
+  return field;
+}
+
+function parseHealthResponse(value: unknown): HealthResponse {
+  const obj = asObject(value);
+  const status = readString(obj, "status");
+  const engine = readString(obj, "engine");
+  if (status !== "ok" || engine !== "sympy") {
+    throw new Error("math-engine health response has unexpected values");
+  }
+  return { status, engine };
+}
+
+function parseSolveResponse(value: unknown): SolveResponse {
+  const obj = asObject(value);
+  return { solutions: readStringArray(obj, "solutions") };
+}
+
+function parseVerifyResponse(value: unknown): VerifyResponse {
+  const obj = asObject(value);
+  return {
+    equivalent: readBoolean(obj, "equivalent"),
+    diff: readString(obj, "diff"),
+  };
+}
+
+function parseSimplifyResponse(value: unknown): SimplifyResponse {
+  const obj = asObject(value);
+  return { simplified: readString(obj, "simplified") };
+}
+
+function parseDifferentiateResponse(value: unknown): DifferentiateResponse {
+  const obj = asObject(value);
+  return { derivative: readString(obj, "derivative") };
+}
+
+function parseLimitResponse(value: unknown): LimitResponse {
+  const obj = asObject(value);
+  return { limit: readString(obj, "limit") };
 }
