@@ -1,18 +1,16 @@
 import Link from "next/link";
-import { BrandMark } from "./brand-mark";
 
 const navItems = [
-  { href: "#curriculum", label: "교육과정" },
-  { href: "#verification", label: "검증" },
-  { href: "#docs", label: "문서" },
-  { href: "#research", label: "연구" },
+  { href: "/samples", label: "예시" },
+  { href: "/app", label: "검증" },
+  { href: "/app/new/grade", label: "출제" },
+  { href: "/login", label: "로그인" },
 ];
 
 export function Nav() {
   return (
     <nav className="container-landing relative z-10 grid grid-cols-3 items-center py-6">
       <div className="brand-wordmark justify-self-start">
-        <BrandMark />
         <span>OpenMath</span>
       </div>
 

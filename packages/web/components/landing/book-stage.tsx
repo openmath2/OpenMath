@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BrandMark } from "./brand-mark";
 
 /* ─────────────────────────────────────────────────────────────
  * Tablet (iPad) showcase — OpenMath 사용법 4단계 walkthrough.
@@ -103,7 +102,6 @@ export function BookStage() {
           {/* App nav — brand left, CTA right */}
           <div className="tablet-appnav">
             <div className="tablet-brand">
-              <BrandMark />
               <span>OpenMath</span>
             </div>
             <button

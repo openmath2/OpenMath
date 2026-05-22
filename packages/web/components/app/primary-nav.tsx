@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { BrandMark } from "@/components/landing/brand-mark";
 
 type NavItem = {
   href: string;
@@ -8,16 +7,15 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { href: "/app", label: "워크스페이스" },
-  { href: "/#curriculum", label: "교육과정" },
-  { href: "/#verification", label: "검증" },
-  { href: "/#docs", label: "문서" },
+  { href: "/samples", label: "예시" },
+  { href: "/app/new/grade", label: "출제" },
+  { href: "/login", label: "로그인" },
 ];
 
 export function PrimaryNav() {
   return (
     <nav className="container-app app-nav" aria-label="주 메뉴">
       <Link href="/" className="brand-wordmark" aria-label="OpenMath — 홈으로">
-        <BrandMark />
         <span>OpenMath</span>
       </Link>
       <div className="hidden gap-7 md:flex">
