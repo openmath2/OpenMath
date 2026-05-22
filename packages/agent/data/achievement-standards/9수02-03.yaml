@@ -1,0 +1,32 @@
+code: 9수02-03
+title: 일차방정식을 풀 수 있다
+school_level: middle
+grade: 1
+techniques:
+  required_at_least_one_of:
+    - inverse_operation
+    - equation_simplification
+  forbidden:
+    - quadratic_formula
+evaluation_dimensions:
+  - id: A
+    description: 등식의 성질을 이용해 미지수를 고립시킨다
+    must_preserve: true
+  - id: B
+    description: 구한 값을 원래 식에 대입해 확인한다
+    must_preserve: true
+difficulty_range:
+  - easy
+  - medium
+problem_types_supported:
+  - short_answer
+  - objective
+structural_transforms:
+  - kind: coefficient_swap
+    range: [-20, 20]
+    exclude_zero: true
+conceptual_transforms:
+  - kind: rephrase_as_word_problem
+    context:
+      - 수량 관계
+      - 비율
