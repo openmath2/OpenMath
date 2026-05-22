@@ -20,6 +20,13 @@ type ModeOption = {
   badgeText: string;
 };
 
+type ReferenceProblem = {
+  id: string;
+  title: string;
+  body: string;
+  sourceProblemText: string;
+};
+
 const modes: ModeOption[] = [
   {
     value: "structural",
@@ -39,6 +46,51 @@ const modes: ModeOption[] = [
   },
 ];
 
+function referenceProblems(topic: Topic): ReferenceProblem[] {
+  if (topic.code === "9수01-05") {
+    return [
+      {
+        id: "sqrt-basic",
+        title: "제곱근 기본형",
+        body: "x² = 5 를 만족하는 실수 x를 모두 구한다.",
+        sourceProblemText: "x**2 - 5 = 0",
+      },
+      {
+        id: "sqrt-expression",
+        title: "근호 표현형",
+        body: "제곱해서 7이 되는 두 수를 근호로 나타낸다.",
+        sourceProblemText: "x**2 - 7 = 0",
+      },
+      {
+        id: "real-number",
+        title: "실수 분류형",
+        body: "√9, -√5, 0.3 중 유리수와 무리수를 구분한다.",
+        sourceProblemText: "x**2 - 9 = 0",
+      },
+    ];
+  }
+  return [
+    {
+      id: `${topic.code}-basic`,
+      title: `${topic.name} 기본형`,
+      body: topic.achievement,
+      sourceProblemText: topic.achievement,
+    },
+    {
+      id: `${topic.code}-structural`,
+      title: "구조 보존형",
+      body: "풀이 단계는 유지하고 수치와 표현만 바꾼다.",
+      sourceProblemText: topic.achievement,
+    },
+    {
+      id: `${topic.code}-conceptual`,
+      title: "개념 보존형",
+      body: "학습 목표는 유지하되 문항 맥락을 바꾼다.",
+      sourceProblemText: topic.achievement,
+    },
+  ];
+}
+
 type Props = {
   grade: Grade | null;
   topic: Topic | null;
@@ -47,6 +99,8 @@ type Props = {
 
 export function IntentPicker({ grade, topic, candidates }: Props) {
   const [mode, setMode] = useState<IsomorphismMode | null>(null);
+  const refs = topic === null ? [] : referenceProblems(topic);
+  const [selectedRef, setSelectedRef] = useState<string>(refs[0]?.id ?? "");
   const [checked, setChecked] = useState<Set<string>>(
     () => new Set(candidates.filter((c) => c.default).map((c) => c.key)),
   );
@@ -88,8 +142,9 @@ export function IntentPicker({ grade, topic, candidates }: Props) {
 
   const canSubmit = mode !== null && checked.size > 0;
   const dims = Array.from(checked).sort().join(",");
+  const source = refs.find((ref) => ref.id === selectedRef)?.sourceProblemText ?? refs[0]?.sourceProblemText ?? "";
   const generateHref = canSubmit
-    ? `/app/new/verify?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims}`
+    ? `/app/new/verify?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims}&source=${encodeURIComponent(source)}`
     : null;
 
   return (
@@ -161,7 +216,43 @@ export function IntentPicker({ grade, topic, candidates }: Props) {
           </div>
         </section>
 
-        {/* S3-B — 평가 차원 */}
+        {/* S3-B — 기준 문항 */}
+        <section
+          className="section-block"
+          aria-labelledby="reference-heading"
+        >
+          <h2 className="heading-md" id="reference-heading">
+            어떤 문제를 기준으로 만들까요?
+          </h2>
+          <p className="page-subtitle">
+            구조동형은 풀이 구조를, 개념동형은 학습 목표를 이 기준 문항에서 가져옵니다.
+          </p>
+          <div
+            className="mode-grid"
+            role="radiogroup"
+            aria-labelledby="reference-heading"
+          >
+            {refs.map((ref) => (
+              <label key={ref.id} className="intent-radio-card">
+                <input
+                  type="radio"
+                  name="reference-problem"
+                  value={ref.id}
+                  checked={selectedRef === ref.id}
+                  onChange={() => setSelectedRef(ref.id)}
+                  className="sr-only"
+                />
+                <span className="dot" aria-hidden="true" />
+                <span className="label">
+                  <span className="label-main">{ref.title}</span>
+                  <span className="label-desc">{ref.body}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </section>
+
+        {/* S3-C — 평가 차원 */}
         <section
           className="section-block"
           aria-labelledby="dim-heading"
