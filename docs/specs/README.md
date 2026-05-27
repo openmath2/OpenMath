@@ -17,6 +17,7 @@
 | L0 | `architecture.md` | 시스템 경계, 컴포넌트, 통신 위상, 실패 모드, 비기능 요구 |
 | L1 | `domain.md` (TBD) | 도메인 개념(Problem, Solution, Verification, Strategy 등)과 불변식 |
 | L2 | `contracts.md` (TBD) | HTTP/agent-tool 인터페이스 계약 |
+| L3 | `rag-integration.md` | AI Hub canonical RAG JSONL 연결 방식 |
 | L3 | `modules/<name>.md` (TBD) | 개별 모듈/함수의 의무·전후조건 |
 
 상위 레이어가 `Draft` 이상이어야 그 아래 레이어를 쓸 자격이 생긴다.
@@ -47,4 +48,5 @@
 ## 현재 상태
 
 - L0 `architecture.md` — Draft
-- L1 이하 — 미작성
+- L1 `domain.md` — Draft
+- L3 `rag-integration.md` — Draft

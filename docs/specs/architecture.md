@@ -180,6 +180,16 @@
 - **대안**: (a) Vite + React (SSR 없음 → 첫 페인트 늦음, SEO 약함, AI SDK 통합 약함), (b) SvelteKit (팀 친숙도 낮음, 학습 비용), (c) `apps/` + `packages/` 분리 (현재 평면 3 패키지 구조에서 분리 비용 > 가치), (d) Pretendard 단일 시스템 유지 (랜딩의 editorial 권위 표현 못함).
 - **채택 사유**: D-4 Vercel AI SDK 와 1:1 호환 (`ai/react`, `useChat`, SSE consumption hook 기본). Server Components 로 KaTeX SSR (수식이 첫 페인트부터 보임). Tailwind v4 의 CSS-first config 가 DESIGN.md 토큰을 그대로 `@theme` 블록에 매핑 가능. 듀얼-서피스로 랜딩 (D-3 학원 강사 첫 인상 — 신뢰감) 과 앱 내부 (정확/결정론적 출제 도구) 의 voice 둘 다 충족. 기존 `docs/product/DESIGN.md` (Nike fork productivity-only) 는 본 결정으로 superseded → historical reference 로 보존.
 
+### D-10. 인증·세션 layer 는 Better Auth — v2 도입 (1차 MVP 비활성)
+- **결정**: 사용자 가입·로그인·세션·계정 관리 기능 도입 시 [Better Auth](https://www.better-auth.com) 를 채택. TypeScript-first, framework-agnostic auth library. 1차 MVP (D-3 학원 강사 단일 사용자 PoC) 에서는 *비활성* — 랜딩의 "무료로 시작하기" CTA 는 placeholder, 실제 가입 흐름 없음. 캡스톤 데모 발표 후 v2 트리거.
+- **대안**: (a) NextAuth/Auth.js (Next.js 14 App Router 1급, 그러나 type-safety/customization 약함, OAuth 외 흐름 어색), (b) Clerk (호스티드 SaaS — 한국 컴플라이언스·비용·vendor 락인), (c) Supabase Auth (전체 BaaS 락인 — DB·storage·realtime 함께 채택해야 효율), (d) Lucia Auth (2024 maintenance mode 진입), (e) 자체 구현 (보안 위험 + 일정 부담).
+- **채택 사유**: TypeScript-first end-to-end type safety. Drizzle/Prisma/Kysely 어댑터로 D-7 (`RagClient`) 와 동일한 인터페이스 추상화 패턴 — DB 결정 (Q-2) 이전에 도입해도 swap 가능. Email/password · social · magic link · passkeys · 2FA 모두 1급. Next.js 14 App Router 의 `app/api/auth/[...all]/route.ts` 단일 catch-all 핸들러 패턴. self-hosted 가능 (Clerk vendor 락인 회피). 2024 후반 OSS production tool 채택 사례 다수 — NextAuth 의 type-erased 한계와 Lucia 의 EOL 을 동시에 해결.
+- **범위**:
+  - **1차 MVP (캡스톤 데모)**: 인증 layer 없음. D-3 결정 유지. 랜딩 CTA "무료로 시작하기" → "/app" 으로 직접 라우팅 (사용자 식별 없음).
+  - **v2 (데모 후)**: Better Auth 도입. 강사 가입 + Google social provider 1순위 + email/password 2순위 + 세션·작업 히스토리. `packages/web/lib/auth.ts` (instance) + `packages/web/app/api/auth/[...all]/route.ts` (catch-all) + `packages/web/app/(auth)/{sign-in,sign-up}/page.tsx` (DESIGN.md productivity surface 컴포넌트 사용).
+  - **DB**: Better Auth adapter 추상화로 Q-2 (영속 저장소) 결정과 decouple. 1차 도입 시점 후보: SQLite (local dev) → Postgres (production).
+- **Closes**: Q-4 의 (c) "인증 없는 PoC (1차 MVP)" 가 D-3 으로 확정, 인증 도입 시 기술 선택은 본 결정으로 확정. *신뢰 경계*·*rate limit 위치*는 여전히 Q-4 open.
+
 > 추가 결정은 Open Question을 닫을 때마다 여기에 누적한다.
 
 ---
@@ -198,11 +208,14 @@
 ### ~~Q-3. 클라이언트 ↔ agent 프로토콜~~ — **Closed by D-6**
 SSE 스트리밍 (Hono `streamSSE`).
 
-### Q-4. 어디까지가 신뢰 경계인가
+### Q-4. 어디까지가 신뢰 경계인가 — **Partially closed by D-3 + D-10**
 **왜 묻는가**: 입력 검증·rate limit·인증의 위치를 결정.
-**선택지 예시**: (a) `agent`만 외부 노출, `math-engine`은 내부망 한정,
-(b) 둘 다 내부망 한정 (외부에 별도 BFF), (c) 인증 없는 PoC (1차 MVP 현재).
-**관련 영향**: §5.1, §6.
+**Closed parts**: *인증 기술* → Better Auth (D-10, v2 트리거). *1차 MVP* → 인증 없는 PoC (D-3).
+**남은 선택지** (배포 경계 + rate limit 위치):
+(a) `agent` 만 외부 노출, `math-engine` 은 내부망 한정,
+(b) 둘 다 내부망 한정 (외부에 별도 BFF),
+(c) rate limit 을 `agent` 진입점 또는 별 reverse proxy 어디에 둘지.
+**관련 영향**: §5.1, §6, Q-5.
 
 ### Q-5. 비용·반복 상한
 **왜 묻는가**: LLM 호출 폭주 방지. 검증 실패 시 몇 회까지 재생성할지.
