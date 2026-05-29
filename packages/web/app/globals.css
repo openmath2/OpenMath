@@ -1536,6 +1536,48 @@
     color: var(--color-warn-deep);
   }
 
+  .reference-list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--color-hairline-soft);
+  }
+  .reference-row {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-hairline-soft);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    min-width: 0;
+  }
+  .reference-topic {
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.5;
+    flex: 1;
+    min-width: 0;
+  }
+  .reference-meta {
+    color: var(--color-ink-3);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 400;
+    line-height: 1.45;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+  @media (max-width: 600px) {
+    .reference-row {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .reference-meta {
+      text-align: left;
+    }
+  }
+
   /* spinner-dot — DESIGN.md {component.spinner-dot} */
   .spinner-dot {
     width: 14px;

@@ -35,6 +35,13 @@ export type Step = {
   summary: string | null;
 };
 
+export type RagReference = {
+  item_id: string;
+  similarity: number | null;
+  match_reason: string;
+  topic_name: string;
+};
+
 export type GeneratedProblem = {
   id: string;
   question_latex: string;
@@ -58,12 +65,14 @@ export type StreamState = {
   status: StreamStatus;
   previewLatex: string | null;
   candidates: GeneratedProblem[];
+  ragRefs: RagReference[];
   error: string | null;
 };
 
 export type StreamInput = {
   grade: 1 | 2 | 3;
   topic: string;
+  topicName?: string;
   mode: "structural" | "conceptual";
   dims: readonly string[];
   /** override agent endpoint. defaults to NEXT_PUBLIC_AGENT_URL or localhost:3000 */
@@ -81,6 +90,7 @@ function makeInitialState(): StreamState {
     status: "idle",
     previewLatex: null,
     candidates: [],
+    ragRefs: [],
     error: null,
   };
 }
@@ -92,6 +102,7 @@ type Action =
       index: number;
       status: "started" | "completed" | "failed";
       summary: string | null;
+      ragRefs?: RagReference[];
     }
   | { type: "PREVIEW"; latex: string }
   | { type: "RESULT"; candidates: GeneratedProblem[] }
@@ -121,7 +132,12 @@ function reducer(state: StreamState, action: Action): StreamState {
           ? { ...s, status: nextStatus, summary: action.summary }
           : s,
       );
-      return { ...state, status: "streaming", steps };
+      return {
+        ...state,
+        status: "streaming",
+        steps,
+        ragRefs: action.ragRefs ?? state.ragRefs,
+      };
     }
     case "PREVIEW":
       return { ...state, previewLatex: action.latex };
@@ -158,6 +174,7 @@ function parseStep(raw: unknown): {
   index: number;
   status: "started" | "completed" | "failed";
   summary: string | null;
+  ragRefs?: RagReference[];
 } | null {
   const o = asObject(raw);
   if (o === null) return null;
@@ -171,7 +188,39 @@ function parseStep(raw: unknown): {
     index,
     status,
     summary: asString(o.summary),
+    ragRefs: index === 1 ? parseRagRefs(o) : undefined,
   };
+}
+
+function parseRagRefs(stepPayload: Record<string, unknown>): RagReference[] | undefined {
+  const raw = asObject(stepPayload.raw);
+  const data = raw === null ? null : asObject(raw.data);
+  const refs = data === null ? null : data.refs;
+  if (!Array.isArray(refs)) {
+    return undefined;
+  }
+
+  const parsed = refs
+    .map((ref): RagReference | null => {
+      const o = asObject(ref);
+      if (o === null) return null;
+      const itemId = asString(o.item_id);
+      const matchReason = asString(o.match_reason);
+      const topicName = asString(o.topic_name);
+      if (itemId === null || matchReason === null || topicName === null) {
+        return null;
+      }
+
+      return {
+        item_id: itemId,
+        similarity: asNumber(o.similarity),
+        match_reason: matchReason,
+        topic_name: topicName,
+      };
+    })
+    .filter((ref): ref is RagReference => ref !== null);
+
+  return parsed.length > 0 ? parsed : undefined;
 }
 
 function parsePreview(raw: unknown): string | null {
@@ -257,7 +306,7 @@ export function useVerificationStream(
   const inputKey =
     input === null
       ? null
-      : `${input.grade}|${input.topic}|${input.mode}|${dimsKey}|${input.endpoint ?? ""}`;
+      : `${input.grade}|${input.topic}|${input.topicName ?? ""}|${input.mode}|${dimsKey}|${input.endpoint ?? ""}`;
 
   /* effect 본문이 input 의 *최신* 값을 읽어야 하지만 deps 로 넣으면 가드가
    * 무효화되어 부모 re-render 마다 SSE 재연결이 발생한다 (PR #7 리뷰).
@@ -297,7 +346,12 @@ export function useVerificationStream(
       body: JSON.stringify({
         grade: current.grade,
         topic: current.topic,
+        topic_code: current.topic,
+        topic_name: current.topicName,
         mode: current.mode,
+        count: 5,
+        difficulty: "medium",
+        problem_type: "objective",
         dims: [...current.dims].sort(),
       }),
       signal: controller.signal,

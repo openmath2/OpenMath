@@ -1,14 +1,45 @@
-/** Service entrypoint. Wiring of deps -> createApp is the only un-implemented part of scaffolding. */
+/** Service entrypoint. Wires runtime deps and starts the Hono server. */
 
+import { access } from "node:fs/promises";
+
+import { serve } from "@hono/node-server";
+
+import { createApp } from "./server/app.js";
 import { loadEnv } from "./config/index.js";
+import { createMathEngineClient } from "./tools/math-engine-client.js";
+import { createInMemoryRagClient } from "./tools/rag-client.js";
 
 export async function main(): Promise<void> {
   const env = loadEnv();
-  console.log(
-    `[openmath/agent] Boot pending. Port ${env.PORT}, math-engine ${env.MATH_ENGINE_URL}. ` +
-      `See docs/specs/architecture.md D-3~D-8 + src/{tools,agents,steps,workflows}/*.`,
-  );
-  throw new Error("main: dependency wiring not implemented yet.");
+
+  if (!env.CORPUS_JSONL) {
+    throw new Error(
+      "CORPUS_JSONL is required to start the agent with RAG search. " +
+        "Set it to the openmath_rag_records.jsonl file path.",
+    );
+  }
+
+  await access(env.CORPUS_JSONL);
+
+  const rag = createInMemoryRagClient({ jsonlPath: env.CORPUS_JSONL });
+  await rag.warmup?.();
+
+  const mathEngine = createMathEngineClient({
+    baseUrl: env.MATH_ENGINE_URL,
+    timeoutMs: env.PER_STEP_TIMEOUT_MS,
+  });
+
+  const app = createApp({
+    mathEngine,
+    workflow: { rag, mathEngine },
+  });
+
+  serve({ fetch: app.fetch, port: env.PORT }, (info) => {
+    console.log(
+      `[openmath/agent] Listening on http://localhost:${info.port}; ` +
+        `math-engine ${env.MATH_ENGINE_URL}; corpus ${env.CORPUS_JSONL}`,
+    );
+  });
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

@@ -9,6 +9,7 @@ import {
   gradeLabel,
 } from "../topic/data";
 import {
+  type RagReference,
   type Step,
   type StreamInput,
   useVerificationStream,
@@ -88,6 +89,37 @@ function stateLabel(status: Step["status"]): string {
   }
 }
 
+function RagReferenceList({ refs }: { refs: RagReference[] }) {
+  if (refs.length === 0) {
+    return null;
+  }
+
+  return (
+    <section
+      className="section-block"
+      aria-labelledby="rag-reference-heading"
+    >
+      <h2 className="heading-md" id="rag-reference-heading">
+        참조한 원본 문제
+      </h2>
+      <ul className="reference-list" aria-label="RAG 검색 참조 문제">
+        {refs.slice(0, 5).map((ref) => (
+          <li key={ref.item_id} className="reference-row">
+            <span className="reference-topic">{ref.topic_name}</span>
+            <span className="reference-meta">
+              {ref.item_id}
+              {ref.similarity !== null
+                ? ` · ${Math.round(ref.similarity * 100)}%`
+                : ""}
+              {` · ${ref.match_reason}`}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export function VerifyView({ grade, topic, mode, dims }: Props) {
   const valid =
     grade !== null && topic !== null && mode !== null && dims.length > 0;
@@ -96,7 +128,7 @@ export function VerifyView({ grade, topic, mode, dims }: Props) {
     if (!valid || grade === null || topic === null || mode === null) {
       return null;
     }
-    return { grade, topic: topic.code, mode, dims };
+    return { grade, topic: topic.code, topicName: topic.name, mode, dims };
   }, [valid, grade, topic, mode, dims]);
 
   /* hook 은 input 이 null 이면 stream 을 시작하지 않는다. invalid 가드. */
@@ -217,6 +249,8 @@ export function VerifyView({ grade, topic, mode, dims }: Props) {
             </div>
           </div>
         ) : null}
+
+        <RagReferenceList refs={stream.ragRefs} />
       </main>
 
       <div className="action-bar-sticky">

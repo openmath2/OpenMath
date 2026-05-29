@@ -25,6 +25,7 @@ export const GenerateRequestSchema = z.object({
 
   school_level: SchoolLevelSchema.default("middle"),
   grade: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  topic: z.string().optional(),
   topic_code: z.string().optional(),
   topic_name: z.string().optional(),
 

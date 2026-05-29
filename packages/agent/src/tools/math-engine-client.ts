@@ -68,7 +68,45 @@ export interface MathEngineClientOptions {
 }
 
 export function createMathEngineClient(
-  _opts: MathEngineClientOptions,
+  opts: MathEngineClientOptions,
 ): MathEngineClient {
-  throw new Error("createMathEngineClient: not implemented yet");
+  const baseUrl = opts.baseUrl.replace(/\/$/, "");
+  const timeoutMs = opts.timeoutMs ?? 5000;
+
+  return {
+    health: () => request<HealthResponse>(baseUrl, "/health", undefined, timeoutMs),
+    solve: (req) => request<SolveResponse>(baseUrl, "/solve", req, timeoutMs),
+    verify: (req) => request<VerifyResponse>(baseUrl, "/verify", req, timeoutMs),
+    simplify: (req) => request<SimplifyResponse>(baseUrl, "/simplify", req, timeoutMs),
+    differentiate: (req) =>
+      request<DifferentiateResponse>(baseUrl, "/differentiate", req, timeoutMs),
+    limit: (req) => request<LimitResponse>(baseUrl, "/limit", req, timeoutMs),
+  };
+}
+
+async function request<T>(
+  baseUrl: string,
+  path: string,
+  body: unknown,
+  timeoutMs: number,
+): Promise<T> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(`${baseUrl}${path}`, {
+      method: body === undefined ? "GET" : "POST",
+      headers: body === undefined ? undefined : { "Content-Type": "application/json" },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      throw new Error(`math-engine ${path} failed: ${res.status} ${res.statusText}`);
+    }
+
+    return (await res.json()) as T;
+  } finally {
+    clearTimeout(timeout);
+  }
 }

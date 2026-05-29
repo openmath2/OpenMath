@@ -32,7 +32,14 @@ updated: 2026-05-18
 
 # References
 
-{{#each refs}}- 원본: {{this.problem.question_text}} → 정답: {{this.problem.answer_text}}
+{{#each refs}}- item_id: {{this.item_id}}
+  - match: {{this.match_reason}} {{this.similarity}}
+  - 단원: {{this.problem.topic_name}}
+  - 성취기준: {{this.problem.achievement_standard}}
+  - 유형/난이도: {{this.problem.problem_type_norm}} / {{this.problem.difficulty_norm}}
+  - 원본문제: {{this.problem.question_text}}
+  - 정답: {{this.problem.answer_text}}
+  - 해설: {{this.problem.explanation_text}}
 {{/each}}
 
 # Strategy (선택)
