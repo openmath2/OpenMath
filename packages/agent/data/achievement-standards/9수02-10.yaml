@@ -1,0 +1,33 @@
+code: 9수02-10
+title: 이차방정식의 활용
+school_level: middle
+grade: 3
+techniques:
+  required_at_least_one_of:
+    - quadratic_modeling
+    - factoring
+  forbidden:
+    - formula_without_modeling
+evaluation_dimensions:
+  - id: A
+    description: 상황을 이차방정식으로 모델링한다.
+    must_preserve: true
+  - id: B
+    description: 문제 조건에 맞는 해만 선택한다.
+    must_preserve: true
+difficulty_range:
+  - medium
+  - hard
+problem_types_supported:
+  - objective
+  - short_answer
+structural_transforms:
+  - kind: coefficient_swap
+    range: [-12, 12]
+    exclude_zero: true
+conceptual_transforms:
+  - kind: rephrase_as_word_problem
+    context:
+      - 넓이
+      - 연속하는 정수
+      - 이동 거리

@@ -1,0 +1,30 @@
+code: 9수01-05
+title: 제곱근과 실수
+school_level: middle
+grade: 3
+techniques:
+  required_at_least_one_of:
+    - square_root_definition
+    - real_number_classification
+  forbidden:
+    - decimal_approximation_only
+evaluation_dimensions:
+  - id: A
+    description: 제곱근의 뜻을 이용해 양수의 두 제곱근을 구분한다.
+    must_preserve: true
+  - id: B
+    description: 유리수와 무리수를 실수 범위에서 분류한다.
+    must_preserve: true
+difficulty_range:
+  - easy
+  - medium
+problem_types_supported:
+  - objective
+  - short_answer
+structural_transforms:
+  - kind: coefficient_swap
+    range: [2, 100]
+    exclude_zero: true
+conceptual_transforms:
+  - kind: inverse_question
+    hint: 제곱근의 값이 주어졌을 때 원래 수를 찾는 형태로 바꾼다.

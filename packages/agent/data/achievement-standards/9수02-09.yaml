@@ -1,0 +1,38 @@
+code: 9수02-09
+title: 이차방정식
+school_level: middle
+grade: 3
+techniques:
+  required_at_least_one_of:
+    - factoring
+    - quadratic_formula
+  forbidden:
+    - numerical_approximation_only
+evaluation_dimensions:
+  - id: A
+    description: 이차식을 인수분해 가능한 형태로 변형한다.
+    must_preserve: true
+  - id: B
+    description: 각 인수를 0으로 두어 해를 구한다.
+    must_preserve: true
+  - id: C
+    description: 해가 원래 방정식을 만족하는지 확인한다.
+    must_preserve: false
+difficulty_range:
+  - easy
+  - medium
+problem_types_supported:
+  - objective
+  - short_answer
+structural_transforms:
+  - kind: coefficient_swap
+    range: [-10, 10]
+    exclude_zero: true
+  - kind: sign_flip
+conceptual_transforms:
+  - kind: present_via_root_relations
+    hint: 두 근의 합과 곱을 이용하는 문항으로 바꿀 수 있다.
+  - kind: rephrase_as_word_problem
+    context:
+      - 직사각형의 넓이
+      - 연속하는 두 정수

@@ -43,8 +43,10 @@ function escapeHtml(s: string): string {
 }
 
 function renderLatex(latex: string, block: boolean): string {
+  const normalized = normalizeMathNotation(latex);
   try {
-    return katex.renderToString(latex, {
+    return katex.renderToString(normalized,
+    {
       displayMode: block,
       throwOnError: true,
       strict: false,
@@ -54,6 +56,14 @@ function renderLatex(latex: string, block: boolean): string {
   } catch {
     return `<span class="latex-error">${escapeHtml(latex)}</span>`;
   }
+}
+
+function normalizeMathNotation(input: string): string {
+  return input
+    .replace(/\bsqrt\(([^()]+)\)/g, "\\sqrt{$1}")
+    .replace(/([A-Za-z0-9)\]}]+)\s*\*\*\s*([A-Za-z0-9({[]+)/g, "$1^{$2}")
+    .replace(/([0-9A-Za-z)\]}]+)\s*\*\s*([A-Za-z({[]+)/g, "$1$2")
+    .replace(/\^\{([^{}]+)\}\s*\)/g, "^{$1})");
 }
 
 export function LatexRenderer({ latex, block = false }: LatexRendererProps) {

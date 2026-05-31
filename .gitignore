@@ -36,3 +36,7 @@ __pycache__/
 .env.local
 *.env
 !.env.example
+
+# Large local RAG corpus
+packages/agent/data/corpus/*.jsonl
+!packages/agent/data/corpus/*fixture*.jsonl

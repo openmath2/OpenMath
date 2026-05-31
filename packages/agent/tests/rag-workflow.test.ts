@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { RagClient } from "../src/tools/rag-client.js";
+import type { MathEngineClient } from "../src/tools/math-engine-client.js";
 import { ragSearch } from "../src/steps/rag-search.js";
 import { runVerificationWorkflow } from "../src/workflows/verification-workflow.js";
 import type { RagQuery, RagResult } from "../src/schemas/index.js";
@@ -48,16 +49,17 @@ describe("ragSearch", () => {
 });
 
 describe("runVerificationWorkflow", () => {
-  it("streams RAG and intent events with source references before the unimplemented generation error", async () => {
+  it("streams all six steps and emits verified fallback candidates", async () => {
     const rag: RagClient = {
       async search() {
         return [ragResult("111:train:similarity")];
       },
     };
+    const mathEngine = fakeMathEngine();
 
     const events = [];
     const workflow = runVerificationWorkflow(
-      { rag },
+      { rag, mathEngine },
       {
         mode: "structural",
         school_level: "middle",
@@ -79,7 +81,15 @@ describe("runVerificationWorkflow", () => {
       "step",
       "step",
       "step",
-      "error",
+      "step",
+      "step",
+      "step",
+      "step",
+      "step",
+      "step",
+      "step",
+      "step",
+      "result",
     ]);
     expect(events[1]).toMatchObject({
       type: "step",
@@ -104,12 +114,87 @@ describe("runVerificationWorkflow", () => {
         source_ref_count: 1,
       },
     });
-    expect(events[4]).toMatchObject({
-      type: "error",
-      code: "PIPELINE_NOT_IMPLEMENTED",
+    expect(events.at(-1)).toMatchObject({
+      type: "result",
+      candidates: [
+        {
+          verification: {
+            overall: "verified",
+          },
+        },
+        {
+          verification: {
+            overall: "verified",
+          },
+        },
+      ],
     });
   });
+
+  it("auto mode alternates structural and conceptual candidates", async () => {
+    const rag: RagClient = {
+      async search() {
+        return [ragResult("111:train:similarity")];
+      },
+    };
+    const events = [];
+    const workflow = runVerificationWorkflow(
+      { rag, mathEngine: fakeMathEngine() },
+      {
+        mode: "auto",
+        school_level: "middle",
+        grade: 2,
+        topic_code: "9수04-04",
+        topic_name: "도형의 닮음",
+        count: 2,
+        difficulty: "medium",
+        problem_type: "objective",
+      },
+    );
+
+    for await (const event of workflow) {
+      events.push(event);
+    }
+
+    const result = events.at(-1);
+    expect(result).toMatchObject({ type: "result" });
+    if (result?.type !== "result") {
+      throw new Error("expected result event");
+    }
+    expect(result.candidates.map((item) => item.problem.mode)).toEqual([
+      "structural",
+      "conceptual",
+    ]);
+  });
 });
+
+function fakeMathEngine(): MathEngineClient {
+  return {
+    async health() {
+      return { status: "ok", engine: "sympy" };
+    },
+    async solve(req) {
+      const match = req.equation.match(/x\s*\+\s*(\d+)\s*=\s*(\d+)/);
+      if (match === null) {
+        return { solutions: [] };
+      }
+      return { solutions: [String(Number(match[2]) - Number(match[1]))] };
+    },
+    async verify(req) {
+      const equivalent = req.expr1.trim() === req.expr2.trim();
+      return { equivalent, diff: equivalent ? "0" : `${req.expr1}-${req.expr2}` };
+    },
+    async simplify(req) {
+      return { simplified: req.expr };
+    },
+    async differentiate() {
+      return { derivative: "0" };
+    },
+    async limit() {
+      return { limit: "0" };
+    },
+  };
+}
 
 function ragResult(itemId: string): RagResult {
   return {

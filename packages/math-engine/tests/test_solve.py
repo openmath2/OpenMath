@@ -45,6 +45,18 @@ def test_solve_rational_solution(client):
     assert response.json()["solutions"] == ["-1/2"]
 
 
+def test_solve_linear_system(client):
+    response = client.post(
+        "/solve",
+        json={
+            "equation": ["x + y = 5", "x - y = 1"],
+            "variable": ["x", "y"],
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["solutions"] == ["x=3, y=2"]
+
+
 def test_solve_invalid_equation(client):
     response = client.post(
         "/solve",

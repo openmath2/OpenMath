@@ -232,6 +232,11 @@ function parsePreview(raw: unknown): string | null {
 function parseProblem(raw: unknown): GeneratedProblem | null {
   const o = asObject(raw);
   if (o === null) return null;
+  const maybeProblem = asObject(o.problem);
+  if (maybeProblem !== null) {
+    return parseAgentResult(maybeProblem, asObject(o.verification));
+  }
+
   const id = asString(o.id);
   const question = asString(o.question_latex);
   const answer = asString(o.answer_latex);
@@ -252,6 +257,42 @@ function parseProblem(raw: unknown): GeneratedProblem | null {
     isomorphism: iso,
     preserved_dimensions: dims,
     verification_status: verif,
+  };
+}
+
+function parseAgentResult(
+  problem: Record<string, unknown>,
+  verification: Record<string, unknown> | null,
+): GeneratedProblem | null {
+  const id = asString(problem.candidate_id);
+  const question = asString(problem.question_text);
+  const answer = asString(problem.expected_answer);
+  const iso = asString(problem.mode);
+  if (id === null || question === null || answer === null) return null;
+  if (iso !== "structural" && iso !== "conceptual") return null;
+
+  const inferred = asObject(problem.inferred_intent);
+  const dimsRaw = inferred === null ? null : inferred.evaluation_dimensions;
+  const dims = Array.isArray(dimsRaw)
+    ? dimsRaw
+        .map((item): string | null => {
+          const dim = asObject(item);
+          if (dim === null || dim.must_preserve !== true) return null;
+          return asString(dim.id) ?? asString(dim.description);
+        })
+        .filter((item): item is string => item !== null)
+    : [];
+  const overall = verification === null ? null : asString(verification.overall);
+
+  return {
+    id,
+    question_latex: question,
+    answer_latex: answer,
+    explanation_latex: asString(problem.proposed_solution_trace) ?? undefined,
+    isomorphism: iso,
+    preserved_dimensions: dims,
+    verification_status:
+      overall === "verified" ? "pass" : overall === "warning" ? "partial" : "fail",
   };
 }
 

@@ -75,7 +75,7 @@ function toRagQuery(request: GenerateRequest): RagQuery {
   const topicCode = request.topic_code?.trim();
   const topicName = request.topic_name?.trim() ?? topicFromAlias;
   const usableTopicCode =
-    topicCode !== undefined && !looksLikeAchievementCode(topicCode)
+    topicCode !== undefined && looksLikeAchievementCode(topicCode)
       ? topicCode
       : undefined;
 

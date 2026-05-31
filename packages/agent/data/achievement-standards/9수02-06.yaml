@@ -1,0 +1,34 @@
+code: 9수02-06
+title: 일차부등식
+school_level: middle
+grade: 2
+techniques:
+  required_at_least_one_of:
+    - inequality_balance
+    - interval_solution
+  forbidden:
+    - equation_only
+evaluation_dimensions:
+  - id: A
+    description: 부등식의 성질을 이용해 미지수 항을 정리한다.
+    must_preserve: true
+  - id: B
+    description: 음수로 나누거나 곱할 때 부등호 방향을 바꾼다.
+    must_preserve: true
+difficulty_range:
+  - easy
+  - medium
+problem_types_supported:
+  - objective
+  - short_answer
+structural_transforms:
+  - kind: coefficient_swap
+    range: [-8, 8]
+    exclude_zero: true
+  - kind: sign_flip
+conceptual_transforms:
+  - kind: rephrase_as_word_problem
+    context:
+      - 최소 비용
+      - 제한 조건
+      - 점수 기준

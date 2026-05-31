@@ -6,6 +6,8 @@
  * 단일 지점.
  */
 
+import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type { LanguageModel } from "ai";
 
 export type LlmProviderKind =
@@ -20,6 +22,23 @@ export interface LlmProviderConfig {
   apiKey?: string;
 }
 
-export function resolveLanguageModel(_config: LlmProviderConfig): LanguageModel {
-  throw new Error("resolveLanguageModel: not implemented yet");
+export function resolveLanguageModel(config: LlmProviderConfig): LanguageModel {
+  if (config.kind === "openai") {
+    const provider = createOpenAI({
+      apiKey: config.apiKey ?? process.env.OPENAI_API_KEY,
+      compatibility: "strict",
+    });
+    return provider(config.modelId);
+  }
+
+  if (config.baseUrl === undefined) {
+    throw new Error(`${config.kind} requires LLM_BASE_URL`);
+  }
+
+  const provider = createOpenAICompatible({
+    name: config.kind,
+    baseURL: config.baseUrl,
+    apiKey: config.apiKey ?? "dummy-key",
+  });
+  return provider(config.modelId);
 }

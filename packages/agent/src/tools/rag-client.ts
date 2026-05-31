@@ -36,6 +36,7 @@ type OpenMathRagRecord = {
     semester?: 1 | 2 | null;
     topic_code?: string | null;
     topic_name: string;
+    achievement_code?: string | null;
     achievement_standard?: string | null;
     achievement_confidence?: number;
   };
@@ -154,7 +155,7 @@ function toIndexedProblem(record: OpenMathRagRecord): IndexedProblem {
     school_level: record.curriculum.school_level,
     grade: record.curriculum.grade,
     semester: record.curriculum.semester ?? null,
-    topic_code: record.curriculum.topic_code ?? null,
+    topic_code: record.curriculum.achievement_code ?? record.curriculum.topic_code ?? null,
     topic_name: record.curriculum.topic_name,
     achievement_standard: record.curriculum.achievement_standard ?? null,
     question_text: record.problem.question_text,

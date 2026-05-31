@@ -1,0 +1,30 @@
+code: 9수04-05
+title: 삼각비
+school_level: middle
+grade: 3
+techniques:
+  required_at_least_one_of:
+    - trigonometric_ratio
+    - right_triangle_reasoning
+  forbidden:
+    - calculator_only
+evaluation_dimensions:
+  - id: A
+    description: 직각삼각형에서 sin, cos, tan의 비를 해석한다.
+    must_preserve: true
+  - id: B
+    description: 특수각의 삼각비 값을 활용한다.
+    must_preserve: true
+difficulty_range:
+  - easy
+  - medium
+problem_types_supported:
+  - objective
+  - short_answer
+structural_transforms:
+  - kind: coefficient_swap
+    range: [1, 12]
+    exclude_zero: true
+conceptual_transforms:
+  - kind: inverse_question
+    hint: 삼각비 값이 주어졌을 때 각이나 변의 비를 찾는다.

@@ -16,6 +16,7 @@ import {
   SchoolLevelSchema,
 } from "./source-problem.schema.js";
 
+// auto: workflow alternates structural/conceptual attempts so the UI can compare both.
 export const GenerateModeSchema = z.enum(["structural", "conceptual", "auto"]);
 
 export type GenerateMode = z.infer<typeof GenerateModeSchema>;

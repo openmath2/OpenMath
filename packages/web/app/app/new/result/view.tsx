@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LatexRenderer } from "@/components/math/latex-renderer";
 import { type Grade, type Topic, gradeLabel } from "../topic/data";
 import type { ResultProblem } from "./mock";
@@ -83,10 +83,27 @@ export function ResultView({
 }: Props) {
   const [filter, setFilter] = useState<Filter>("all");
   const [adopted, setAdopted] = useState<Set<string>>(new Set());
+  const [liveProblems, setLiveProblems] = useState<ResultProblem[] | null>(null);
+
+  useEffect(() => {
+    const raw = window.localStorage.getItem("openmath:last-results");
+    if (raw === null) return;
+    try {
+      const parsed = JSON.parse(raw) as unknown;
+      const mapped = mapLiveResults(parsed);
+      if (mapped.length > 0) {
+        setLiveProblems(mapped);
+      }
+    } catch {
+      setLiveProblems(null);
+    }
+  }, []);
+
+  const effectiveProblems = liveProblems ?? problems;
 
   const visible = useMemo(
-    () => problems.filter((p) => matchesFilter(p, filter)),
-    [problems, filter],
+    () => effectiveProblems.filter((p) => matchesFilter(p, filter)),
+    [effectiveProblems, filter],
   );
 
   if (grade === null || topic === null || mode === null) {
@@ -126,7 +143,7 @@ export function ResultView({
   };
 
   const adoptedCount = adopted.size;
-  const passedCount = problems.filter((p) => p.status !== "fail").length;
+  const passedCount = effectiveProblems.filter((p) => p.status !== "fail").length;
   const verifyHref = `/app/new/verify?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}`;
   const exportHref =
     adoptedCount > 0
@@ -349,4 +366,38 @@ export function ResultView({
       </div>
     </>
   );
+}
+
+function mapLiveResults(raw: unknown): ResultProblem[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .map((item, index): ResultProblem | null => {
+      if (typeof item !== "object" || item === null) return null;
+      const o = item as Record<string, unknown>;
+      const id = typeof o.id === "string" ? o.id : `live-${index + 1}`;
+      const question = typeof o.question_latex === "string" ? o.question_latex : null;
+      const answer = typeof o.answer_latex === "string" ? o.answer_latex : null;
+      const iso = o.isomorphism;
+      const status = o.verification_status;
+      if (question === null || answer === null) return null;
+      if (iso !== "structural" && iso !== "conceptual") return null;
+      if (status !== "pass" && status !== "partial" && status !== "fail") return null;
+      const dims = Array.isArray(o.preserved_dimensions)
+        ? o.preserved_dimensions.filter((dim): dim is string => typeof dim === "string")
+        : [];
+      return {
+        id,
+        number: index + 1,
+        isomorphism: iso,
+        status: status === "partial" ? "warn" : status,
+        questionLatex: question,
+        answerLatex: answer,
+        solutionLatex:
+          typeof o.explanation_latex === "string" ? o.explanation_latex : "",
+        preservedDims: dims,
+        missingDims: [],
+        failReason: status === "fail" ? "검증 파이프라인에서 실패했습니다." : null,
+      };
+    })
+    .filter((item): item is ResultProblem => item !== null);
 }

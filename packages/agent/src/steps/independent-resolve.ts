@@ -4,6 +4,7 @@
 import type { SolverAgent } from "../agents/index.js";
 import type { GateResult, GeneratedProblem } from "../schemas/index.js";
 import type { MathEngineClient } from "../tools/math-engine-client.js";
+import { normalizeMathText } from "./sympy-verification.js";
 
 export interface IndependentResolveDeps {
   solver: SolverAgent;
@@ -20,8 +21,65 @@ export interface IndependentResolveOutput {
 }
 
 export async function independentResolve(
-  _deps: IndependentResolveDeps,
-  _input: IndependentResolveInput,
+  deps: IndependentResolveDeps,
+  input: IndependentResolveInput,
 ): Promise<IndependentResolveOutput> {
-  throw new Error("independentResolve: not implemented yet");
+  const started = Date.now();
+  if (input.sympyGate.status === "skipped") {
+    return {
+      gate: {
+        step: "re_solve",
+        status: "skipped",
+        duration_ms: Date.now() - started,
+        evidence: { reason: "sympy_verify skipped" },
+      },
+    };
+  }
+  if (input.sympyGate.status === "failed") {
+    return {
+      gate: {
+        step: "re_solve",
+        status: "skipped",
+        duration_ms: Date.now() - started,
+        evidence: { reason: "sympy_verify failed" },
+      },
+    };
+  }
+
+  try {
+    const attempt = await deps.solver.solve(input.candidate);
+    const check = await deps.mathEngine.verify({
+      expr1: normalizeMathText(attempt.derived_answer),
+      expr2: normalizeMathText(input.candidate.expected_answer),
+    });
+
+    return {
+      gate: {
+        step: "re_solve",
+        status: check.equivalent ? "passed" : "failed",
+        duration_ms: Date.now() - started,
+        evidence: { attempt, diff: check.diff },
+        ...(check.equivalent
+          ? {}
+          : {
+              failure_detail: {
+                code: "independent_resolve_mismatch",
+                message: "Independent solver answer differs from candidate answer.",
+              },
+            }),
+      },
+    };
+  } catch (error) {
+    return {
+      gate: {
+        step: "re_solve",
+        status: "failed",
+        duration_ms: Date.now() - started,
+        failure_detail: {
+          code: "independent_solver_error",
+          message: error instanceof Error ? error.message : String(error),
+        },
+      },
+    };
+  }
 }

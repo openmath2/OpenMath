@@ -1,5 +1,6 @@
 /** Step 2: Intent extraction. Single LLM agent (D-5). Output validated by IntentSchema (I-I1, I-I2). */
 
+import { generateObject } from "ai";
 import type { LanguageModel } from "ai";
 
 import type {
@@ -8,7 +9,7 @@ import type {
   RagResult,
   Strategy,
 } from "../schemas/index.js";
-import { assertIntentInvariants } from "../schemas/index.js";
+import { IntentSchema, assertIntentInvariants } from "../schemas/index.js";
 import type { PromptLoader } from "../tools/prompt-loader.js";
 
 export interface IntentExtractionDeps {
@@ -27,9 +28,26 @@ export interface IntentExtractionOutput {
 }
 
 export async function extractIntent(
-  _deps: IntentExtractionDeps,
+  deps: IntentExtractionDeps,
   input: IntentExtractionInput,
 ): Promise<IntentExtractionOutput> {
+  if (deps.model !== undefined && deps.prompts !== undefined) {
+    const prompt = await deps.prompts.load("intent-extraction");
+    const result = await generateObject({
+      model: deps.model,
+      schema: IntentSchema,
+      temperature: prompt.metadata.temperature,
+      maxTokens: prompt.metadata.max_tokens,
+      prompt: prompt.render({ ...input }),
+    });
+    assertIntentInvariants(result.object);
+    return { intent: result.object };
+  }
+
+  return fallbackExtractIntent(input);
+}
+
+function fallbackExtractIntent(input: IntentExtractionInput): IntentExtractionOutput {
   const primaryRef = input.refs[0];
   const primaryProblem = primaryRef?.problem;
   const objectiveCode = firstValidObjectiveCode([

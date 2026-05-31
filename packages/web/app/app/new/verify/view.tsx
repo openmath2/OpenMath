@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { LatexRenderer } from "@/components/math/latex-renderer";
 import {
   type Grade,
@@ -168,6 +168,15 @@ export function VerifyView({ grade, topic, mode, dims }: Props) {
   const isCancelled = stream.status === "cancelled";
   const isDone = stream.status === "done";
   const showPreview = stream.previewLatex !== null;
+
+  useEffect(() => {
+    if (isDone && stream.candidates.length > 0) {
+      window.localStorage.setItem(
+        "openmath:last-results",
+        JSON.stringify(stream.candidates),
+      );
+    }
+  }, [isDone, stream.candidates]);
 
   return (
     <>

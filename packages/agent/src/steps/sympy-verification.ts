@@ -16,8 +16,87 @@ export interface SympyVerificationOutput {
 }
 
 export async function verifyWithSympy(
-  _deps: SympyVerificationDeps,
-  _input: SympyVerificationInput,
+  deps: SympyVerificationDeps,
+  input: SympyVerificationInput,
 ): Promise<SympyVerificationOutput> {
-  throw new Error("verifyWithSympy: not implemented yet");
+  const started = Date.now();
+  const equation = extractEquation(input.candidate.question_text);
+  if (equation === null) {
+    return {
+      gate: {
+        step: "sympy_verify",
+        status: "failed",
+        duration_ms: Date.now() - started,
+        failure_detail: {
+          code: "equation_not_found",
+          message: "Generated problem does not contain a verifiable equation.",
+        },
+      },
+    };
+  }
+
+  try {
+    const solved = await deps.mathEngine.solve({ equation });
+    const expected = normalizeMathText(input.candidate.expected_answer);
+    const equivalent = await Promise.all(
+      solved.solutions.map((solution) =>
+        deps.mathEngine.verify({ expr1: solution, expr2: expected }),
+      ),
+    );
+    const passed = equivalent.some((result) => result.equivalent);
+
+    return {
+      gate: {
+        step: "sympy_verify",
+        status: passed ? "passed" : "failed",
+        duration_ms: Date.now() - started,
+        evidence: {
+          equation,
+          solutions: solved.solutions,
+          expected_answer: expected,
+        },
+        ...(passed
+          ? {}
+          : {
+              failure_detail: {
+                code: "answer_mismatch",
+                message: "Expected answer does not match math-engine solution.",
+              },
+            }),
+      },
+    };
+  } catch (error) {
+    return {
+      gate: {
+        step: "sympy_verify",
+        status: "failed",
+        duration_ms: Date.now() - started,
+        failure_detail: {
+          code: "math_engine_error",
+          message: error instanceof Error ? error.message : String(error),
+        },
+      },
+    };
+  }
+}
+
+export function extractEquation(text: string): string | null {
+  const normalized = normalizeMathText(text);
+  const match = normalized.match(/[A-Za-z0-9+\-*/^().\s]+=[A-Za-z0-9+\-*/^().\s]+/);
+  return match?.[0]?.trim() ?? null;
+}
+
+export function normalizeMathText(text: string): string {
+  return text
+    .replace(/\\\((.*?)\\\)/g, "$1")
+    .replace(/\$(.*?)\$/g, "$1")
+    .replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, "($1)/($2)")
+    .replace(/\\sqrt\{([^{}]+)\}/g, "sqrt($1)")
+    .replace(/\^\{([^{}]+)\}/g, "^($1)")
+    .replace(/[{}]/g, "")
+    .replace(/−/g, "-")
+    .replace(/×/g, "*")
+    .replace(/÷/g, "/")
+    .replace(/\s+/g, " ")
+    .trim();
 }

@@ -24,8 +24,8 @@ def safe_parse(expr_str: str):
 
 
 class SolveRequest(BaseModel):
-    equation: str
-    variable: str = "x"
+    equation: str | list[str]
+    variable: str | list[str] = "x"
 
 
 class SolveResponse(BaseModel):
@@ -34,16 +34,35 @@ class SolveResponse(BaseModel):
 
 @router.post("/solve", response_model=SolveResponse)
 def solve_equation(req: SolveRequest):
-    var = symbols(req.variable)
-
-    if "=" in req.equation:
-        left, right = req.equation.split("=", 1)
-        expr = Eq(safe_parse(left.strip()), safe_parse(right.strip()))
+    if isinstance(req.variable, list):
+        variables = symbols(" ".join(req.variable))
+        if not isinstance(variables, tuple):
+            variables = (variables,)
     else:
-        expr = safe_parse(req.equation)
+        variables = (symbols(req.variable),)
 
+    if isinstance(req.equation, list):
+        equations = [parse_equation(equation) for equation in req.equation]
+        solutions = solve(equations, variables, dict=True)
+        return SolveResponse(
+            solutions=[
+                ", ".join(f"{str(var)}={str(solution[var])}" for var in variables)
+                for solution in solutions
+            ]
+        )
+
+    expr = parse_equation(req.equation)
+    var = variables[0]
     solutions = solve(expr, var)
     return SolveResponse(solutions=[str(s) for s in solutions])
+
+
+def parse_equation(equation: str):
+    if "=" in equation:
+        left, right = equation.split("=", 1)
+        return Eq(safe_parse(left.strip()), safe_parse(right.strip()))
+    else:
+        return safe_parse(equation)
 
 
 class VerifyRequest(BaseModel):

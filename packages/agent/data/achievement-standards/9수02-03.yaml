@@ -1,0 +1,34 @@
+code: 9수02-03
+title: 일차방정식
+school_level: middle
+grade: 1
+techniques:
+  required_at_least_one_of:
+    - equation_balance
+    - linear_equation_solving
+  forbidden:
+    - calculator_only
+evaluation_dimensions:
+  - id: A
+    description: 등식의 성질을 이용해 미지수 항을 분리한다.
+    must_preserve: true
+  - id: B
+    description: 양변에 같은 수를 더하거나 빼서 해를 구한다.
+    must_preserve: true
+difficulty_range:
+  - easy
+  - medium
+problem_types_supported:
+  - objective
+  - short_answer
+structural_transforms:
+  - kind: coefficient_swap
+    range: [-9, 9]
+    exclude_zero: true
+  - kind: sign_flip
+conceptual_transforms:
+  - kind: rephrase_as_word_problem
+    context:
+      - 가격
+      - 거리
+      - 나이

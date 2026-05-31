@@ -1,0 +1,37 @@
+code: 9수02-07
+title: 연립일차방정식
+school_level: middle
+grade: 2
+techniques:
+  required_at_least_one_of:
+    - elimination
+    - substitution
+  forbidden:
+    - graph_only
+evaluation_dimensions:
+  - id: A
+    description: 두 일차방정식을 동시에 만족하는 미지수 값을 찾는다.
+    must_preserve: true
+  - id: B
+    description: 가감법 또는 대입법으로 한 미지수를 먼저 소거한다.
+    must_preserve: true
+difficulty_range:
+  - easy
+  - medium
+problem_types_supported:
+  - objective
+  - short_answer
+structural_transforms:
+  - kind: coefficient_swap
+    range: [-6, 6]
+    exclude_zero: true
+  - kind: variable_rename
+    allowed:
+      - x
+      - y
+conceptual_transforms:
+  - kind: rephrase_as_word_problem
+    context:
+      - 물건의 개수
+      - 입장료
+      - 두 수

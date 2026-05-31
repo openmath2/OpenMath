@@ -1,0 +1,30 @@
+code: 9수01-01
+title: 소인수분해
+school_level: middle
+grade: 1
+techniques:
+  required_at_least_one_of:
+    - prime_factorization
+    - divisor_multiple_reasoning
+  forbidden:
+    - calculator_only
+evaluation_dimensions:
+  - id: A
+    description: 자연수를 소수의 곱으로 분해한다.
+    must_preserve: true
+  - id: B
+    description: 소인수분해 결과를 약수와 배수 판단에 활용한다.
+    must_preserve: true
+difficulty_range:
+  - easy
+  - medium
+problem_types_supported:
+  - objective
+  - short_answer
+structural_transforms:
+  - kind: coefficient_swap
+    range: [2, 120]
+    exclude_zero: true
+conceptual_transforms:
+  - kind: inverse_question
+    hint: 소인수분해 결과가 주어졌을 때 원래 수나 약수 개수를 묻는다.

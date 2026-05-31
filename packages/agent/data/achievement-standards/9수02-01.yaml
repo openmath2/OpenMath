@@ -1,0 +1,38 @@
+code: 9수02-01
+title: 문자의 사용과 식의 값
+school_level: middle
+grade: 1
+techniques:
+  required_at_least_one_of:
+    - algebraic_expression_modeling
+    - substitution
+  forbidden:
+    - guess_and_check_only
+evaluation_dimensions:
+  - id: A
+    description: 수량 관계를 문자식으로 나타낸다.
+    must_preserve: true
+  - id: B
+    description: 주어진 문자 값으로 식의 값을 계산한다.
+    must_preserve: true
+difficulty_range:
+  - easy
+  - medium
+problem_types_supported:
+  - objective
+  - short_answer
+structural_transforms:
+  - kind: variable_rename
+    allowed:
+      - x
+      - a
+      - n
+  - kind: coefficient_swap
+    range: [-9, 9]
+    exclude_zero: true
+conceptual_transforms:
+  - kind: rephrase_as_word_problem
+    context:
+      - 물건 가격
+      - 도형 둘레
+      - 점수
