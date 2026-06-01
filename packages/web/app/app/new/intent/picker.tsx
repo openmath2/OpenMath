@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useDraftStorage } from "@/hooks/use-draft-storage";
 import {
   type EvaluationCandidate,
   type Grade,
@@ -10,6 +11,12 @@ import {
 } from "../topic/data";
 
 type IsomorphismMode = "structural" | "conceptual";
+
+/* OM-48: 사용자가 S3 에서 직접 선택. POST body 의 difficulty / problem_type 에 직결.
+ * 기존 OM-85 는 difficulty=grade 자동, problem_type="objective" 하드코딩이었음.
+ */
+type Difficulty = "easy" | "medium" | "hard";
+type ProblemType = "objective" | "short_answer";
 
 type ModeOption = {
   value: IsomorphismMode;
@@ -39,6 +46,21 @@ const modes: ModeOption[] = [
   },
 ];
 
+const DIFFICULTIES: Array<{ value: Difficulty; label: string; desc: string }> = [
+  { value: "easy", label: "쉬움", desc: "중1 수준 문제" },
+  { value: "medium", label: "보통", desc: "중2 수준 문제" },
+  { value: "hard", label: "어려움", desc: "중3 수준 문제" },
+];
+
+const PROBLEM_TYPES: Array<{
+  value: ProblemType;
+  label: string;
+  desc: string;
+}> = [
+  { value: "objective", label: "객관식", desc: "5지선다 등 선택형" },
+  { value: "short_answer", label: "단답형", desc: "값 또는 식 직접 작성" },
+];
+
 type Props = {
   grade: Grade | null;
   topic: Topic | null;
@@ -50,6 +72,40 @@ export function IntentPicker({ grade, topic, candidates }: Props) {
   const [checked, setChecked] = useState<Set<string>>(
     () => new Set(candidates.filter((c) => c.default).map((c) => c.key)),
   );
+  /* OM-48: 난이도 / 문제 유형 — 기본값 보장 (canSubmit 가드 영향 없음). */
+  const [difficulty, setDifficulty] = useState<Difficulty>("medium");
+  const [problemType, setProblemType] = useState<ProblemType>("objective");
+  const { saveDraft, loadDraft } = useDraftStorage();
+
+  /* OM-47: draft 의 mode / dims / difficulty / problemType 복원.
+   * candidates 는 props 라 dims 복원 시 현재 화면의 후보 안에 있는 키만 살린다. */
+  useEffect(() => {
+    const draft = loadDraft();
+    if (draft === null) return;
+    if (draft.mode !== null) setMode(draft.mode);
+    if (draft.dims.length > 0) {
+      const validKeys = new Set(candidates.map((c) => c.key));
+      const restored = draft.dims.filter((k) => validKeys.has(k));
+      if (restored.length > 0) setChecked(new Set(restored));
+    }
+    if (draft.difficulty !== null) setDifficulty(draft.difficulty);
+    if (draft.problem_type !== null) setProblemType(draft.problem_type);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [candidates]);
+
+  /* 선택 setter wrapper — state 갱신 + draft 즉시 저장. */
+  const chooseMode = (m: IsomorphismMode): void => {
+    setMode(m);
+    saveDraft({ mode: m });
+  };
+  const chooseDifficulty = (d: Difficulty): void => {
+    setDifficulty(d);
+    saveDraft({ difficulty: d });
+  };
+  const chooseProblemType = (t: ProblemType): void => {
+    setProblemType(t);
+    saveDraft({ problem_type: t });
+  };
 
   if (grade === null || topic === null) {
     return (
@@ -82,14 +138,17 @@ export function IntentPicker({ grade, topic, candidates }: Props) {
       } else {
         next.add(key);
       }
+      /* OM-47: dims 변화도 draft 에 반영. */
+      saveDraft({ dims: Array.from(next).sort() });
       return next;
     });
   };
 
   const canSubmit = mode !== null && checked.size > 0;
   const dims = Array.from(checked).sort().join(",");
+  /* OM-48: difficulty / problem_type 도 URL 로 전달 → verify/page.tsx 가 파싱 → hook POST body */
   const generateHref = canSubmit
-    ? `/app/new/verify?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims}`
+    ? `/app/new/verify?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims}&difficulty=${difficulty}&problem_type=${problemType}`
     : null;
 
   return (
@@ -142,7 +201,7 @@ export function IntentPicker({ grade, topic, candidates }: Props) {
                   name="iso-mode"
                   value={m.value}
                   checked={mode === m.value}
-                  onChange={() => setMode(m.value)}
+                  onChange={() => chooseMode(m.value)}
                   className="sr-only"
                 />
                 <span className="dot" aria-hidden="true" />
@@ -211,6 +270,76 @@ export function IntentPicker({ grade, topic, candidates }: Props) {
           <span id="dim-required-reason" className="sr-only">
             평가 차원을 1 개 이상 선택하세요.
           </span>
+        </section>
+
+        {/* OM-48: 난이도 선택 — intent-radio-card 패턴 재사용 */}
+        <section
+          className="section-block"
+          aria-labelledby="difficulty-heading"
+        >
+          <h2 className="heading-md" id="difficulty-heading">
+            난이도
+          </h2>
+          <div
+            className="mode-grid"
+            role="radiogroup"
+            aria-labelledby="difficulty-heading"
+          >
+            {DIFFICULTIES.map((d) => (
+              <label key={d.value} className="intent-radio-card">
+                <input
+                  type="radio"
+                  name="difficulty"
+                  value={d.value}
+                  checked={difficulty === d.value}
+                  onChange={() => chooseDifficulty(d.value)}
+                  className="sr-only"
+                />
+                <span className="dot" aria-hidden="true" />
+                <span className="label">
+                  <span className="label-main">
+                    <span>{d.label}</span>
+                  </span>
+                  <span className="label-desc">{d.desc}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+        </section>
+
+        {/* OM-48: 문제 유형 선택 — intent-radio-card 패턴 재사용 */}
+        <section
+          className="section-block"
+          aria-labelledby="problem-type-heading"
+        >
+          <h2 className="heading-md" id="problem-type-heading">
+            문제 유형
+          </h2>
+          <div
+            className="mode-grid"
+            role="radiogroup"
+            aria-labelledby="problem-type-heading"
+          >
+            {PROBLEM_TYPES.map((t) => (
+              <label key={t.value} className="intent-radio-card">
+                <input
+                  type="radio"
+                  name="problem-type"
+                  value={t.value}
+                  checked={problemType === t.value}
+                  onChange={() => chooseProblemType(t.value)}
+                  className="sr-only"
+                />
+                <span className="dot" aria-hidden="true" />
+                <span className="label">
+                  <span className="label-main">
+                    <span>{t.label}</span>
+                  </span>
+                  <span className="label-desc">{t.desc}</span>
+                </span>
+              </label>
+            ))}
+          </div>
         </section>
       </main>
 

@@ -147,21 +147,36 @@ agent 코드를 *건드리지 않고* 동작이 바뀌는 영역.
 
 ---
 
-## 9. 진입점 우선순위 (현재 미구현)
+## 9. 진입점 구현 상태
 
-`grep -rn "not implemented yet" packages/agent/src` 로 14곳 확인 가능.
+`grep -rn "not implemented yet" packages/agent/src` 로 현재 **21곳** 확인 가능. 유일한 구현 완료 항목은 `tools/rag-client.ts` 의 `createInMemoryRagClient` (RAG JSONL + 메모리 인덱스, ≈300 LOC). 나머지 20개 함수는 모두 `throw new Error("... not implemented yet")` 본문만 있는 stub — 호출 시 즉시 throw → caller chain 진입 불가.
 
-| Priority | 파일 | 비고 |
-|---|---|---|
-| P0 | `tools/math-engine-client.ts` `createMathEngineClient` | math-engine은 작동 중. 첫 통합 |
-| P0 | `tools/prompt-loader.ts` `createFsPromptLoader` | gray-matter + handlebars |
-| P0 | `tools/llm-provider.ts` `resolveLanguageModel` | CLIProxyAPI 우선 |
-| P1 | `tools/rag-client.ts` `createInMemoryRagClient` | JSONL + filter |
-| P1 | `agents/*-agent.ts` (4개) | `generateObject` + prompt 로드 |
-| P1 | `steps/*.ts` (6개) | agents/tools 얇은 wrapper |
-| P2 | `workflows/verification-workflow.ts` | async generator + I-V invariant assert |
-| P2 | `server/routes/generate.ts` + `sse/progress-stream.ts` | streamSSE 흘리기 |
-| P3 | `src/index.ts` `main` | dep wiring (10줄) |
+| Priority | 파일 | 함수 | 상태 |
+|---|---|---|---|
+| P0 | `tools/math-engine-client.ts` | `createMathEngineClient` | ❌ stub |
+| P0 | `tools/prompt-loader.ts` | `createFsPromptLoader` | ❌ stub |
+| P0 | `tools/llm-provider.ts` | `resolveLanguageModel` | ❌ stub |
+| P0 | `tools/schema-loader.ts` | `createFsStrategyLoader` | ❌ stub |
+| P1 | `tools/rag-client.ts` | `createInMemoryRagClient` | ✅ **구현 완료** (JSONL + filter, ≈300 LOC) |
+| P1 | `agents/generator-agent.ts` | `createGeneratorAgent` | ❌ stub |
+| P1 | `agents/constraint-critic-agent.ts` | `createConstraintCriticAgent` | ❌ stub |
+| P1 | `agents/refiner-agent.ts` | `createRefinerAgent` | ❌ stub |
+| P1 | `agents/solver-agent.ts` | `createSolverAgent` | ❌ stub |
+| P1 | `steps/rag-search.ts` | `ragSearch` | ❌ stub |
+| P1 | `steps/intent-extraction.ts` | `extractIntent` | ❌ stub |
+| P1 | `steps/problem-generation.ts` | `generateProblem` | ❌ stub |
+| P1 | `steps/sympy-verification.ts` | `verifyWithSympy` | ❌ stub |
+| P1 | `steps/independent-resolve.ts` | `independentResolve` | ❌ stub |
+| P1 | `steps/objective-mapping.ts` | `mapObjective` | ❌ stub |
+| P2 | `policies/acceptance-policy.ts` | `createAcceptancePolicy` | ❌ stub |
+| P2 | `policies/retry-policy.ts` | `createBoundedRetryPolicy` | ❌ stub |
+| P2 | `policies/timeout-policy.ts` | `withTimeout` | ❌ stub |
+| P2 | `workflows/verification-workflow.ts` | `runVerificationWorkflow` | ❌ stub |
+| P2 | `server/routes/generate.ts` | `POST /api/generate` handler | ❌ stub |
+| P2 | `server/sse/progress-stream.ts` | `pipeProgressToSse` | ❌ stub |
+| P3 | `src/index.ts` | `main` (dep wiring) | ❌ stub |
+
+진행률: **21 중 1 구현 = 약 4.8%** (rag-client 만 완료). OM-72 / OM-39 / OM-70 / OM-95 / OM-85 / OM-82 / OM-81 / OM-80 / OM-79 / OM-78 / OM-55 / OM-43 / OM-42 / OM-100 / OM-83 / OM-48 / OM-47 / OM-46 / OM-45 (Sprint 5) 까지는 모두 schema / wire adapter / FE / 타입 계약 / 문서 정합 영역. 위 stub 들이 runtime 동작의 병목.
 
 ---
 

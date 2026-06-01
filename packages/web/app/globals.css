@@ -2009,6 +2009,12 @@
     gap: 3mm;
   }
 
+  /* OM-84: 시험지 글자 크기 옵션. ExamSheet 의 data-font-size 속성과 매칭.
+   * 미리보기 (screen) 와 인쇄 (@media print) 양쪽에 동일 매핑 적용. */
+  .exam-sheet[data-font-size="small"]  { font-size: 14px; }
+  .exam-sheet[data-font-size="medium"] { font-size: 16px; }
+  .exam-sheet[data-font-size="large"]  { font-size: 18px; }
+
   @media print {
     @page {
       size: A4;
@@ -2032,6 +2038,10 @@
       left: 0;
       width: 100%;
     }
+    /* OM-84: print 시에도 동일 값 유지. media 밖 rule 이 print 에 상속되지만 명시화. */
+    .exam-sheet[data-font-size="small"]  { font-size: 14px; }
+    .exam-sheet[data-font-size="medium"] { font-size: 16px; }
+    .exam-sheet[data-font-size="large"]  { font-size: 18px; }
   }
 
   /* empty state (S2 filter 결과 0건) */
@@ -2777,6 +2787,25 @@
     opacity: 0.85;
   }
 
+  /* OM-96: prefers-reduced-motion — 4 영역 motion 정적 처리.
+   *
+   * 영역 1 — 랜딩 iPad showcase (OM-100 이후 iPad walkthrough 가 책 스택 대체):
+   *   - .tablet-step 의 fade 전환, .tablet-dot 의 활성 transition.
+   *   - JS 측: components/landing/book-stage.tsx 가 matchMedia 로 setInterval(5000ms) 차단.
+   *
+   * 영역 2 — S4 spinner-dot:
+   *   - .spinner-dot 회전 animation 무효 + opacity 0.6 정적 표시.
+   *
+   * 영역 3 — S5 result-card editing 진입:
+   *   - 현재 transition 미사용 (즉시 swap). 향후 slide-in 도입 시 [class*="slide"] 와일드카드가 자동 catch.
+   *   - editor 의 spinner overlay 안 .spinner-dot 는 영역 2 rule 로 자동 정적화.
+   *
+   * 영역 4 — S6 disclosure-row 펼침:
+   *   - <details> native 라 height transition 없음 (브라우저 기본 instant swap).
+   *   - .disclosure-row .chevron rotation 만 transition → 본 블록에서 무효화.
+   *
+   * 와일드카드 (parallax/slide/accordion/collapsible) 는 향후 패턴 도입 시 자동 적용용 방어막.
+   */
   @media (prefers-reduced-motion: reduce) {
     .disclosure-row .chevron,
     .footer-col a,
@@ -2790,7 +2819,12 @@
     .spinner-dot,
     .tablet-step,
     .tablet-dot,
-    .mock-step-row.active .mock-step-icon {
+    .mock-step-row.active .mock-step-icon,
+    [class*="parallax"],
+    [class*="slide"],
+    [class*="accordion"],
+    [class*="collapsible"],
+    [class*="spinner"] {
       transition: none !important;
       animation: none !important;
     }

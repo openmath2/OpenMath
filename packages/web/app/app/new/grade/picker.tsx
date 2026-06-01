@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useDraftStorage } from "@/hooks/use-draft-storage";
 
 type Grade = 1 | 2 | 3;
 
@@ -19,6 +20,23 @@ const grades: GradeOption[] = [
 
 export function GradePicker() {
   const [selected, setSelected] = useState<Grade | null>(null);
+  const { saveDraft, loadDraft } = useDraftStorage();
+
+  /* OM-47: 진입 시 draft 의 grade 로 복원 (cross-tab 영속). */
+  useEffect(() => {
+    const draft = loadDraft();
+    if (draft !== null && draft.grade !== null) {
+      setSelected(draft.grade);
+    }
+    /* loadDraft 가 매 render 마다 새 ref 라 deps 비움 — mount 1회만 실행 의도 */
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* OM-47: 학년 선택할 때마다 draft 저장. */
+  const choose = (g: Grade): void => {
+    setSelected(g);
+    saveDraft({ grade: g });
+  };
 
   return (
     <>
@@ -54,7 +72,7 @@ export function GradePicker() {
                 name="grade"
                 value={g.value}
                 checked={selected === g.value}
-                onChange={() => setSelected(g.value)}
+                onChange={() => choose(g.value)}
                 className="sr-only"
               />
               <span className="dot" aria-hidden="true" />

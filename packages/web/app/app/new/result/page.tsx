@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { findTopic, parseGrade, pickFirst } from "../topic/data";
-import { generateMockResults } from "./mock";
 import { ResultView } from "./view";
 
 export const metadata: Metadata = {
@@ -38,18 +37,15 @@ export default function ResultPage({ searchParams }: Props) {
   const mode = parseMode(pickFirst(searchParams.mode));
   const dims = parseDims(pickFirst(searchParams.dims));
 
-  const problems =
-    topic !== null && mode !== null
-      ? generateMockResults(topic, mode, dims)
-      : [];
-
+  /* OM-42: server component 는 sessionStorage 접근 불가 → 빈 배열만 전달.
+   * 실제 데이터는 client 측 ResultView 가 useEffect 로 sessionStorage 에서 로드. */
   return (
     <ResultView
       grade={grade}
       topic={topic}
       mode={mode}
       dims={dims}
-      problems={problems}
+      problems={[]}
     />
   );
 }

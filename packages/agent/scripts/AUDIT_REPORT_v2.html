@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>OpenMath Agent — 실행 기반 감사 리포트 v2</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 18mm 14mm 18mm;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    color: #1f2937;
+    font-size: 11pt;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* hero */
+  .hero {
+    background: #1a2742;
+    color: white;
+    padding: 28px 32px;
+    margin-bottom: 18px;
+    border-radius: 4px;
+  }
+  .hero h1 {
+    font-size: 26pt;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .hero .subtitle {
+    color: #60a5fa;
+    font-size: 13pt;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .hero .desc {
+    color: #cbd5e1;
+    font-size: 10pt;
+    margin-bottom: 14px;
+  }
+  .hero .meta {
+    color: #94a3b8;
+    font-size: 9.5pt;
+    border-top: 1px solid #334155;
+    padding-top: 10px;
+  }
+  /* one-liner */
+  .one-liner {
+    background: #fffbeb;
+    border-left: 4px solid #f59e0b;
+    padding: 14px 18px;
+    margin: 18px 0 24px;
+    font-size: 10.5pt;
+    line-height: 1.7;
+    color: #1f2937;
+  }
+  .one-liner strong { color: #92400e; }
+  /* section */
+  .section {
+    margin: 26px 0 14px;
+    padding-top: 14px;
+    border-top: 1px solid #e5e7eb;
+    page-break-inside: avoid;
+  }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 4px;
+  }
+  .section-num {
+    font-size: 26pt;
+    font-weight: 700;
+    color: #2563eb;
+    line-height: 1;
+    min-width: 32px;
+  }
+  .section-num.new { color: #dc2626; }
+  .section-title {
+    font-size: 14pt;
+    font-weight: 700;
+    color: #111827;
+  }
+  .section-sub {
+    font-size: 9.5pt;
+    color: #6b7280;
+    margin-left: 46px;
+    margin-bottom: 14px;
+  }
+  /* table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 14px;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th {
+    background: #1a2742;
+    color: white;
+    padding: 8px 10px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 9.5pt;
+  }
+  td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
+  }
+  tr:nth-child(even) td { background: #fafafa; }
+  /* status colors in tables */
+  .st-ok    { color: #16a34a; font-weight: 600; }
+  .st-fail  { color: #dc2626; font-weight: 600; }
+  .st-warn  { color: #ea580c; font-weight: 600; }
+  .st-info  { color: #2563eb; font-weight: 600; }
+  .mono     { font-family: Consolas, 'Courier New', monospace; font-size: 9pt; }
+  /* boxes */
+  .box {
+    padding: 12px 16px;
+    margin: 10px 0;
+    border-radius: 4px;
+    font-size: 9.5pt;
+    line-height: 1.7;
+    page-break-inside: avoid;
+  }
+  .box-warn    { background: #fffbeb; border-left: 4px solid #f59e0b; color: #78350f; }
+  .box-success { background: #ecfdf5; border-left: 4px solid #10b981; color: #065f46; }
+  .box-info    { background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e3a8a; }
+  .box-error   { background: #fef2f2; border-left: 4px solid #dc2626; color: #7f1d1d; }
+  .box strong { color: #1f2937; }
+  /* code block */
+  .code {
+    background: #fef9c3;
+    border-left: 3px solid #eab308;
+    padding: 10px 14px;
+    margin: 8px 0;
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 9pt;
+    line-height: 1.6;
+    color: #422006;
+    white-space: pre-wrap;
+  }
+  .code .label { color: #6b7280; }
+  /* sub-section */
+  .sub-section {
+    margin: 14px 0 8px;
+    padding-left: 46px;
+  }
+  .sub-section h3 {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 6px;
+  }
+  .sub-section p { margin: 4px 0; font-size: 10pt; }
+  /* finding cards */
+  .finding-card {
+    background: #fef2f2;
+    border-left: 4px solid #dc2626;
+    padding: 12px 16px;
+    margin: 10px 0;
+    border-radius: 3px;
+    page-break-inside: avoid;
+  }
+  .finding-card .finding-title {
+    font-weight: 700;
+    color: #991b1b;
+    font-size: 10.5pt;
+    margin-bottom: 6px;
+  }
+  .finding-card .finding-loc {
+    font-family: Consolas, monospace;
+    font-size: 9pt;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+  .finding-card .finding-desc {
+    font-size: 10pt;
+    line-height: 1.6;
+    color: #1f2937;
+  }
+  /* badge */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 8.5pt;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .badge-new { background: #fee2e2; color: #991b1b; }
+  /* footer */
+  .footer {
+    margin-top: 30px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 9pt;
+  }
+  ul { margin: 6px 0 6px 22px; font-size: 10pt; }
+  ul li { margin-bottom: 3px; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>OpenMath Agent</h1>
+  <div class="subtitle">실행 기반 감사 리포트 v2 (보강판)</div>
+  <div class="desc">기존 코드 수정 없이 · 에이전트 각각 직접 실행 · 부족한 부분 정밀 파악</div>
+  <div class="meta">감사 일자: 2026-05-28 · 감사 범위: agents/ steps/ tools/ policies/ workflows/ · 버전: v2 (보강 5 항목)</div>
+</div>
+
+<div class="one-liner">
+  <strong>한 줄 결론:</strong> agent 21개 진입점 중 17개 stub (throw). 동작하는 건 RAG client + Zod 스키마 + 불변식 5개뿐. 외부 서비스(cliproxy, math-engine)는 둘 다 살아있음 — wrapper(연결 다리)만 빠진 상태. <strong>추가로 이미 구현된 코드에서도 약점 4건 발견.</strong>
+</div>
+
+<!-- ============ Section 0 ============ -->
+<div class="section">
+  <div class="section-head">
+    <span class="section-num">0</span>
+    <span class="section-title">먼저 이해하기 — stub이 뭔가?</span>
+  </div>
+  <div class="section-sub">코드가 있는데 왜 안 돌아가는지 이해하는 게 핵심</div>
+
+  <div class="sub-section">
+    <h3>stub(스텁)이란?</h3>
+    <p>코드 파일은 있고 함수 이름도 있는데, 안에 실제 내용이 없고 '나중에 만들어줘' 라고 적어둔 상태야. 마치 건물 외벽과 뼈대는 다 있는데 내부 공사가 하나도 안 된 것처럼.</p>
+  </div>
+
+  <div class="code"><span class="label">stub 코드 예시</span>
+함수 이름: createGeneratorAgent()
+내부 내용: throw new Error('not implemented yet')
+→ 호출하면 즉시 오류 발생. 아무것도 안 함.</div>
+
+  <div class="sub-section">
+    <h3>OpenMath agent의 현재 상태</h3>
+    <p>설계도(인터페이스, 타입, 스키마)는 완성되어 있어. 하지만 실제로 일하는 코드 본문이 아직 채워지지 않았어. 뼈대 100%, 내용물 0% 인 상태야.</p>
+  </div>
+
+  <table>
+    <thead><tr><th style="width:30%">영역</th><th style="width:20%">상태</th><th>쉽게 말하면</th></tr></thead>
+    <tbody>
+      <tr><td>설계도 (타입·스키마)</td><td class="st-ok">✓ 완성</td><td>어떻게 만들지 설계는 다 됨</td></tr>
+      <tr><td>프롬프트 파일 6개</td><td class="st-ok">✓ 완성</td><td>AI한테 줄 지시문은 다 있음</td></tr>
+      <tr><td>외부 서비스 연결</td><td class="st-ok">✓ 살아있음</td><td>cliproxy, math-engine 둘 다 켜져있음</td></tr>
+      <tr><td>RAG 검색 엔진</td><td class="st-ok">✓ 동작</td><td>기출문제 검색 기능은 구현됨</td></tr>
+      <tr><td>agent 4개 본문</td><td class="st-fail">✗ 0/4 stub</td><td>AI 호출하는 핵심 코드 없음</td></tr>
+      <tr><td>step 6개 본문</td><td class="st-fail">✗ 0/6 stub</td><td>6단계 처리 코드 없음</td></tr>
+      <tr><td>tool 3개 본문</td><td class="st-fail">✗ 0/3 stub</td><td>LLM·math·프롬프트 연결 코드 없음</td></tr>
+      <tr><td>policy 3개 본문</td><td class="st-fail">✗ 0/3 stub</td><td>재시도·타임아웃·판정 코드 없음</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ============ Section 1 ============ -->
+<div class="section">
+  <div class="section-head">
+    <span class="section-num">1</span>
+    <span class="section-title">사전 체크 — 실행 환경 확인</span>
+  </div>
+  <div class="section-sub">코드 돌리기 전에 필요한 서비스들이 켜져있는지 확인</div>
+
+  <table>
+    <thead><tr><th style="width:40%">확인 항목</th><th style="width:15%">결과</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td>cliproxy (127.0.0.1:8317)</td><td class="st-ok">✓ 응답</td><td>Claude/GPT 연결 서버 켜져있음</td></tr>
+      <tr><td>math-engine (localhost:8000)</td><td class="st-ok">✓ 응답</td><td>수학 계산기 서버 켜져있음</td></tr>
+      <tr><td>packages/agent/.env 파일</td><td class="st-fail">✗ 없음</td><td>.env.example만 있음 → 직접 만들어야 함</td></tr>
+      <tr><td>pnpm install (패키지)</td><td class="st-ok">✓ 완료</td><td>필요한 도구 다 설치됨</td></tr>
+      <tr><td>기존 코드 수정</td><td class="st-ok">✓ 0줄</td><td>scripts/ 에만 테스트 파일 추가</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box box-warn"><strong>주의:</strong> .env 파일 없음 → scripts/ 안에서 환경변수를 직접 주입하는 방식으로 우회해서 실행함</div>
+
+  <!-- ★ NEW: baseline 3/3 통과 -->
+  <div class="sub-section" style="margin-top: 16px;">
+    <h3><span class="badge badge-new">v2 추가</span> 감사 작업이 코드를 깨뜨렸는지 검증 — baseline 3/3 통과</h3>
+    <p>scripts/ 폴더에 진단 파일 8개를 추가했는데, 그게 기존 빌드를 깨뜨리지 않았는지 확인.</p>
+  </div>
+  <table>
+    <thead><tr><th style="width:30%">검사</th><th style="width:15%">결과</th><th>상세</th></tr></thead>
+    <tbody>
+      <tr><td>pnpm typecheck</td><td class="st-ok">✓ exit 0</td><td>TypeScript 타입 에러 0건</td></tr>
+      <tr><td>pnpm test</td><td class="st-ok">✓ 7/7 통과</td><td>2 files (rag-client 2건 + placeholder 5건)</td></tr>
+      <tr><td>pnpm build</td><td class="st-ok">✓ 성공</td><td>dist/index.js 12.64KB + .d.ts 85.46KB (72ms ESM + 4.3s DTS)</td></tr>
+    </tbody>
+  </table>
+  <div class="box box-success"><strong>핵심:</strong> 감사용 스크립트 8개 추가가 기존 코드를 1줄도 깨뜨리지 않음. <strong>destructive 영향 0건 확정.</strong></div>
+</div>
+
+<!-- ============ Section 2 ============ -->
+<div class="section">
+  <div class="section-head">
+    <span class="section-num">2</span>
+    <span class="section-title">발견된 문제 — 환경변수 이름 불일치</span>
+  </div>
+  <div class="section-sub">.env.example 에 적힌 이름과 실제 코드가 인식하는 이름이 달라서 조용히 무시됨</div>
+
+  <p style="margin: 6px 0 12px; font-size: 10pt;">.env.example 파일을 보고 그대로 복사해서 쓰면 코드가 인식을 못 해. 파일에 적힌 이름과 코드가 실제로 읽는 이름이 달라. 오류도 안 나고 그냥 조용히 무시되니까 더 위험해.</p>
+
+  <table>
+    <thead><tr><th>.env.example 에 적힌 이름</th><th>코드가 실제로 읽는 이름</th><th>문제</th></tr></thead>
+    <tbody>
+      <tr><td class="mono st-fail">OPENAI_API_KEY</td><td class="mono">LLM_API_KEY</td><td>이름이 달라 → 조용히 무시됨</td></tr>
+      <tr><td class="mono st-fail">CLIPROXY_BASE_URL</td><td class="mono">LLM_BASE_URL</td><td>이름이 달라 → 조용히 무시됨</td></tr>
+      <tr><td class="mono st-fail">CLIPROXY_API_KEY</td><td class="mono">LLM_API_KEY</td><td>이름이 달라 → 조용히 무시됨</td></tr>
+      <tr><td class="mono st-fail">LLM_PROVIDER=cliproxy</td><td class="mono">openai-compatible 써야 함</td><td>'cliproxy' 값 자체가 거부됨</td></tr>
+      <tr><td class="mono st-fail">CLIPROXY_MODEL</td><td class="mono">코드에 정의 없음</td><td>이 변수 자체가 코드에 없음</td></tr>
+    </tbody>
+  </table>
+
+  <div class="code"><span class="label">올바른 .env 설정</span>
+LLM_PROVIDER=openai-compatible
+LLM_BASE_URL=http://127.0.0.1:8317/v1
+LLM_API_KEY=my-secret-key
+MATH_ENGINE_URL=http://localhost:8000</div>
+</div>
+
+<!-- ============ Section 3 ============ -->
+<div class="section">
+  <div class="section-head">
+    <span class="section-num">3</span>
+    <span class="section-title">발견된 문제 — 프롬프트가 없는 스키마 참조</span>
+  </div>
+  <div class="section-sub">AI 지시문 파일이 존재하지 않는 데이터 형식을 참조하고 있음</div>
+
+  <p style="margin: 6px 0 12px; font-size: 10pt;">AI한테 보내는 지시문(프롬프트) 파일 6개 중 3개가 아직 만들어지지 않은 데이터 형식을 참조하고 있어. prompt-loader 가 구현되면 이 3개에서 오류가 날 거야.</p>
+
+  <table>
+    <thead><tr><th style="width:30%">프롬프트 파일</th><th style="width:35%">참조하는 데이터 형식</th><th>실제로 있나?</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">problem-generator.md</td><td class="mono">GeneratedProblemSchema</td><td class="st-ok">✓ 있음</td></tr>
+      <tr><td class="mono">refiner.md</td><td class="mono">GeneratedProblemSchema</td><td class="st-ok">✓ 있음</td></tr>
+      <tr><td class="mono">intent-extraction.md</td><td class="mono">IntentSchema</td><td class="st-ok">✓ 있음</td></tr>
+      <tr><td class="mono">constraint-critic.md</td><td class="mono">CritiqueSchema</td><td class="st-fail">✗ 없음</td></tr>
+      <tr><td class="mono">independent-solver.md</td><td class="mono">SolveAttemptSchema</td><td class="st-fail">✗ 없음</td></tr>
+      <tr><td class="mono">objective-mapper.md</td><td class="mono">ObjectiveMappingNuanceSchema</td><td class="st-fail">✗ 없음 (TODO 명시)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ============ Section 4 ============ -->
+<div class="section">
+  <div class="section-head">
+    <span class="section-num">4</span>
+    <span class="section-title">P0 도구 3개 실행 결과 (가장 먼저 만들어야 함)</span>
+  </div>
+  <div class="section-sub">이게 없으면 agent도, step도 아무것도 못 돌아감</div>
+
+  <p style="margin: 6px 0 12px; font-size: 10pt;">P0는 '최우선 순위'라는 뜻이야. 이 3개가 완성되어야 나머지 모든 것이 돌아갈 수 있어. 지금은 3개 모두 stub(껍데기)만 있는 상태야.</p>
+
+  <div class="finding-card">
+    <div class="finding-title">[P0-A] LLM 연결 도구 (tools/llm-provider.ts)</div>
+    <div class="finding-desc"><strong>이게 하는 일:</strong> Claude나 GPT 같은 AI 모델을 실제로 연결하는 도구야. 이게 없으면 어떤 AI도 호출할 수 없어.</div>
+    <div style="margin-top:8px; padding: 8px 10px; background: white; border-radius: 3px;">
+      <div>실행 결과: <span class="st-fail">✗ 실패</span></div>
+      <div>오류 발생 위치: <span class="mono">tools/llm-provider.ts 24번 줄</span></div>
+      <div>오류 메시지: <span class="mono">resolveLanguageModel: not implemented yet</span></div>
+      <div>cliproxy 연결: <span class="st-fail">✗ 불가</span> (연결 도구 자체가 없어서)</div>
+    </div>
+  </div>
+
+  <div class="finding-card">
+    <div class="finding-title">[P0-B] 프롬프트 파일 읽기 도구 (tools/prompt-loader.ts)</div>
+    <div class="finding-desc"><strong>이게 하는 일:</strong> AI한테 줄 지시문(.md 파일)을 읽어서 불러오는 도구야. 이게 없으면 AI가 뭘 해야 할지 지시를 받지 못해.</div>
+    <div style="margin-top:8px; padding: 8px 10px; background: white; border-radius: 3px;">
+      <div>실행 결과: <span class="st-fail">✗ 실패</span></div>
+      <div>오류 발생 위치: <span class="mono">tools/prompt-loader.ts 42번 줄</span></div>
+      <div>오류 메시지: <span class="mono">createFsPromptLoader: not implemented yet</span></div>
+      <div>로드 성공한 프롬프트: 0개 / 6개</div>
+    </div>
+  </div>
+
+  <div class="finding-card" style="background: #fffbeb; border-left-color: #f59e0b;">
+    <div class="finding-title" style="color: #92400e;">[P0-C] 수학 계산기 연결 도구 (tools/math-engine-client.ts)</div>
+    <div class="finding-desc"><strong>이게 하는 일:</strong> Python SymPy 수학 계산기 서버에 HTTP로 요청을 보내는 도구야. 수학 서버 자체는 켜져있고 잘 돌아가는데, Node 쪽에서 연결하는 다리만 없는 상태야.</div>
+    <div style="margin-top:8px; padding: 8px 10px; background: white; border-radius: 3px;">
+      <div>실행 결과: <span class="st-warn">⚠ 절반 성공</span></div>
+      <div>오류 발생 위치: <span class="mono">tools/math-engine-client.ts 73번 줄</span></div>
+      <div>오류 메시지: <span class="mono">createMathEngineClient: not implemented yet</span></div>
+      <div style="margin-top:4px;">math-engine 서버 직접 호출: <span class="st-ok">✓ 5/5 정상</span></div>
+      <ul style="margin-left:18px; font-size:9pt; color:#374151;">
+        <li><span class="mono">/solve</span>: x²-5x+6=0 → {solutions: ['2', '3']} ✓</li>
+        <li><span class="mono">/verify</span>: (x+1)(x-1) ≡ x²-1 → {equivalent: true} ✓</li>
+        <li><span class="mono">/simplify, /differentiate, /limit</span> → 전부 정상 ✓</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="box box-success"><strong>핵심 발견:</strong> 수학 계산기 서버는 완벽히 작동함. Node 쪽 연결 다리(wrapper)만 만들면 바로 연결 가능!</div>
+</div>
+
+<!-- ============ Section 5 ============ -->
+<div class="section">
+  <div class="section-head">
+    <span class="section-num">5</span>
+    <span class="section-title">P1 에이전트 4개 실행 결과</span>
+  </div>
+  <div class="section-sub">실제로 AI를 호출해서 일하는 부품들 — 전부 stub 상태</div>
+
+  <p style="margin: 6px 0 12px; font-size: 10pt;">에이전트는 실제로 AI(Claude/GPT)를 불러서 수학 문제를 만들거나 검토하는 부품이야. 4개 모두 껍데기만 있고 내부 코드가 없어서 호출하면 즉시 오류가 나.</p>
+
+  <table>
+    <thead><tr><th>에이전트</th><th>하는 일</th><th>오류 위치</th><th>오류 메시지</th></tr></thead>
+    <tbody>
+      <tr><td>Generator Agent</td><td>수학 문제 초안 생성</td><td class="mono">generator-agent.ts:32</td><td class="st-fail">not implemented yet</td></tr>
+      <tr><td>Constraint Critic Agent</td><td>조건 위반 검사</td><td class="mono">constraint-critic-agent.ts:31</td><td class="st-fail">not implemented yet</td></tr>
+      <tr><td>Refiner Agent</td><td>위반 부분 수정</td><td class="mono">refiner-agent.ts:23</td><td class="st-fail">not implemented yet</td></tr>
+      <tr><td>Solver Agent</td><td>독립적으로 문제 다시 풀기</td><td class="mono">solver-agent.ts:24</td><td class="st-fail">not implemented yet</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ★ NEW: 사용자 dummy 형식 mismatch 5건 -->
+  <div class="sub-section" style="margin-top: 14px;">
+    <h3><span class="badge badge-new">v2 추가</span> 추가 발견 — 입력 데이터 형식 자체에도 불일치 5건</h3>
+    <p>사용자가 spec 에 적은 dummy 입력 형식(예: <span class="mono">intent.achievementCode</span>) 이 실제 코드 schema(<span class="mono">intent.objective_code</span>) 와 다름. factory 가 먼저 throw 라 silent. stub 구현 후 재검증 필요.</p>
+  </div>
+  <table>
+    <thead><tr><th style="width:35%">사용자 dummy 필드</th><th style="width:40%">실제 코드 schema 필드</th><th>mismatch 종류</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">intent.achievementCode</td><td class="mono">intent.objective_code</td><td>이름 다름</td></tr>
+      <tr><td class="mono">intent.evaluationDimensions: string[]</td><td class="mono">evaluation_dimensions: {id, description, must_preserve}[]</td><td>형태 다름 (배열 요소 객체)</td></tr>
+      <tr><td class="mono">intent.requiredTechniques</td><td class="mono">required_techniques</td><td>snake_case 차이</td></tr>
+      <tr><td class="mono">ragResults[].sourceProblem</td><td class="mono">refs[].problem</td><td>키 이름 + 컨테이너</td></tr>
+      <tr><td class="mono">constraints.integerAnswerOnly</td><td class="mono">(schema 에 없음)</td><td>필드 자체 없음</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ============ Section 6 ============ -->
+<div class="section">
+  <div class="section-head">
+    <span class="section-num">6</span>
+    <span class="section-title">P1 단계(Step) 6개 실행 결과</span>
+  </div>
+  <div class="section-sub">6단계 파이프라인의 각 단계 — 전부 stub 상태</div>
+
+  <p style="margin: 6px 0 12px; font-size: 10pt;">step은 6단계 검증 파이프라인의 각 단계야. 에이전트를 감싸는 얇은 포장지 역할인데, 포장지도 없는 상태야.</p>
+
+  <table>
+    <thead><tr><th>단계</th><th>하는 일</th><th>오류 위치</th><th>상태</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">ragSearch</td><td>기출문제 검색</td><td class="mono">rag-search.ts:22</td><td class="st-fail">✗ stub</td></tr>
+      <tr><td class="mono">extractIntent</td><td>의도 분석</td><td class="mono">intent-extraction.ts:32</td><td class="st-fail">✗ stub</td></tr>
+      <tr><td class="mono">generateProblem</td><td>문제 생성</td><td class="mono">problem-generation.ts:41</td><td class="st-fail">✗ stub</td></tr>
+      <tr><td class="mono">verifyWithSympy</td><td>수학 계산기 검증</td><td class="mono">sympy-verification.ts:22</td><td class="st-fail">✗ stub</td></tr>
+      <tr><td class="mono">independentResolve</td><td>독립 재풀이</td><td class="mono">independent-resolve.ts:26</td><td class="st-fail">✗ stub</td></tr>
+      <tr><td class="mono">mapObjective</td><td>학습목표 매핑</td><td class="mono">objective-mapping.ts:31</td><td class="st-fail">✗ stub</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ============ Section 7 (NEW) — Policy 3개 ============ -->
+<div class="section">
+  <div class="section-head">
+    <span class="section-num new">7</span>
+    <span class="section-title"><span class="badge badge-new">v2 추가</span> P2 정책(Policy) 3개 실행 결과</span>
+  </div>
+  <div class="section-sub">재시도·타임아웃·최종 판정 정책 — 전부 stub 상태</div>
+
+  <p style="margin: 6px 0 12px; font-size: 10pt;">정책(policy)은 "재시도 몇 번까지 할까", "한 단계 몇 초 안에 끝내야 할까", "6단계 결과를 어떻게 종합해서 verified/rejected/warning 으로 판정할까" 같은 룰을 담당하는 부품이야. 3개 모두 stub.</p>
+
+  <table>
+    <thead><tr><th>정책</th><th>하는 일</th><th>오류 위치</th><th>상태</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">createAcceptancePolicy</td><td>6단계 결과 종합 → 최종 판정 (verified/rejected/warning)</td><td class="mono">acceptance-policy.ts:10</td><td class="st-fail">✗ stub</td></tr>
+      <tr><td class="mono">createBoundedRetryPolicy</td><td>실패 시 몇 번까지 재시도할지 결정 (최대 3회, I-V5)</td><td class="mono">retry-policy.ts:22</td><td class="st-fail">✗ stub</td></tr>
+      <tr><td class="mono">withTimeout</td><td>한 단계가 너무 오래 걸리면 끊기 (기본 30초)</td><td class="mono">timeout-policy.ts:12</td><td class="st-fail">✗ stub</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box box-info"><strong>참고:</strong> 이 3개는 정책 로직이 단순해서 stub 구현 난이도가 가장 낮음. 그러나 orchestrator (`runVerificationWorkflow`) 가 이 3개에 의존하므로 우선순위는 후순위.</div>
+</div>
+
+<!-- ============ Section 8 — 불변식 (was 7) ============ -->
+<div class="section">
+  <div class="section-head">
+    <span class="section-num">8</span>
+    <span class="section-title">정상 동작 확인 — 불변식 검증</span>
+  </div>
+  <div class="section-sub">Zod 스키마 + 5개 불변식은 완벽하게 구현되어 있음</div>
+
+  <p style="margin: 6px 0 12px; font-size: 10pt;">불변식이란 '절대 어겨서는 안 되는 규칙'이야. 예를 들어 '수학 계산기가 실패했으면 최종 결과도 실패여야 한다' 같은 규칙. 이 규칙들을 검사하는 코드는 이미 완벽하게 구현되어 있어 — 7가지 케이스 전부 통과.</p>
+
+  <table>
+    <thead><tr><th style="width:14%">불변식</th><th>검사 내용</th><th style="width:13%">결과</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">I-V1</td><td>검증 단계가 정확히 6개인지 확인</td><td class="st-ok">✓ 통과</td></tr>
+      <tr><td class="mono">I-V2/V3</td><td>수학 계산기 실패 → 최종 결과도 반드시 실패</td><td class="st-ok">✓ 통과</td></tr>
+      <tr><td class="mono">I-V4-A</td><td>경고 조건이 맞는지 확인 (위반 케이스)</td><td class="st-ok">✓ 통과</td></tr>
+      <tr><td class="mono">I-V4-B</td><td>경고 조건이 맞는지 확인 (정상 케이스)</td><td class="st-ok">✓ 통과</td></tr>
+      <tr><td class="mono">I-V5-A</td><td>재시도 4회 이상이면 반드시 실패 처리</td><td class="st-ok">✓ 통과</td></tr>
+      <tr><td class="mono">I-V5-B</td><td>재시도 4회 + 실패 처리 (정상 케이스)</td><td class="st-ok">✓ 통과</td></tr>
+      <tr><td>정상 케이스</td><td>모든 단계 통과 + 최종 검증됨</td><td class="st-ok">✓ 통과</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box box-success"><strong>핵심 발견:</strong> 규칙 검사 코드는 완벽히 동작함. stub 본문이 채워지면 자동으로 규칙이 보장됨!</div>
+</div>
+
+<!-- ============ Section 9 (NEW) — 추가 발견: 이미 구현된 코드 약점 ============ -->
+<div class="section">
+  <div class="section-head">
+    <span class="section-num new">9</span>
+    <span class="section-title"><span class="badge badge-new">v2 추가</span> 추가 발견 — 이미 구현된 코드의 약점 4건</span>
+  </div>
+  <div class="section-sub">stub 외에도 "이미 동작하는 코드" 에서 버그/약점 발견</div>
+
+  <p style="margin: 6px 0 12px; font-size: 10pt;">감사 메시지가 "stub만 채우면 끝" 으로 단순화되면 위험해. 실제로 <strong>이미 구현된 코드 4건에서도 약점</strong> 이 발견됨. stub 구현 이전/이후 따로 fix 필요.</p>
+
+  <div class="finding-card">
+    <div class="finding-title">🔴 약점 1 — RAG 검색 엔진의 Zod 검증 누락 (D-7 부분 위반)</div>
+    <div class="finding-loc">위치: rag-client.ts:148-182 (toIndexedProblem 함수)</div>
+    <div class="finding-desc">
+      <strong>현상:</strong> JSONL 기출문제를 메모리에 로드할 때 TypeScript 타입 강제만 있고, <strong>Zod 런타임 검증 (SourceProblemSchema.parse) 호출 없음</strong>.<br>
+      <strong>결과:</strong> 깨진 데이터가 들어와도 통과. 예: <span class="mono">grade: "abc"</span> (숫자여야 함) 또는 <span class="mono">grade: null</span> 도 그대로 통과 → I-S1~I-S5 (SourceProblem 불변식 5건) 강제 안 됨.<br>
+      <strong>권장:</strong> <span class="mono">SourceProblemSchema.parse(problem)</span> 한 줄 추가.
+    </div>
+  </div>
+
+  <div class="finding-card">
+    <div class="finding-title">🔴 약점 2 — health endpoint 가 가짜 OK 반환 (D-3 위반)</div>
+    <div class="finding-loc">위치: server/routes/health.ts:10</div>
+    <div class="finding-desc">
+      <strong>현상:</strong> health 핸들러가 <span class="mono">_mathEngine</span> 파라미터를 받아놓고 <strong>한 번도 호출하지 않음.</strong> 응답은 항상 <span class="mono">{status:"ok"}</span>.<br>
+      <strong>결과:</strong> math-engine 서버가 죽어도 agent <span class="mono">/health</span> 는 200 OK 반환 → 모니터링이 silent failure 를 못 잡음.<br>
+      <strong>권장:</strong> <span class="mono">await mathEngine.health()</span> 호출 + 실패 시 503 반환.
+    </div>
+  </div>
+
+  <div class="finding-card">
+    <div class="finding-title">🔴 약점 3 — Windows 에서 main() 호출 안 됨</div>
+    <div class="finding-loc">위치: src/index.ts:14</div>
+    <div class="finding-desc">
+      <strong>현상:</strong> 진입점 가드 <span class="mono">if (import.meta.url === `file://${process.argv[1]}`)</span> 가 Windows 에서 백슬래시/슬래시 차이로 매번 false. <strong>main() 자체가 호출 안 됨.</strong><br>
+      <strong>결과:</strong> <span class="mono">pnpm dev</span> 가 침묵 (에러도 출력 안 됨). 개발자가 "내가 뭘 잘못했나" 헷갈림.<br>
+      <strong>권장:</strong> <span class="mono">pathToFileURL(process.argv[1]).href</span> 변환 후 비교.
+    </div>
+  </div>
+
+  <div class="finding-card" style="background: #fffbeb; border-left-color: #f59e0b;">
+    <div class="finding-title" style="color: #92400e;">🟡 약점 4 — 모델 ID 하드코딩 (cliproxy 즉시 fail)</div>
+    <div class="finding-loc">위치: config/models.ts (DEFAULT_MODELS)</div>
+    <div class="finding-desc">
+      <strong>현상:</strong> 6개 agent 역할의 모델이 전부 <span class="mono">gpt-4o</span> / <span class="mono">gpt-4o-mini</span> 하드코딩. env 변수로 override 불가능.<br>
+      <strong>결과:</strong> cliproxy 모델 목록에 <span class="mono">gpt-4o</span> 없음 (cliproxy 는 <span class="mono">claude-haiku-4-5</span>, <span class="mono">gemini-2.5-flash</span> 등 제공) → 즉시 <span class="mono">unknown provider for model gpt-4o</span> 에러.<br>
+      <strong>권장:</strong> env 변수 <span class="mono">LLM_MODEL_*</span> 로 override 가능하게 변경.
+    </div>
+  </div>
+
+  <div class="box box-error"><strong>요약:</strong> stub 17건 채우는 작업과 별개로, 이미 동작하는 코드 4건에도 fix 필요. <strong>약점 1, 2 는 D-7/D-3 도메인 원칙 위반</strong>이라 우선순위 높음.</div>
+</div>
+
+<!-- ============ Section 10 (NEW small) — AGENTS.md 표기 오류 ============ -->
+<div class="section">
+  <div class="section-head">
+    <span class="section-num new">10</span>
+    <span class="section-title"><span class="badge badge-new">v2 추가</span> 작은 발견 — AGENTS.md 문서 자체의 숫자 오류</span>
+  </div>
+  <div class="section-sub">감사가 spec 문서의 잘못된 표기까지 잡음</div>
+
+  <div class="box box-info">
+    <strong>AGENTS.md §9 의 표기:</strong> "grep -rn 'not implemented yet' packages/agent/src 로 <strong>14곳</strong> 확인 가능"<br>
+    <strong>본 감사 실측:</strong> <span class="mono">grep</span> 결과 정확히 <strong>21곳</strong> (P0:3 + P1:11 + P2:4 + P3:3)<br>
+    <strong>차이 7곳의 원인:</strong> §9 가 일부 항목을 "agents/*-agent.ts (4개)" 같이 <strong>묶음으로 카운트</strong>해서 발생. 정수는 21.<br>
+    <strong>권장:</strong> AGENTS.md §9 의 "14곳" 표기를 "21곳 (묶음 9 행)" 으로 갱신.
+  </div>
+</div>
+
+<div class="footer">
+  OpenMath — Capstone Team 3 · 중앙대학교 2026 · 감사 범위: agent 파트 전용 · v2 보강 (5 항목)
+</div>
+
+</body>
+</html>

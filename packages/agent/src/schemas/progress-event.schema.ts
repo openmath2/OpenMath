@@ -62,11 +62,24 @@ export const ErrorEventSchema = z.object({
 
 export type ErrorEvent = z.infer<typeof ErrorEventSchema>;
 
+/* OM-79: 3/6 generate step 완료 직후 첫 후보의 LaTeX 를 미리보여 주기 위한 이벤트.
+ * FE (use-verification-stream.ts: parsePreview) 는 wire payload 의 `latex` 만 읽으므로
+ * 본 schema 에는 일관성 위해 timestamp 까지 포함하되 wire-adapter 가 latex 만 직렬화한다.
+ */
+export const PreviewEventSchema = z.object({
+  type: z.literal("preview"),
+  latex: z.string().min(1),
+  timestamp: z.string(),
+});
+
+export type PreviewEvent = z.infer<typeof PreviewEventSchema>;
+
 export const ProgressEventSchema = z.discriminatedUnion("type", [
   StepEventSchema,
   RetryEventSchema,
   ResultEventSchema,
   ErrorEventSchema,
+  PreviewEventSchema,
 ]);
 
 export type ProgressEvent = z.infer<typeof ProgressEventSchema>;

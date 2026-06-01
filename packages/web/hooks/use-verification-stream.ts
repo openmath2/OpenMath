@@ -66,6 +66,10 @@ export type StreamInput = {
   topic: string;
   mode: "structural" | "conceptual";
   dims: readonly string[];
+  /* OM-48: 사용자가 S3 에서 직접 선택. BE GenerateRequestSchema 의
+   * difficulty / problem_type enum 일치. */
+  difficulty: "easy" | "medium" | "hard";
+  problemType: "objective" | "short_answer";
   /** override agent endpoint. defaults to NEXT_PUBLIC_AGENT_URL or localhost:3000 */
   endpoint?: string;
 };
@@ -254,10 +258,11 @@ export function useVerificationStream(
    * inputKey 는 input 의 모든 의미상 식별자를 직렬화하므로 effect deps 로 충분.
    */
   const dimsKey = input === null ? "" : [...input.dims].sort().join(",");
+  /* OM-48: difficulty / problemType 도 inputKey 에 포함 → 변경 시 SSE 재연결 */
   const inputKey =
     input === null
       ? null
-      : `${input.grade}|${input.topic}|${input.mode}|${dimsKey}|${input.endpoint ?? ""}`;
+      : `${input.grade}|${input.topic}|${input.mode}|${dimsKey}|${input.difficulty}|${input.problemType}|${input.endpoint ?? ""}`;
 
   /* effect 본문이 input 의 *최신* 값을 읽어야 하지만 deps 로 넣으면 가드가
    * 무효화되어 부모 re-render 마다 SSE 재연결이 발생한다 (PR #7 리뷰).
@@ -294,11 +299,22 @@ export function useVerificationStream(
     void fetchEventSource(url, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+      /* OM-48: difficulty / problem_type 는 S3 (intent/picker.tsx) 에서 사용자가 직접 선택.
+       *   - 이전 OM-85: difficulty 를 grade 로 자동 추론 + problem_type 하드코딩 → 사용자 의도 무시.
+       *   - 이제 input.difficulty / input.problemType 그대로 wire 로 직렬화.
+       *
+       * OM-85 후속: topic / dims 키 이름을 BE GenerateRequestSchema 와 정합.
+       *   이전엔 'topic' / 'dims' 로 보내서 Zod 가 silent strip 했다 (BE 는 topic_code /
+       *   evaluation_dimension_ids 를 기대). 값 자체 (topic.code, dim ID 배열) 는 그대로 두고
+       *   키만 BE 컨벤션 (snake_case) 으로 rename.
+       */
       body: JSON.stringify({
         grade: current.grade,
-        topic: current.topic,
+        topic_code: current.topic,
         mode: current.mode,
-        dims: [...current.dims].sort(),
+        evaluation_dimension_ids: [...current.dims].sort(),
+        difficulty: current.difficulty,
+        problem_type: current.problemType,
       }),
       signal: controller.signal,
       openWhenHidden: true,

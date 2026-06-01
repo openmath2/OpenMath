@@ -24,7 +24,7 @@
 - 한국어 본문 `lang="ko"`, `word-break: keep-all; overflow-wrap: break-word;`.
 - 검증 시그널은 색 + 아이콘 + 텍스트 3중 표기 (색맹 사용자 대응, `DESIGN.md` Don'ts §"검증 시그널 색을 분위기용으로 사용 금지" 와 짝).
 - 터치 타깃 WCAG AAA 44×44px (`DESIGN.md` Responsive §"Touch Targets").
-- `prefers-reduced-motion: reduce` 시 모든 transform·parallax·spinner 회전 무효화.
+- `prefers-reduced-motion: reduce` 시 모든 transform·fade·spinner 회전 무효화.
 - 본문 대비 WCAG AA 이상 (`{colors.ink}` on `{colors.canvas-pure}` ≈ 16:1, `{colors.ink-3}` on `{colors.canvas-pure}` ≈ 5.1:1).
 
 ---
@@ -44,23 +44,21 @@
 | Hero — headline | `{typography.display-hero}` | Fraunces clamp(48,8vw,104)px — 1 페이지 1회 |
 | Hero — meta row | `{component.meta-pill}` × N | "· 회원가입 X" / "· 중1–중3 전 단원" |
 | Hero — CTA cluster | `{component.button-primary}` "무료로 시작하기" + `{component.button-ghost}` "샘플 문제 보기" | 같은 fold |
-| Hero — book stack | `{component.book-cover}` × 4 | 380×500, perspective 1800px / rotateX 28° |
-| Hero — floating tokens | `{component.floating-token}` × 6 (desktop) / 3 (mobile) | 수식·식별자, parallax |
-| Hero — hint | `{component.hint-pill}` | "마우스를 올리면 표지가 넘어갑니다" — mouse-in 시 fade |
+| Hero — iPad showcase | `{component.tablet-frame}` 단일 인스턴스 (D-11) | iPad 프레임 + 상태바 + appnav + 5-step walkthrough (`mock-ws` → `mock-grade` → `mock-topic` → `mock-intent` → `mock-verify`) + step dots + 양방향 nav arrow. 실제 제품 워크플로 (S0→S1→S2→S3→S4) 의 mini UI 데모. |
 | Feature strip | `{component.feature-cell}` × 3 | num caption → heading-xl → body-sm |
 | Footline | `{component.footline}` | copyright · build version |
 
-**Effect 허용 (editorial 한정):** backdrop-blur, radial-gradient wash (`{colors.primary-50}` 우상단 + `{colors.pass-50}` 좌하단), 64×64 grid pattern overlay (4% opacity, radial mask fade), perspective transform, drop-shadow (책 표지 + brand-mark glow 단 2곳).
+**Effect 허용 (editorial 한정):** backdrop-blur, radial-gradient wash (`{colors.primary-50}` 우상단 + `{colors.pass-50}` 좌하단), 64×64 grid pattern overlay (4% opacity, radial mask fade), drop-shadow (iPad 프레임 + brand-mark glow 단 2곳).
 
 ### 상태 목록
 
 | 상태 | 트리거 | 표현 |
 |---|---|---|
-| Default | 페이지 로드 | 책 4권 닫힌 상태, floating-token 정지 |
-| Hover-stage | 마우스가 book-stack 영역 진입 | `hint-pill` opacity → 0, 가장 가까운 book-cover 가 168° flip |
-| Parallax-active | 마우스 이동 | floating-token data-depth 별 translate (-40px ~ -24px) |
-| Reduced-motion | `prefers-reduced-motion: reduce` | 책 flip / parallax 모두 비활성, 정적 표시 |
-| Mobile (<600px) | viewport | display-hero clamp → 48px, primary-nav links 숨김, book-stack 92vw, floating-token 3개로 축소 |
+| Default | 페이지 로드 | iPad 첫 step (`mock-ws`) 표시, dots 의 첫 위치 active |
+| Auto-advance | 5 초 경과 또는 우측 arrow 클릭 또는 appnav "문제 생성하기 →" 클릭 | 다음 step 으로 fade-in 전환, dots 갱신 |
+| Back | 좌측 arrow 클릭 | 이전 step 으로 fade-in 전환 (modulo 순환) |
+| Reduced-motion | `prefers-reduced-motion: reduce` | 5초 auto-rotate 비활성, fade 전환 즉시 swap. arrow / dots 는 그대로 동작 |
+| Mobile (<600px) | viewport | display-hero clamp → 48px, primary-nav links 숨김, iPad 프레임 ~92vw 로 축소 |
 
 `{component.button-primary}` 자체의 상태는 default / `button-primary-active` (pressed: bg `{colors.primary-deep}` + `translateY(-1px)`) 두 가지.
 
@@ -78,10 +76,9 @@
 - **키보드:** `Tab` 순서 — utility links → primary-nav links → `button-primary` (nav) → eyebrow (skip) → hero CTA cluster → feature-cell links → footline. `Enter` 로 CTA 활성.
 - **스크린리더:**
   - `display-hero` 는 `<h1>` 1개로 한정. feature-cell 의 num caption ("01", "02") 은 `aria-hidden="true"` (장식).
-  - `book-cover` × 4 는 `role="img"` + `aria-label` "중1 인수분해 · 검증 12문항" 형식의 의미적 라벨. 책 표지 안 문구를 그대로 읽지 않게.
-  - `floating-token` 은 `aria-hidden="true"` (장식 — 수식이 의미 운반 아님).
-  - `hint-pill` 은 `aria-hidden="true"` 가 아니라 정보 — "마우스 사용자 안내" 의미는 마우스가 없는 사용자에게 노출되지 않아야 하므로 `<noscript>` 또는 hover-detection 직후에만 DOM 삽입.
-- **Motion:** 책 flip / parallax 는 `prefers-reduced-motion` 시 무효 (`DESIGN.md` Known Gaps §"랜딩 book-stack 모션 접근성").
+  - iPad showcase 안의 mini-UI (mock-ws / mock-grade / mock-topic / mock-intent / mock-verify) 는 시각 데모이므로 컨테이너에 `role="img"` + `aria-label` "OpenMath 워크플로 5 단계 데모" 부여. 내부 텍스트는 `aria-hidden="true"` 로 중복 읽기 방지.
+  - iPad nav arrow 좌/우는 `aria-label` "이전 단계" / "다음 단계", step dots 는 `aria-hidden="true"` (시각 인디케이터). 키보드 Tab 으로 arrow 진입 가능.
+- **Motion:** iPad showcase 의 fade 전환 + 5초 auto-rotate 는 `prefers-reduced-motion` 시 정적 swap + auto-rotate 비활성 (`DESIGN.md` Known Gaps §"iPad showcase 모션 접근성").
 
 ---
 
@@ -543,13 +540,13 @@ action-bar 의 primary 가 disabled 일 때:
 
 | 자리 | Default | Reduced |
 |---|---|---|
-| Landing book-cover flip | 168° rotateY 1초 cubic-bezier | 정적 (호버해도 회전 X) |
-| Landing floating-token parallax | -40px~-24px translate | 정적 |
+| Landing iPad showcase 5초 auto-rotate | setInterval 5000ms | 비활성 (사용자 arrow 클릭만 진행) |
+| Landing iPad step fade 전환 | opacity transition | 즉시 swap |
 | S4 spinner-dot 회전 | 700ms linear infinite | 정적 점 또는 점멸 |
 | S4 step-progress-row 상태 전환 | opacity / color transition | 즉시 |
 | S5 result-card editing 모드 진입 | slide-in editor | 즉시 swap |
 | S6 disclosure-row 펼침 | height transition | 즉시 |
 
-`DESIGN.md` Known Gaps §"랜딩 book-stack 모션 접근성" 와 동일 정책을 모든 productivity 화면에 확장.
+`DESIGN.md` Known Gaps §"iPad showcase 모션 접근성" 와 동일 정책을 모든 productivity 화면에 확장.
 
 ---

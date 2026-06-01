@@ -190,6 +190,20 @@
   - **DB**: Better Auth adapter 추상화로 Q-2 (영속 저장소) 결정과 decouple. 1차 도입 시점 후보: SQLite (local dev) → Postgres (production).
 - **Closes**: Q-4 의 (c) "인증 없는 PoC (1차 MVP)" 가 D-3 으로 확정, 인증 도입 시 기술 선택은 본 결정으로 확정. *신뢰 경계*·*rate limit 위치*는 여전히 Q-4 open.
 
+### D-11. 랜딩 히어로 = iPad showcase (책 스택 대안)
+- **결정**: 랜딩 (`/`) 의 우측 절반을 `BookStage` 컴포넌트 (`packages/web/components/landing/book-stage.tsx`) 안의 *iPad 워크플로 walkthrough* 로 채택. SCREENS.md / MOCKUPS.md 초안의 `{component.book-cover}` × 4 (rotateX 28° 책 스택) + floating-token parallax 조합은 폐기. 대신 iPad 프레임 안에서 5 단계 (Workspace → Grade → Topic → Intent → Verify) 미니 UI 가 5 초 주기로 fade-in 자동 전환 + 좌우 nav arrow / step dots 로 양방향 수동 제어. 책 스택(SCREENS.md 초안) 대신 iPad 워크플로 데모로 결정한 이유는 제품 동작을 직접 보여주는 것이 editorial 정체성보다 캡스톤 데모에 효과적이기 때문이며, 문서-코드 정합을 위해 SCREENS / MOCKUPS 를 갱신했다.
+- **대안**: (a) 책 스택 + floating-token (SCREENS.md / MOCKUPS.md 초안 — editorial 권위 표현, 단 제품 동작 노출 부재), (b) 정적 스크린샷 4 컷 (전환 없음 — 캡스톤 데모 청중 시선 끌기 약함), (c) 동영상 임베드 (자동 재생 정책·접근성·번역 cost).
+- **채택 사유**: 캡스톤 데모 (D-3 학원 강사 + 심사 청중) 첫 인상에서 *제품이 무엇을 하는지* 가 *editorial 권위 표명* 보다 우선. iPad 프레임은 mobile/productivity 친숙도 동시 노출 + 5-step 자동 전환으로 발표 도중 손 안 대고도 한 사이클 진행. `prefers-reduced-motion` 시 auto-rotate 정지 + 양방향 화살표만 활성 (접근성 보존). D-9 의 듀얼-서피스 (editorial / productivity) 결정은 유지 — 랜딩의 폰트·색·hero headline 은 editorial 그대로.
+- **범위**: SCREENS.md §"Landing" 의 화면 구성요소 표 + 상태 표 + 접근성 노트 + Motion fallback 표 갱신. MOCKUPS.md §"Landing — /" 의 ASCII art + "핵심 시각 결정" + 부록 A mobile 변형 + 부록 B 컴포넌트 매핑 표 + 부록 C 한계 노트 갱신. D-9 결정문 본문의 "book stack" 언급은 historical reference 로 남김 (수정 안 함).
+- **Closes**: 문서-코드 정합. 코드 (`book-stage.tsx`) 가 1차 출처, 문서가 따른다.
+
+### D-12. 랜딩 nav 에서 로그인 링크 제거 (D-3 보충, OM-76)
+- **결정**: 랜딩 nav (`packages/web/components/landing/nav.tsx`) 의 `<Link href="/login">로그인</Link>` 항목을 제거. `/login` 페이지 파일 (`packages/web/app/login/page.tsx`, `form.tsx`) 자체는 **유지** — 직접 URL / 북마크 접근은 가능. 페이지 상단에 `inline-notice-warn` 배지로 "1차 MVP 는 무인증 운영 중. 로그인 기능은 v2 에서 제공" 안내.
+- **대안**: (a) nav 링크 + 페이지 둘 다 유지 (현 상태 — 사용자가 mock 폼을 실 인증으로 오해 가능), (b) nav 링크 + 페이지 둘 다 제거 (캡스톤 후 v2 도입 시 URL 재구성 필요), (c) 페이지를 "503 / 준비 중" 으로 대체 (북마크 사용자에게 부정적 첫 인상).
+- **채택 사유**: D-3 (1차 MVP 학원 강사 단일 사용자 PoC, 인증 없음) + D-10 (Better Auth v2 도입 — 1차 MVP 비활성) 정책에 따라 nav 의 로그인 노출은 *데모 시 심사위원 혼란 발생 source*. 페이지 자체 유지는 (1) 향후 v2 진입 시 URL/디자인 시스템 연속성, (2) 북마크 / QA / 디자인 리뷰 접근로 보존, (3) 페이지 안 명시적 warn 배지로 사용자 기대 정렬. D-10 의 "Better Auth v2 트리거" 시점에 nav 링크 복원 + 배지 제거 + form 의 mock router.push 실 인증 호출로 교체.
+- **범위**: nav.tsx 의 로그인 Link 1건 제거. login/page.tsx 의 inline-notice 1건 추가. login/form.tsx 의 mock 동작 (noValidate, router.push("/app")) 은 유지 (v2 에서 정리).
+- **Closes**: OM-76. D-3 (무인증 정책) 의 UX 표면 정합화. v2 인증 도입까지 nav 표면 무인증 일관.
+
 > 추가 결정은 Open Question을 닫을 때마다 여기에 누적한다.
 
 ---

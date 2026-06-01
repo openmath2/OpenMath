@@ -32,6 +32,13 @@ export const GenerateRequestSchema = z.object({
   difficulty: DifficultySchema.default("medium"),
   problem_type: ProblemTypeSchema.default("objective"),
 
+  /* OM-85 후속: 사용자가 S3-B (intent) 화면에서 선택한 평가 차원 ID 들.
+   * Intent 추출 단계에서 'must_preserve=true' 후보를 좁히는 hint 로 사용.
+   * full EvaluationDimension 객체 ({id, description, must_preserve}) 는 BE 가
+   * Intent 추출 시 생성하므로, FE 는 ID 만 보내고 객체 형성은 BE 책임.
+   */
+  evaluation_dimension_ids: z.array(z.string()).optional(),
+
   source_problem_text: z.string().optional(),
 });
 

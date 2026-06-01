@@ -33,6 +33,19 @@ export default function LoginPage() {
           <h1 className="auth-title">OpenMath</h1>
           <p className="auth-subtitle">이메일과 비밀번호로 들어가세요.</p>
 
+          {/* OM-76: 1차 MVP 무인증 정책 안내. v2 Better Auth 도입 (D-10) 전까지 mock. */}
+          <div
+            className="inline-notice inline-notice-warn"
+            role="status"
+            style={{ marginBottom: 16 }}
+          >
+            <span className="icon" aria-hidden="true">⚠</span>
+            <span className="body">
+              1차 MVP 는 무인증 운영 중입니다. 로그인 기능은 v2 에서
+              제공됩니다 (D-3, D-10).
+            </span>
+          </div>
+
           <LoginForm />
 
           <div className="auth-divider" aria-hidden="true">

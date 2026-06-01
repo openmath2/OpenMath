@@ -40,7 +40,7 @@
 
 ## Landing — `/`
 
-Editorial surface (`{colors.canvas}` warming ivory). 사진 자리에 책 4권 + 떠다니는 수식 토큰.
+Editorial surface (`{colors.canvas}` warming ivory). 우측 절반에 iPad showcase 가 실제 워크플로 (S0→S1→S2→S3→S4) 를 5 초 주기로 자동 전환. (D-11)
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -50,18 +50,21 @@ Editorial surface (`{colors.canvas}` warming ivory). 사진 자리에 책 4권 +
 ├────────────────────────────────────────────────────────────────────────┤
 │░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│
 │░  ▢ 검증된 문제 한 세트                                              ░│ eyebrow
-│░                                                                     ░│
-│░  수학 문제는                  ┌──┐┌──┐┌──┐┌──┐                       ░│
-│░  그럴듯해서는                 │  ││  ││  ││  │  ← book-cover × 4    ░│
-│░  안 된다.                     │  ││  ││  ││  │    (rotateX 28°)     ░│
-│░  맞아야 한다.                 │  ││  ││  ││  │                       ░│ display-hero
-│░                               │  ││  ││  ││  │   ∑ⁿₖ₌₁ k²            ░│ (Fraunces
-│░  · 회원가입 X                 └──┘└──┘└──┘└──┘                       ░│  96~104px)
-│░  · 중1–중3 전 단원              중1 중2 중3 통합                     ░│
-│░  · 출제 5~30초                                                       ░│
-│░                                            √(b² − 4ac)               ░│ floating-token
-│░  [ 무료로 시작하기 ]  [ 샘플 문제 보기 ]                            ░│
-│░                                          ▢ 마우스 hover 시 표지 펼침 ░│ hint-pill
+│░                              ┌─────────────────────────────────┐    ░│
+│░  수학 문제는                 │ 9:30 AM · 5월 20일       100% ▮  │    ░│ tablet-statusbar
+│░  그럴듯해서는                ├─────────────────────────────────┤    ░│
+│░  안 된다.                    │ ◆ OpenMath       [문제 생성하기→]│    ░│ tablet-appnav
+│░  맞아야 한다.                ├─────────────────────────────────┤    ░│
+│░                              │  단원 선택                  3/5  │    ░│ display-hero
+│░  · 회원가입 X                │  어느 단원인가요?                 │    ░│ (Fraunces
+│░  · 중1–중3 전 단원           │                                  │    ░│  96~104px)
+│░  · 출제 5~30초               │  [전체][수와 연산][문자와 식]…  │    ░│
+│░                              │  ● 이차방정식                    │    ░│  iPad
+│░  [ 무료로 시작하기 ]         │  ○ 제곱근과 실수                 │    ░│  showcase
+│░  [ 샘플 문제 보기 ]          │  ○ 이차함수와 그래프              │    ░│  (5초 auto)
+│░                              ├─────────────────────────────────┤    ░│
+│░                              │   ←     ● ● ● ● ●     →           │    ░│ tablet-bottombar
+│░                              └─────────────────────────────────┘    ░│  + dots
 │░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░│
 ├────────────────────────────────────────────────────────────────────────┤
 │ 01                  │ 02                  │ 03                          │
@@ -74,10 +77,10 @@ Editorial surface (`{colors.canvas}` warming ivory). 사진 자리에 책 4권 +
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-**핵심 시각 결정:**
+**핵심 시각 결정 (D-11):**
 - 한 fold 안에 `button-primary` "무료로 시작하기" 와 `button-ghost` "샘플 문제 보기" 두 개. 다른 chrome accent 없음.
-- 책 표지 (`{rounded.book}` 비대칭 4/14/14/4) 가 우측 절반 점유. 사진 X.
-- 떠다니는 토큰 6개 (mobile 에서 3개) 가 책 주변에서 parallax.
+- iPad 프레임 (`{component.tablet-frame}`) 이 우측 절반 점유. 사진 X. status bar + appnav + 본문 + bottom bar 모두 실제 iOS 레이아웃 모사.
+- 본문은 5 단계 (Workspace / Grade / Topic / Intent / Verify) 미니 UI 가 5 초 주기로 fade 전환. `prefers-reduced-motion` 시 auto-rotate 비활성, 사용자가 좌우 화살표 또는 dots 로 수동 제어.
 
 ---
 
@@ -428,7 +431,7 @@ Productivity surface (`{colors.canvas-pure}` 순백). 검은 hero-tile 한 띠 +
 ## 부록 A — Mobile 변형 (320~599px)
 
 좁은 viewport 에서 핵심 변경은 (1) primary-nav 의 nav-links 숨김, (2) entry / result grid 1-up,
-(3) book-stack 92vw, (4) action-bar fixed bottom.
+(3) iPad showcase ~92vw 로 축소, (4) action-bar fixed bottom.
 
 ### Landing — mobile
 
@@ -444,11 +447,14 @@ Productivity surface (`{colors.canvas-pure}` 순백). 검은 hero-tile 한 띠 +
 │░ 안 된다.               ░│ (clamp → 48px)
 │░ 맞아야 한다.           ░│
 │░                        ░│
-│░ ┌──┐┌──┐┌──┐┌──┐      ░│
-│░ │  ││  ││  ││  │      ░│ book-stack 92vw
-│░ └──┘└──┘└──┘└──┘      ░│
-│░  ∑ⁿₖ₌₁ k²              ░│ floating-token
-│░                        ░│   (3개로 축소)
+│░ ┌──────────────────┐   ░│
+│░ │ 9:30 AM   100%▮  │   ░│ iPad showcase ~92vw
+│░ │ ◆ OpenMath  [→]  │   ░│ (status + appnav
+│░ │   단원 선택 3/5  │   ░│  + step body
+│░ │   ● 이차방정식    │   ░│  + dots)
+│░ │   ←  ● ● ● ● ● → │   ░│
+│░ └──────────────────┘   ░│
+│░                        ░│
 │░ [ 무료로 시작하기 ]    ░│
 │░ [ 샘플 문제 보기 ]     ░│
 │░░░░░░░░░░░░░░░░░░░░░░░░░░│
@@ -574,7 +580,7 @@ Productivity surface (`{colors.canvas-pure}` 순백). 검은 hero-tile 한 띠 +
 | Mockup 영역 | DESIGN.md 컴포넌트 | Surface |
 |---|---|---|
 | 상단 검정 띠 (S0) | `hero-tile-productivity` | productivity |
-| 워밍 아이보리 hero (Landing) | `eyebrow` + `display-hero` + `book-cover` + `floating-token` + `hint-pill` | editorial |
+| 워밍 아이보리 hero (Landing) | `eyebrow` + `display-hero` + `tablet-frame` (iPad showcase, D-11) | editorial |
 | 카드 진입 (S0) | `job-entry-card` (× 2) | productivity |
 | 학년·단원·모드 카드 (S1·S2·S3-A) | `intent-radio-card` | productivity |
 | 체크 항목 (S3-B) | `intent-checkbox` | productivity |
@@ -598,10 +604,10 @@ ASCII 가 표현하지 못하는 것:
 
 1. **색 의미** — `{colors.pass}` green / `{colors.fail}` coral / `{colors.concept}` blue / `{colors.warn}` amber 의 차이가 본 문서에는 보이지 않는다. `[ ✓ 구조 ]` `[ ✦ 개념 ]` `[ ⚠ 주의 ]` `[ ✗ 실패 ]` 의 *모양* 만 보임. 시각 결과는 `DESIGN.md` Colors §"Verification semantics" 와 함께 본다.
 2. **세리프 vs sans 대비** — Landing 의 Fraunces 96~104px 디스플레이와 본문 Inter 의 시각 격차. ASCII 에서는 모두 동일 monospace.
-3. **드롭 섀도우·glow** — Landing 의 책 표지 `0 18px 36px rgba(0,0,0,0.20)` 와 brand-mark `0 4px 14px rgba(59,130,246,0.3)` 의 깊이. ASCII 에서는 같은 1px 박스.
+3. **드롭 섀도우·glow** — Landing 의 iPad 프레임 `0 18px 36px rgba(0,0,0,0.20)` 와 brand-mark `0 4px 14px rgba(59,130,246,0.3)` 의 깊이. ASCII 에서는 같은 1px 박스.
 4. **간격 리듬** — `{spacing.section}` (48px) / `{spacing.xxl}` (32px) / `{spacing.lg}` (16px) 의 차이. ASCII 의 줄바꿈은 등간격이라 실제 비례가 어긋남.
 5. **Fluid type** — display-hero `clamp(48,8vw,104)px` 의 viewport-비례 스케일. ASCII 는 고정 폭.
-6. **Motion** — book flip / parallax / spinner 회전 / step row state 전환. 정적 그림으로 표현 불가.
+6. **Motion** — iPad showcase 의 5초 auto-rotate fade / spinner 회전 / step row state 전환. 정적 그림으로 표현 불가.
 7. **수식 렌더링** — KaTeX 출력의 글리프 비율·indent. 본 문서는 ASCII 근사 (`3x + 5 = 14`, `∑ⁿₖ₌₁ k²`) 만 사용.
 
 따라서 본 문서는 spec 의 *대체* 가 아니라 *진입로* 다. 컴포넌트를 빌드할 때는 SCREENS.md 의 상태 표 + DESIGN.md 의 토큰 정의를 함께 본다.

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useDraftStorage } from "@/hooks/use-draft-storage";
 import {
   type Category,
   type Grade,
@@ -20,6 +21,26 @@ type Props = {
 export function TopicPicker({ grade }: Props) {
   const [filter, setFilter] = useState<Filter>("전체");
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
+  const { saveDraft, loadDraft } = useDraftStorage();
+
+  /* OM-47: 진입 시 draft 의 topic 으로 복원 (draft 의 topic 이 현재 학년의 유효 단원일 때만). */
+  useEffect(() => {
+    const draft = loadDraft();
+    if (draft !== null && draft.topic !== null) {
+      const valid = topics.find(
+        (t) => t.code === draft.topic && t.grade === grade,
+      );
+      if (valid !== undefined) {
+        setSelectedCode(valid.code);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [grade]);
+
+  const chooseTopic = (code: string): void => {
+    setSelectedCode(code);
+    saveDraft({ topic: code });
+  };
 
   const visible = useMemo<Topic[]>(() => {
     if (grade === null) return [];
@@ -123,7 +144,7 @@ export function TopicPicker({ grade }: Props) {
                   name="topic"
                   value={t.code}
                   checked={selectedCode === t.code}
-                  onChange={() => setSelectedCode(t.code)}
+                  onChange={() => chooseTopic(t.code)}
                   className="sr-only"
                 />
                 <span className="dot" aria-hidden="true" />
