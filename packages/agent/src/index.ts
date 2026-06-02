@@ -6,7 +6,12 @@ import { resolve } from "node:path";
 import { loadEnv } from "./config/index.js";
 import { DEFAULT_MODELS } from "./config/models.js";
 import { createApp } from "./server/app.js";
-import { createGeneratorAgent } from "./agents/index.js";
+import {
+  createConstraintCriticAgent,
+  createGeneratorAgent,
+  createRefinerAgent,
+  createSolverAgent,
+} from "./agents/index.js";
 import {
   createFsPromptLoader,
   createFsStrategyLoader,
@@ -35,20 +40,47 @@ export async function main(): Promise<void> {
   const llmBaseUrl = env.LLM_BASE_URL ?? env.CLIPROXY_BASE_URL;
   const llmApiKey = env.LLM_API_KEY ?? env.CLIPROXY_API_KEY ?? env.OPENAI_API_KEY;
   const llmModel = env.LLM_MODEL ?? env.CLIPROXY_MODEL ?? env.OPENAI_MODEL ?? DEFAULT_MODELS.generator;
-  const generator = llmBaseUrl !== undefined || llmApiKey !== undefined
-    ? createGeneratorAgent({
-        model: resolveLanguageModel({
-          kind: llmKind,
-          modelId: llmModel,
-          baseUrl: llmBaseUrl,
-          apiKey: llmApiKey ?? "openmath-local",
-          allowedHosts: ["localhost", "127.0.0.1"],
-        }),
+  const llm = llmBaseUrl !== undefined || llmApiKey !== undefined
+    ? resolveLanguageModel({
+        kind: llmKind,
+        modelId: llmModel,
+        baseUrl: llmBaseUrl,
+        apiKey: llmApiKey ?? "openmath-local",
+        allowedHosts: ["localhost", "127.0.0.1"],
+      })
+    : undefined;
+  const generator = llm === undefined
+    ? undefined
+    : createGeneratorAgent({
+        model: llm,
         modelId: llmModel,
         promptId: "problem-generator",
         prompts,
-      })
-    : undefined;
+      });
+  const critic = llm === undefined
+    ? undefined
+    : createConstraintCriticAgent({
+        model: llm,
+        modelId: llmModel,
+        promptId: "constraint-critic",
+        prompts,
+      });
+  const refiner = llm === undefined || generator === undefined
+    ? undefined
+    : createRefinerAgent({
+        model: llm,
+        modelId: llmModel,
+        promptId: "refiner",
+        generator,
+      });
+  const solver = llm === undefined
+    ? undefined
+    : createSolverAgent({
+        model: llm,
+        modelId: llmModel,
+        promptId: "independent-solver",
+        prompts,
+      });
 
   const app = createApp({
     mathEngine,
@@ -57,7 +89,16 @@ export async function main(): Promise<void> {
       mathEngine,
       prompts,
       strategies,
+      intentModel: llm,
       generator,
+      critic,
+      refiner,
+      solver,
+      objectiveLlm: llm,
+    },
+    workflowOptions: {
+      maxRetries: env.MAX_RETRIES,
+      perStepTimeoutMs: env.PER_STEP_TIMEOUT_MS,
     },
   });
 
