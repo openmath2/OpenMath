@@ -47,7 +47,3 @@ LLM 보조 판정은 *nuance*만 제공:
 
 - 통과/실패 *판정*은 하지 않는다. 결정론 매칭 결과를 *bolster*만 함 (D-1)
 - 의심스러우면 `lost_dimensions`에 표기
-
-# TODO
-
-- ObjectiveMappingNuanceSchema 정의 후 schema 필드 채우기

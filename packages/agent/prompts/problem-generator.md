@@ -57,8 +57,10 @@ updated: 2026-05-18
 # Output
 
 JSON으로만 응답.
-- `question_text`는 SymPy가 풀 수 있는 `x` 방정식 문자열이어야 한다. 예: `x**2 - 7 = 0`, `2*x + 3 = 11`.
-- `expected_answer`는 `sqrt(7), -sqrt(7)`처럼 쉼표로 구분한다. 서버가 SymPy로 다시 계산해 최종 정답을 검증한다.
+- `question_text`는 KaTeX가 바로 렌더링할 수 있는 LaTeX `x` 방정식 문자열이어야 한다. `**`, `*`를 쓰지 말고 지수는 `x^{2}`, 곱셈은 `5x`, 제곱근은 `\\sqrt{7}`처럼 쓴다.
+- `expected_answer`도 LaTeX로 쓴다. 예: `2, 5`, `\\sqrt{7}, -\\sqrt{7}`.
+- 예시 출력: `{ "question_text": "x^{2} - 7x + 10 = 0", "expected_answer": "2, 5", "proposed_solution_trace": "인수분해하면 (x - 2)(x - 5) = 0이므로 x = 2 또는 x = 5이다." }`
+- 서버가 SymPy로 다시 계산해 최종 정답을 검증한다.
 - `proposed_solution_trace`에 풀이 단계와 출제 의도를 한국어로 명시한다.
 - 풀이 가능하고 답이 실수인 중학교 수준 방정식만 생성한다.
 - 결과 문제는 source problem과 달라야 하며, structural/conceptual 모드 차이가 풀이 설명에 드러나야 한다.
