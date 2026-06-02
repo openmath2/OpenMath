@@ -58,6 +58,94 @@ pnpm build           # production build (agent + web)
 - Math Engine: `http://localhost:8000`
 - Web: `http://localhost:3001` (landing)
 
+### LLM 환경 설정 (필수)
+
+**⚠ LLM 환경 없이는 생성·검증이 100% 실패합니다** — seed fallback은 RAG 원본을 그대로 후보로 반환하므로 `objective_map`의 `not_transformed` 가드에 걸립니다.
+
+다음 3가지 중 하나를 설정하세요. 모두 `packages/agent/.env` (또는 환경변수)로 주입.
+
+#### 옵션 1 — CLIProxyAPI (Claude/GPT/Gemini 통합 라우터, 권장)
+
+[CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI)를 로컬에서 실행하면 Claude·GPT·Gemini를 OpenAI 호환 API 하나로 라우팅 가능.
+
+```bash
+LLM_PROVIDER=cliproxy
+LLM_BASE_URL=http://localhost:8317/v1
+LLM_API_KEY=dummy-key
+LLM_MODEL=gpt-4o   # 또는 claude-3-5-sonnet, gemini-2.0-flash
+```
+
+**Trade-off**: 로컬 라우터 별도 실행 필요. 캐시·모델 비교에 유리.
+
+#### 옵션 2 — OpenAI 직접
+
+```bash
+LLM_PROVIDER=openai
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o
+```
+
+**Trade-off**: 가장 빠른 setup. 비용은 사용량 기반.
+
+#### 옵션 3 — Anthropic via OpenAI-compatible 호환 레이어
+
+```bash
+LLM_PROVIDER=anthropic-via-compatible
+LLM_BASE_URL=<your-anthropic-compatible-endpoint>
+LLM_API_KEY=...
+LLM_MODEL=claude-3-5-sonnet-20241022
+```
+
+**Trade-off**: 별도 호환 layer 필요 (예: LiteLLM proxy). Claude의 수학 추론 품질 활용.
+
+### 포트 충돌 회피
+
+다른 프로세스(Mantis, 별도 Next.js 서버 등)가 3000번을 점유하면 `pnpm dev:all` 시 agent가 `EADDRINUSE`로 실패. 다음 단계로 회피:
+
+```bash
+# 1. 충돌 확인
+lsof -i :3000
+
+# 2. agent 포트 변경
+PORT=3002 pnpm dev
+
+# 3. web도 다른 포트의 agent를 보도록 변경
+# packages/web/.env.local 생성:
+echo "NEXT_PUBLIC_AGENT_URL=http://localhost:3002" > packages/web/.env.local
+
+# 4. web 재기동
+pnpm -F @openmath/web dev
+```
+
+`NEXT_PUBLIC_AGENT_URL`이 미설정이면 web은 `http://localhost:3000`을 호출하므로 포트 변경 시 반드시 `.env.local` 갱신.
+
+### 데모 실행 절차 (캡스톤)
+
+기본 데모 시나리오: **중3 / 이차방정식 (9수02-09) / 구조 동형 / 3문항** (OM-104 결정).
+
+```bash
+# 1. (한 번) deps + LLM 환경 + corpus 확인
+pnpm install
+cp packages/agent/.env.example packages/agent/.env
+# .env 의 LLM_* 채우기
+
+# 2. (매 시연) 세 서비스 기동
+pnpm dev:all
+
+# 3. (브라우저) http://localhost:3001 → S0 → 학년(중3) → 단원(이차방정식)
+#    → 평가 차원(인수분해 또는 근의 공식 사용 + 판별식) → 생성
+
+# 4. (검증) S4 6단계 ✓ → S5 결과 3문항 → S6 PDF
+```
+
+또는 직접 SSE:
+
+```bash
+curl -sN -X POST http://localhost:3000/api/generate \
+  -H "Content-Type: application/json" \
+  -d '{"grade":3,"topic":"9수02-09","mode":"structural","dims":["인수분해 또는 근의 공식 사용","판별식으로 해의 종류 해석"]}'
+```
+
 ```
 packages/
 ├── agent/                      # Node 22 — verification pipeline + HTTP/SSE

@@ -390,7 +390,7 @@
 |---|---|---|
 | Sub nav | `{component.sub-nav}` | "← 검증 진행 / 결과" · 우측 progress 카운터 없음 |
 | Page title | `{typography.heading-xl}` | "3개 문항이 준비되었습니다" — 동적 카운트 |
-| Filter row | `{component.filter-chip}` × M | "전체" / "구조동형" / "개념동형" / "주의" / "실패" |
+| Filter row | `{component.filter-chip}` × 4 | "전체" / "구조동형" / "개념동형" / "주의" — 실패 카드는 색·아이콘으로 충분히 구분되므로 별도 필터 없음 (OM-101 결정) |
 | Result grid | `{component.result-card}` × N (3-up → 1024px↓ 2-up → 600px↓ 1-up) | |
 | Card head | `{typography.body-strong}` 문항 번호 + `{component.badge-pass}` / `{component.badge-concept}` / `{component.badge-warn}` + 아이콘 클러스터 (`{component.button-icon-circular}` ★ 즐겨찾기 / ↻ 재생성 / ✎ 수정 / × 폐기) | padding `16px 20px`, border-bottom `{colors.hairline-soft}` |
 | Card body | `{component.formula-stage}` | LaTeX 문제 본문 (KaTeX), padding `28px 24px`, min-height 120px |
