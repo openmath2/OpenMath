@@ -7,10 +7,10 @@ import { streamSSE } from "hono/streaming";
 
 import { GenerateRequestSchema } from "../../schemas/index.js";
 import { pipeProgressToSse } from "../sse/progress-stream.js";
-import type { VerificationWorkflowDeps } from "../../workflows/verification-workflow.js";
+import type { RunOptions, VerificationWorkflowDeps } from "../../workflows/verification-workflow.js";
 import { runVerificationWorkflow } from "../../workflows/verification-workflow.js";
 
-export function createGenerateRoute(deps: VerificationWorkflowDeps): Hono {
+export function createGenerateRoute(deps: VerificationWorkflowDeps, options?: RunOptions): Hono {
   const app = new Hono();
 
   app.post(
@@ -19,7 +19,7 @@ export function createGenerateRoute(deps: VerificationWorkflowDeps): Hono {
     (c) => {
       const request = c.req.valid("json");
       return streamSSE(c, async (stream) => {
-        await pipeProgressToSse(stream, runVerificationWorkflow(deps, request));
+        await pipeProgressToSse(stream, runVerificationWorkflow(deps, request, options));
       });
     },
   );

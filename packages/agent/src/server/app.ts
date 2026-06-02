@@ -4,13 +4,14 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 
 import type { MathEngineClient } from "../tools/math-engine-client.js";
-import type { VerificationWorkflowDeps } from "../workflows/verification-workflow.js";
+import type { RunOptions, VerificationWorkflowDeps } from "../workflows/verification-workflow.js";
 import { createGenerateRoute } from "./routes/generate.js";
 import { createHealthRoute } from "./routes/health.js";
 
 export interface AppDeps {
   mathEngine: MathEngineClient;
   workflow: VerificationWorkflowDeps;
+  workflowOptions?: RunOptions;
 }
 
 export function createApp(deps: AppDeps): Hono {
@@ -26,7 +27,7 @@ export function createApp(deps: AppDeps): Hono {
   );
 
   app.route("/", createHealthRoute(deps.mathEngine));
-  app.route("/", createGenerateRoute(deps.workflow));
+  app.route("/", createGenerateRoute(deps.workflow, deps.workflowOptions));
 
   return app;
 }

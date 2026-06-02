@@ -30,8 +30,11 @@ const STEP_META: Record<StepName, { index: WireStepIndex; name: string }> = {
   objective_map: { index: 6, name: "학습 목표 매핑" },
 };
 
-function mapStepStatus(status: StepEvent["status"]): WireStepStatus {
-  if (status === "start") return "started";
+function mapStepStatus(event: StepEvent): WireStepStatus {
+  if (event.status === "start") return "started";
+  if (event.status === "info") return "failed";
+  const gateStatus = readGateStatus(event.data);
+  if (gateStatus === "failed") return "failed";
   return "completed";
 }
 
@@ -40,9 +43,18 @@ export function toWireStepEvent(event: StepEvent): WireStepEvent {
   return {
     index: meta.index,
     name: meta.name,
-    status: mapStepStatus(event.status),
+    status: mapStepStatus(event),
     summary: null,
   };
+}
+
+function readGateStatus(data: unknown): "passed" | "failed" | "skipped" | null {
+  if (typeof data !== "object" || data === null || !("gate" in data)) return null;
+  const gate = data.gate;
+  if (typeof gate !== "object" || gate === null || !("status" in gate)) return null;
+  const status = gate.status;
+  if (status === "passed" || status === "failed" || status === "skipped") return status;
+  return null;
 }
 
 function mapVerificationStatus(
