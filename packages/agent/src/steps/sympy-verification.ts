@@ -1,10 +1,12 @@
 /** Step 4: SymPy arithmetic verification. Deterministic (D-1, D-5). math-engine HTTP call. */
 
 import type { GateResult, GeneratedProblem } from "../schemas/index.js";
+import { withTimeout } from "../policies/timeout-policy.js";
 import type { MathEngineClient } from "../tools/math-engine-client.js";
 
 export interface SympyVerificationDeps {
   mathEngine: MathEngineClient;
+  perStepTimeoutMs?: number;
 }
 
 export interface SympyVerificationInput {
@@ -21,7 +23,10 @@ export async function verifyWithSympy(
 ): Promise<SympyVerificationOutput> {
   const started = Date.now();
   try {
-    const passed = await verifyCandidate(deps.mathEngine, input.candidate);
+    const passed = await withTimeout(
+      () => verifyCandidate(deps.mathEngine, input.candidate),
+      { ms: deps.perStepTimeoutMs ?? 30_000, label: "sympy_verify" },
+    );
     return {
       gate: {
         step: "sympy_verify",
