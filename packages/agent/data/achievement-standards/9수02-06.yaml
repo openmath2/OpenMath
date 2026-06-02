@@ -1,19 +1,19 @@
-code: 9수02-03
-title: 일차방정식
+code: 9수02-06
+title: 일차부등식
 school_level: middle
-grade: 1
+grade: 2
 techniques:
   required_at_least_one_of:
-    - equation_balance
-    - linear_equation_solving
+    - inequality_balance
+    - interval_solution
   forbidden:
-    - calculator_only
+    - equation_only
 evaluation_dimensions:
   - id: A
-    description: 등식의 성질을 이용해 미지수 항을 분리한다.
+    description: 부등식의 성질을 이용해 미지수 항을 정리한다.
     must_preserve: true
   - id: B
-    description: 양변에 같은 수를 더하거나 빼서 해를 구한다.
+    description: 음수로 나누거나 곱할 때 부등호 방향을 바꾼다.
     must_preserve: true
 difficulty_range:
   - easy
@@ -23,12 +23,12 @@ problem_types_supported:
   - short_answer
 structural_transforms:
   - kind: coefficient_swap
-    range: [-9, 9]
+    range: [-8, 8]
     exclude_zero: true
   - kind: sign_flip
 conceptual_transforms:
   - kind: rephrase_as_word_problem
     context:
-      - 가격
-      - 거리
-      - 나이
+      - 최소 비용
+      - 제한 조건
+      - 점수 기준

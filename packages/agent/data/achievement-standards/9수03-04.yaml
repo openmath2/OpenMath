@@ -1,0 +1,31 @@
+code: 9수03-04
+title: 이차함수와 그래프
+school_level: middle
+grade: 3
+techniques:
+  required_at_least_one_of:
+    - quadratic_graph_vertex
+    - axis_of_symmetry
+  forbidden:
+    - plotting_only
+evaluation_dimensions:
+  - id: A
+    description: 이차함수 그래프의 꼭짓점과 축을 찾는다.
+    must_preserve: true
+  - id: B
+    description: 식의 계수 변화가 그래프에 미치는 영향을 해석한다.
+    must_preserve: true
+difficulty_range:
+  - medium
+  - hard
+problem_types_supported:
+  - objective
+  - short_answer
+structural_transforms:
+  - kind: coefficient_swap
+    range: [-6, 6]
+    exclude_zero: true
+  - kind: sign_flip
+conceptual_transforms:
+  - kind: present_via_root_relations
+    hint: x절편 또는 꼭짓점 정보로 식을 복원하는 형태로 바꾼다.

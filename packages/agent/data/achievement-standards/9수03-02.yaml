@@ -1,19 +1,19 @@
-code: 9수02-03
-title: 일차방정식
+code: 9수03-02
+title: 일차함수와 그래프
 school_level: middle
-grade: 1
+grade: 2
 techniques:
   required_at_least_one_of:
-    - equation_balance
-    - linear_equation_solving
+    - slope_intercept_form
+    - graph_interpretation
   forbidden:
-    - calculator_only
+    - table_only
 evaluation_dimensions:
   - id: A
-    description: 등식의 성질을 이용해 미지수 항을 분리한다.
+    description: 일차함수의 기울기와 y절편을 해석한다.
     must_preserve: true
   - id: B
-    description: 양변에 같은 수를 더하거나 빼서 해를 구한다.
+    description: 그래프나 두 점으로부터 일차함수식을 구한다.
     must_preserve: true
 difficulty_range:
   - easy
@@ -23,12 +23,12 @@ problem_types_supported:
   - short_answer
 structural_transforms:
   - kind: coefficient_swap
-    range: [-9, 9]
+    range: [-8, 8]
     exclude_zero: true
   - kind: sign_flip
 conceptual_transforms:
   - kind: rephrase_as_word_problem
     context:
-      - 가격
-      - 거리
-      - 나이
+      - 요금제
+      - 속력
+      - 온도 변화

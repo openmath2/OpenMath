@@ -34,6 +34,7 @@ LLMs produce plausible math problems with wrong solutions ([MathTrap300](https:/
 | **Web** | Node 22 + Next.js 14 App Router + Tailwind v4 | Landing + 출제 워크플로우 UI. SSE consumer of `agent` |
 
 검증 흐름은 결정론적 6단계 파이프라인 (RAG → Intent → Generate → SymPy → Re-solve → Objective map). LLM은 생성 단계와 독립 재풀이 단계에만 관여하고, 정답 판정은 결코 하지 않는다 — 자세한 결정 근거는 [`docs/specs/architecture.md`](docs/specs/architecture.md), 도메인 개념은 [`docs/specs/domain.md`](docs/specs/domain.md). 프론트 디자인 시스템은 [`packages/web/DESIGN.md`](packages/web/DESIGN.md) (editorial + productivity 듀얼-서피스).
+캡스톤 시연 범위는 [`docs/product/DEMO_SCOPE.md`](docs/product/DEMO_SCOPE.md)에 고정한다.
 
 LLM access is pluggable: direct OpenAI/Anthropic, or via [CLIProxyAPI](https://github.com/router-for-me/CLIProxyAPI) for unified Claude/GPT/Gemini routing.
 

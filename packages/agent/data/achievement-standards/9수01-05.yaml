@@ -1,5 +1,5 @@
 code: 9수01-05
-title: 제곱근의 뜻과 실수의 분류를 이해한다
+title: 제곱근과 실수
 school_level: middle
 grade: 3
 techniques:
@@ -7,32 +7,24 @@ techniques:
     - square_root_definition
     - real_number_classification
   forbidden:
-    - calculus
+    - decimal_approximation_only
 evaluation_dimensions:
   - id: A
-    description: 제곱근의 뜻을 식으로 해석한다
+    description: 제곱근의 뜻을 이용해 양수의 두 제곱근을 구분한다.
     must_preserve: true
   - id: B
-    description: 양수의 두 제곱근을 모두 구한다
-    must_preserve: true
-  - id: C
-    description: 근호를 사용해 정확한 값을 표현한다
-    must_preserve: true
-  - id: D
-    description: 실수 범위에서 해를 판단한다
+    description: 유리수와 무리수를 실수 범위에서 분류한다.
     must_preserve: true
 difficulty_range:
   - easy
   - medium
 problem_types_supported:
-  - short_answer
   - objective
+  - short_answer
 structural_transforms:
   - kind: coefficient_swap
-    range: [2, 20]
+    range: [2, 100]
     exclude_zero: true
-  - kind: variable_rename
-    allowed: [x, y]
 conceptual_transforms:
   - kind: inverse_question
-    hint: 제곱하면 같은 수가 되는 두 실수를 묻는다
+    hint: 제곱근의 값이 주어졌을 때 원래 수를 찾는 형태로 바꾼다.

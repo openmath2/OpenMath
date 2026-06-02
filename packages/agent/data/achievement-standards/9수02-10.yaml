@@ -1,34 +1,33 @@
-code: 9수02-03
-title: 일차방정식
+code: 9수02-10
+title: 이차방정식의 활용
 school_level: middle
-grade: 1
+grade: 3
 techniques:
   required_at_least_one_of:
-    - equation_balance
-    - linear_equation_solving
+    - quadratic_modeling
+    - factoring
   forbidden:
-    - calculator_only
+    - formula_without_modeling
 evaluation_dimensions:
   - id: A
-    description: 등식의 성질을 이용해 미지수 항을 분리한다.
+    description: 상황을 이차방정식으로 모델링한다.
     must_preserve: true
   - id: B
-    description: 양변에 같은 수를 더하거나 빼서 해를 구한다.
+    description: 문제 조건에 맞는 해만 선택한다.
     must_preserve: true
 difficulty_range:
-  - easy
   - medium
+  - hard
 problem_types_supported:
   - objective
   - short_answer
 structural_transforms:
   - kind: coefficient_swap
-    range: [-9, 9]
+    range: [-12, 12]
     exclude_zero: true
-  - kind: sign_flip
 conceptual_transforms:
   - kind: rephrase_as_word_problem
     context:
-      - 가격
-      - 거리
-      - 나이
+      - 넓이
+      - 연속하는 정수
+      - 이동 거리
