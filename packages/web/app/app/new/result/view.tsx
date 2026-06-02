@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LatexRenderer } from "@/components/math/latex-renderer";
 import { type Grade, type Topic, gradeLabel } from "../topic/data";
 import type { ResultProblem } from "./mock";
@@ -13,7 +13,18 @@ type Props = {
   topic: Topic | null;
   mode: "structural" | "conceptual" | null;
   dims: string[];
+  sourceProblemText: string;
   problems: ResultProblem[];
+};
+
+type StoredProblem = {
+  id: string;
+  question_latex: string;
+  answer_latex: string;
+  explanation_latex?: string;
+  isomorphism: "structural" | "conceptual";
+  preserved_dimensions: string[];
+  verification_status: "pass" | "partial" | "fail";
 };
 
 const filters: { value: Filter; label: string }[] = [
@@ -74,19 +85,102 @@ function matchesFilter(p: ResultProblem, filter: Filter): boolean {
   }
 }
 
+function storageKey(
+  grade: Grade,
+  topic: Topic,
+  mode: "structural" | "conceptual",
+  dims: string[],
+  sourceProblemText: string,
+): string {
+  return [
+    "openmath:verification-result",
+    grade,
+    topic.code,
+    mode,
+    [...dims].sort().join(","),
+    sourceProblemText,
+  ].join("|");
+}
+
+function sourceQuery(sourceProblemText: string): string {
+  return sourceProblemText.length > 0
+    ? `&source=${encodeURIComponent(sourceProblemText)}`
+    : "";
+}
+
+function parseStoredProblem(raw: unknown): StoredProblem | null {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
+  const o = raw as Record<string, unknown>;
+  if (typeof o.id !== "string") return null;
+  if (typeof o.question_latex !== "string") return null;
+  if (typeof o.answer_latex !== "string") return null;
+  if (o.isomorphism !== "structural" && o.isomorphism !== "conceptual") return null;
+  if (o.verification_status !== "pass" && o.verification_status !== "partial" && o.verification_status !== "fail") return null;
+  return {
+    id: o.id,
+    question_latex: o.question_latex,
+    answer_latex: o.answer_latex,
+    explanation_latex: typeof o.explanation_latex === "string" ? o.explanation_latex : undefined,
+    isomorphism: o.isomorphism,
+    preserved_dimensions: Array.isArray(o.preserved_dimensions)
+      ? o.preserved_dimensions.filter((d): d is string => typeof d === "string")
+      : [],
+    verification_status: o.verification_status,
+  };
+}
+
+function toResultProblem(problem: StoredProblem, index: number, dims: string[]): ResultProblem {
+  const status = problem.verification_status === "partial" ? "warn" : problem.verification_status;
+  const missingDims = dims.filter((dim) => !problem.preserved_dimensions.includes(dim));
+  return {
+    id: problem.id,
+    number: index + 1,
+    isomorphism: problem.isomorphism,
+    status,
+    questionLatex: problem.question_latex,
+    answerLatex: problem.answer_latex,
+    solutionLatex: problem.explanation_latex ?? "검증 파이프라인에서 생성된 문항입니다.",
+    preservedDims: problem.preserved_dimensions,
+    missingDims: status === "warn" ? missingDims : [],
+    failReason: status === "fail" ? "검증 실패 — 채택할 수 없습니다." : null,
+  };
+}
+
 export function ResultView({
   grade,
   topic,
   mode,
   dims,
+  sourceProblemText,
   problems,
 }: Props) {
   const [filter, setFilter] = useState<Filter>("all");
   const [adopted, setAdopted] = useState<Set<string>>(new Set());
+  const [displayProblems, setDisplayProblems] = useState<ResultProblem[]>(problems);
+
+  useEffect(() => {
+    setDisplayProblems(problems);
+    if (grade === null || topic === null || mode === null) return;
+    try {
+      const raw = window.sessionStorage.getItem(
+        storageKey(grade, topic, mode, dims, sourceProblemText),
+      );
+      if (raw === null) return;
+      const parsed: unknown = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return;
+      const stored = parsed.map(parseStoredProblem);
+      if (stored.some((p) => p === null)) return;
+      setDisplayProblems(
+        stored.map((p, index) => toResultProblem(p as StoredProblem, index, dims)),
+      );
+    } catch {
+      setDisplayProblems(problems);
+    }
+  }, [grade, topic, mode, dims, sourceProblemText, problems]);
 
   const visible = useMemo(
-    () => problems.filter((p) => matchesFilter(p, filter)),
-    [problems, filter],
+    () => displayProblems.filter((p) => matchesFilter(p, filter)),
+    [displayProblems, filter],
   );
 
   if (grade === null || topic === null || mode === null) {
@@ -126,11 +220,11 @@ export function ResultView({
   };
 
   const adoptedCount = adopted.size;
-  const passedCount = problems.filter((p) => p.status !== "fail").length;
-  const verifyHref = `/app/new/verify?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}`;
+  const passedCount = displayProblems.filter((p) => p.status !== "fail").length;
+  const verifyHref = `/app/new/verify?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}${sourceQuery(sourceProblemText)}`;
   const exportHref =
     adoptedCount > 0
-      ? `/app/new/export?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}&adopted=${Array.from(adopted).join(",")}`
+      ? `/app/new/export?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}${sourceQuery(sourceProblemText)}&adopted=${Array.from(adopted).join(",")}`
       : null;
 
   return (

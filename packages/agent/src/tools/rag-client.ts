@@ -95,14 +95,23 @@ export function createInMemoryRagClient(opts: InMemoryRagClientOptions): RagClie
     const rows = index ?? (await loadCorpusOnce());
     const scored = rows
       .filter((row) => matchesQuery(row, query, minAchievementConfidence))
-      .map((row) => ({ row, score: scoreProblem(row, query) }))
+      .map((row) => {
+        const sourceMatch = sourceProblemMatches(row.problem, query.source_problem_text);
+        return { row, score: scoreProblem(row, query, sourceMatch), sourceMatch };
+      })
       .sort((a, b) => b.score - a.score || a.row.problem.item_id.localeCompare(b.row.problem.item_id));
 
-    return scored.slice(0, query.k ?? 8).map(({ row, score }) => ({
+    return scored.slice(0, query.k ?? 8).map(({ row, score, sourceMatch }) => ({
       item_id: row.problem.item_id,
       similarity: roundSimilarity(score),
       problem: row.problem,
-      match_reason: score >= 0.7 ? "hybrid" : score >= 0.35 ? "semantic" : "structural",
+      match_reason: sourceMatch
+        ? "hybrid"
+        : score >= 0.7
+          ? "hybrid"
+          : score >= 0.35
+            ? "semantic"
+            : "structural",
     }));
   }
 
@@ -216,7 +225,7 @@ function matchesQuery(
   return true;
 }
 
-function scoreProblem(row: IndexedProblem, query: RagQuery): number {
+function scoreProblem(row: IndexedProblem, query: RagQuery, sourceMatch: boolean): number {
   let score = 0.2;
   const problem = row.problem;
 
@@ -243,8 +252,29 @@ function scoreProblem(row: IndexedProblem, query: RagQuery): number {
   if (query.difficulty && problem.difficulty_norm === query.difficulty) {
     score += 0.1;
   }
+  if (sourceMatch) {
+    score += 0.4;
+  }
 
   return Math.min(score, 1);
+}
+
+function sourceProblemMatches(
+  problem: SourceProblem,
+  sourceProblemText: string | undefined,
+): boolean {
+  if (sourceProblemText === undefined) return false;
+  const source = normalizeMathText(sourceProblemText);
+  const question = normalizeMathText(problem.question_text);
+  if (source.length === 0 || question.length === 0) return false;
+  return source.includes(question) || question.includes(source);
+}
+
+function normalizeMathText(value: string): string {
+  return value
+    .replace(/²/g, "**2")
+    .replace(/\s+/g, "")
+    .toLowerCase();
 }
 
 function searchableText(row: IndexedProblem): string {

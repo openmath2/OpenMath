@@ -127,7 +127,7 @@ type SurfaceConstraints = {
 - (I-G1) `inferred_intent.objective_code == request.intent.objective_code` — 학습 목표는 항상 동일.
 - (I-G2) `mode == "structural"`이면 `inferred_intent.required_techniques`가 원본과 동일 (구조 동형 정의).
 - (I-G3) `mode == "conceptual"`이면 `inferred_intent.evaluation_dimensions` 중 `must_preserve` 차원이 원본과 동일 (개념 동형 정의).
-- (I-G4) 검증되지 않은 `GeneratedProblem`은 사용자에게 노출되지 않는다 (D-1 원칙).
+- (I-G4) 검증되지 않은 `GeneratedProblem`은 *사용 가능한 문항* 으로 노출되지 않는다 — verdict `"rejected"` 후보는 `result` 이벤트에 포함되되 FE의 `{component.result-card-failed}` (좌측 4px `{colors.fail}` border + `inline-notice-fail` + "채택" 비활성) 로 *시각 가드* 되어 학생 시험지 등 외부로 흘러가지 못함. *데이터 노출* 은 허용 (강사 신뢰 확보), *사용 노출* 은 차단 (D-1 원칙). 자세한 정책 결정은 architecture.md D-11.
 
 ---
 

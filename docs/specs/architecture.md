@@ -180,6 +180,20 @@
 - **대안**: (a) Vite + React (SSR 없음 → 첫 페인트 늦음, SEO 약함, AI SDK 통합 약함), (b) SvelteKit (팀 친숙도 낮음, 학습 비용), (c) `apps/` + `packages/` 분리 (현재 평면 3 패키지 구조에서 분리 비용 > 가치), (d) Pretendard 단일 시스템 유지 (랜딩의 editorial 권위 표현 못함).
 - **채택 사유**: D-4 Vercel AI SDK 와 1:1 호환 (`ai/react`, `useChat`, SSE consumption hook 기본). Server Components 로 KaTeX SSR (수식이 첫 페인트부터 보임). Tailwind v4 의 CSS-first config 가 DESIGN.md 토큰을 그대로 `@theme` 블록에 매핑 가능. 듀얼-서피스로 랜딩 (D-3 학원 강사 첫 인상 — 신뢰감) 과 앱 내부 (정확/결정론적 출제 도구) 의 voice 둘 다 충족. 기존 `docs/product/DESIGN.md` (Nike fork productivity-only) 는 본 결정으로 superseded → historical reference 로 보존.
 
+### D-11. I-G4 정책 — 검증 거부 후보 *투명* 노출
+
+- **결정**: `Verification.overall == "rejected"` 후보를 SSE `result` 이벤트에 **포함**한다. FE는 fail 카드 (좌측 4px `{colors.fail}` border + `inline-notice-fail`) 로 명시 + "채택" 액션 비활성. 데이터로는 노출하되 *사용 가능한 문항* 으로 보이지 않게 시각적 가드.
+- **대안**: (A) 본 결정 (투명 노출), (B) 워크플로 result emit 시 rejected 필터링 (error 이벤트로 별도 알림), (C) rejected는 별도 SSE 이벤트 `rejection` 으로 분리.
+- **채택 사유**: D-3 1차 사용자 (학원 강사) 에게 *왜 검증이 실패했는지* 신호가 가장 중요. (B) 는 "AI가 뭔가 만들었는데 보여주지 않음" 으로 신뢰 하락. (A) 의 시각적 가드 (fail 카드 + 채택 비활성) 가 I-G4 ("검증되지 않은 문제는 *사용자에게 제공* 되어서는 안 된다") 의 의도를 충족 — *제공* 의 의미는 "강사가 학생 시험지에 넣을 수 있는 상태" 이지 "화면 표시 자체" 가 아니다. 자세한 시각 규약은 `packages/web/DESIGN.md` `{component.result-card-failed}` 참조.
+- **Closes**: OM-92.
+
+### D-12. S0-B (OCR 입력) — v2 로 명확히 보류
+
+- **결정**: S0-B "이 문제처럼" (OCR 이미지 입력 → LaTeX 자동 추출) 흐름은 1차 MVP 범위 외. 캡스톤 데모 후 v2 트리거. S0 카드는 현 상태 (disabled + "준비 중" 표기) 유지.
+- **대안**: (A) 본 결정 (v2 보류), (B) MVP 직후 추가 (Mathpix or Tesseract+SymPy 라이브러리 선정 + LaTeX 후처리 epic 신설), (C) v3 이후 보류.
+- **채택 사유**: 캡스톤 5분 데모 (OM-104: 중3 / 이차방정식 / 구조 동형 / 3문항) 흐름은 S0-A → S1 → S6 만으로 완결. OCR 도입 시 *Q-U4* (S0-B 도입 시 S1 존재 의의) 가 함께 풀려야 하고, 모델 선정 + 비용 + 인식률 평가가 별도 epic 단위. v2 트리거 시 (B) 가 정답이 될 수도 있으나, *현 시점에서 명시적 보류* 가 최선.
+- **Closes**: OM-103, OM-58 §(4).
+
 ### D-10. 인증·세션 layer 는 Better Auth — v2 도입 (1차 MVP 비활성)
 - **결정**: 사용자 가입·로그인·세션·계정 관리 기능 도입 시 [Better Auth](https://www.better-auth.com) 를 채택. TypeScript-first, framework-agnostic auth library. 1차 MVP (D-3 학원 강사 단일 사용자 PoC) 에서는 *비활성* — 랜딩의 "무료로 시작하기" CTA 는 placeholder, 실제 가입 흐름 없음. 캡스톤 데모 발표 후 v2 트리거.
 - **대안**: (a) NextAuth/Auth.js (Next.js 14 App Router 1급, 그러나 type-safety/customization 약함, OAuth 외 흐름 어색), (b) Clerk (호스티드 SaaS — 한국 컴플라이언스·비용·vendor 락인), (c) Supabase Auth (전체 BaaS 락인 — DB·storage·realtime 함께 채택해야 효율), (d) Lucia Auth (2024 maintenance mode 진입), (e) 자체 구현 (보안 위험 + 일정 부담).

@@ -1,0 +1,38 @@
+code: 9수01-05
+title: 제곱근의 뜻과 실수의 분류를 이해한다
+school_level: middle
+grade: 3
+techniques:
+  required_at_least_one_of:
+    - square_root_definition
+    - real_number_classification
+  forbidden:
+    - calculus
+evaluation_dimensions:
+  - id: A
+    description: 제곱근의 뜻을 식으로 해석한다
+    must_preserve: true
+  - id: B
+    description: 양수의 두 제곱근을 모두 구한다
+    must_preserve: true
+  - id: C
+    description: 근호를 사용해 정확한 값을 표현한다
+    must_preserve: true
+  - id: D
+    description: 실수 범위에서 해를 판단한다
+    must_preserve: true
+difficulty_range:
+  - easy
+  - medium
+problem_types_supported:
+  - short_answer
+  - objective
+structural_transforms:
+  - kind: coefficient_swap
+    range: [2, 20]
+    exclude_zero: true
+  - kind: variable_rename
+    allowed: [x, y]
+conceptual_transforms:
+  - kind: inverse_question
+    hint: 제곱하면 같은 수가 되는 두 실수를 묻는다

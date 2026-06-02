@@ -9,10 +9,16 @@ export const EnvSchema = z.object({
   MATH_ENGINE_URL: z.string().url().default("http://localhost:8000"),
 
   LLM_PROVIDER: z
-    .enum(["openai", "openai-compatible", "anthropic-via-compatible"])
+    .enum(["openai", "openai-compatible", "anthropic-via-compatible", "cliproxy"])
     .default("openai-compatible"),
   LLM_BASE_URL: z.string().url().optional(),
   LLM_API_KEY: z.string().min(1).optional(),
+  LLM_MODEL: z.string().min(1).optional(),
+  OPENAI_API_KEY: z.string().min(1).optional(),
+  OPENAI_MODEL: z.string().min(1).optional(),
+  CLIPROXY_BASE_URL: z.string().url().optional(),
+  CLIPROXY_API_KEY: z.string().min(1).optional(),
+  CLIPROXY_MODEL: z.string().min(1).optional(),
 
   PROMPTS_DIR: z.string().default("./prompts"),
   STRATEGIES_DIR: z.string().default("./data/achievement-standards"),

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BrandMark } from "@/components/landing/brand-mark";
 import { LoginForm } from "./form";
 
 export const metadata: Metadata = {
@@ -16,7 +15,6 @@ export default function LoginPage() {
         aria-label="주 메뉴"
       >
         <Link href="/" className="brand-wordmark" aria-label="OpenMath — 홈으로">
-          <BrandMark />
           <span>OpenMath</span>
         </Link>
         <Link href="/" className="nav-link">

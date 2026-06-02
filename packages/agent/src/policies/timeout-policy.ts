@@ -6,8 +6,23 @@ export interface TimeoutOptions {
 }
 
 export async function withTimeout<T>(
-  _fn: () => Promise<T>,
-  _opts: TimeoutOptions,
+  fn: () => Promise<T>,
+  opts: TimeoutOptions,
 ): Promise<T> {
-  throw new Error("withTimeout: not implemented yet");
+  if (!Number.isInteger(opts.ms) || opts.ms <= 0) {
+    throw new Error(`timeout ms must be a positive integer (got ${opts.ms})`);
+  }
+  let timer: NodeJS.Timeout | null = null;
+  try {
+    return await Promise.race([
+      fn(),
+      new Promise<T>((_, reject) => {
+        timer = setTimeout(() => {
+          reject(new Error(`${opts.label} timed out after ${opts.ms}ms`));
+        }, opts.ms);
+      }),
+    ]);
+  } finally {
+    if (timer !== null) clearTimeout(timer);
+  }
 }

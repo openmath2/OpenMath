@@ -7,5 +7,21 @@ export interface AcceptancePolicy {
 }
 
 export function createAcceptancePolicy(): AcceptancePolicy {
-  throw new Error("createAcceptancePolicy: not implemented yet");
+  return {
+    decide(gates, attemptCount) {
+      if (attemptCount > 3) return "rejected";
+
+      const byStep = new Map(gates.map((gate) => [gate.step, gate]));
+      const sympy = byStep.get("sympy_verify");
+      const objective = byStep.get("objective_map");
+      const reSolve = byStep.get("re_solve");
+
+      if (sympy?.status !== "passed") return "rejected";
+      if (objective?.status !== "passed") return "rejected";
+      if (reSolve?.status === "failed") return "warning";
+      if (gates.some((gate) => gate.status === "failed")) return "rejected";
+
+      return "verified";
+    },
+  };
 }

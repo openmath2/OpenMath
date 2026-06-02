@@ -25,14 +25,32 @@ export const GenerateRequestSchema = z.object({
 
   school_level: SchoolLevelSchema.default("middle"),
   grade: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+
+  /** FE alias from `packages/web/hooks/use-verification-stream.ts`. */
+  topic: z.string().optional(),
   topic_code: z.string().optional(),
   topic_name: z.string().optional(),
+
+  /** FE-selected evaluation dimensions. Step 6 treats these as requested keeps. */
+  dims: z.array(z.string()).default([]),
 
   count: z.number().int().min(1).max(20).default(5),
   difficulty: DifficultySchema.default("medium"),
   problem_type: ProblemTypeSchema.default("objective"),
 
   source_problem_text: z.string().optional(),
+}).superRefine((request, ctx) => {
+  if (request.topic === undefined && request.topic_code === undefined) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Either topic or topic_code is required",
+      path: ["topic"],
+    });
+  }
 });
 
 export type GenerateRequest = z.infer<typeof GenerateRequestSchema>;
+
+export function getGenerateRequestTopicCode(request: GenerateRequest): string {
+  return request.topic_code ?? request.topic ?? "";
+}

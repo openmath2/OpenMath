@@ -2059,722 +2059,426 @@
   }
 
   /* ─────────────────────────────────────────────────────────────
-   * Tablet (iPad) mockup — OpenMath 앱 showcase
-   * 외곽 검정 베젤 + 안쪽 흰 스크린 + 상태바 + 앱 nav + 2-col 본문
-   * + 하단 페이지 네비 + home indicator.
-   * 3 개 화면이 6s 마다 fade-in 으로 순환.
+   * Book stack — landing hero 시그니처 (DESIGN.md {component.book-cover}).
+   *   4권 시리즈, perspective 1800px (.book-stage 기존 rule), 그룹은
+   *   rotateX(28°) 로 살짝 뒤로 기울어 책장에 진열된 모습.
+   *   표지마다 다른 그라데이션 (blue / green / orange / zinc — OpenMath 의
+   *   4개 가치 축: 동형 · 검증 · 수식 · 교육과정).
+   *   Hover → 좌측 spine 축 168° flip, 안쪽 페이지 (예시 수식) 노출.
+   *   Idle drift + mouse parallax 는 stage 의 CSS var --mouse-x/y 가 트리거.
+   *   prefers-reduced-motion: reduce 시 @layer 마지막 @media 가 무력화.
    * ──────────────────────────────────────────────────────────── */
-  .tablet-frame {
+  .book-stack {
     position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 760px;
-    height: 560px;
-    transform: translate(-50%, -50%);
-    background: linear-gradient(135deg, var(--color-ink) 0%, rgba(15, 15, 17, 1) 100%);
-    border-radius: 30px;
-    padding: 14px;
-    box-shadow:
-      0 30px 60px -20px rgba(0, 0, 0, 0.35),
-      0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    transform-style: preserve-3d;
+    transform: rotateX(28deg);
+    z-index: 1;
   }
   @media (max-width: 980px) {
-    .tablet-frame {
-      width: 92vw;
-      height: calc(92vw * 0.74);
-      padding: 10px;
-      border-radius: 22px;
+    .book-stack {
+      gap: 16px;
     }
   }
-  .tablet-screen {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    background: var(--color-canvas-pure);
-    border-radius: 18px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+  @media (max-width: 600px) {
+    .book-stack {
+      gap: 6px;
+      transform: rotateX(20deg);
+    }
   }
 
-  /* Status bar */
-  .tablet-statusbar {
-    height: 26px;
-    padding: 0 22px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-family: var(--font-sans);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--color-ink);
-    flex-shrink: 0;
-  }
-  .tablet-statusbar-right {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .tablet-battery {
-    display: inline-block;
-    width: 22px;
-    height: 11px;
-    border: 1.5px solid var(--color-ink);
-    border-radius: 3px;
-    position: relative;
-    margin-left: 2px;
-  }
-  .tablet-battery::before {
-    content: "";
-    position: absolute;
-    inset: 1.5px;
-    background: var(--color-ink);
-    border-radius: 1px;
-  }
-  .tablet-battery::after {
-    content: "";
-    position: absolute;
-    right: -4px;
-    top: 3px;
-    width: 2px;
-    height: 5px;
-    background: var(--color-ink);
-    border-radius: 0 1px 1px 0;
-  }
-
-  /* App nav — brand 좌측, CTA 우측 */
-  .tablet-appnav {
-    height: 52px;
-    padding: 0 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--color-hairline-soft);
-    flex-shrink: 0;
-  }
-  .tablet-brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-family: var(--font-serif);
-    font-weight: 500;
-    font-size: 17px;
-    color: var(--color-ink);
-  }
-  /* CTA button (top-right "문제 생성하기 →") — interactive
-   * 가운데 OpenMath 의 광학적 정중앙을 위해 의도적으로 작게.
+  /* 책 한 권 — 200×320 desktop. idle drift 는 transform 으로,
+   * mouse parallax 는 translate 개별 프로퍼티로 분리해 두 채널이 cascade-merge.
    */
-  .tablet-cta-btn {
-    background: var(--color-primary);
-    color: var(--color-on-ink);
-    border: none;
-    font-family: var(--font-sans);
-    font-size: 10.5px;
-    font-weight: 500;
-    padding: 6px 12px;
-    border-radius: 9999px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    transition: background-color 150ms ease, transform 150ms ease;
+  .book-cover {
+    position: relative;
+    width: 200px;
+    height: 320px;
+    transform-style: preserve-3d;
+    background: var(--color-paper);
+    border-radius: var(--radius-book);
+    box-shadow:
+      inset 0 0 0 1px rgba(39, 39, 42, 0.06),
+      0 18px 36px rgba(39, 39, 42, 0.20);
+    animation: book-idle 6.4s ease-in-out infinite both;
+    translate:
+      calc(var(--mouse-x, 0) * 14px)
+      calc(var(--mouse-y, 0) * 10px);
+    transition: translate 320ms ease-out;
   }
-  .tablet-cta-btn:hover {
-    background: var(--color-primary-deep);
-    transform: translateY(-1px);
+  @keyframes book-idle {
+    0%, 100% {
+      transform: translateY(0) rotateZ(0);
+    }
+    50% {
+      transform: translateY(-10px) rotateZ(-0.4deg);
+    }
   }
-  .tablet-cta-btn:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+  @media (max-width: 980px) {
+    .book-cover {
+      width: 144px;
+      height: 232px;
+    }
+  }
+  @media (max-width: 600px) {
+    .book-cover {
+      width: 92px;
+      height: 152px;
+    }
   }
 
-  /* Body — single column step walkthrough */
-  .tablet-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 24px 32px 12px;
-    overflow: hidden;
-    min-width: 0;
-  }
-  .tablet-step {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    min-width: 0;
-    animation: tablet-fade-in 480ms ease both;
-  }
-  @keyframes tablet-fade-in {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .tablet-step-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .tablet-step-label {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    color: var(--color-ink-3);
-    text-transform: uppercase;
-  }
-  .tablet-step-count {
-    font-family: var(--font-serif);
-    color: var(--color-ink);
-    font-size: 16px;
-    line-height: 1;
-  }
-  .tablet-step-count strong {
-    font-weight: 500;
-  }
-  .tablet-step-count span {
-    font-family: var(--font-sans);
-    font-size: 11px;
-    color: var(--color-ink-3);
-  }
-  .tablet-step-title {
-    font-family: var(--font-serif);
-    font-weight: 400;
-    font-size: 24px;
-    line-height: 1.15;
-    letter-spacing: -0.02em;
-    color: var(--color-ink);
-    margin: 4px 0 0;
-    word-break: keep-all;
-  }
-  .tablet-step-desc {
-    font-family: var(--font-sans);
-    font-size: 12px;
-    line-height: 1.55;
-    color: var(--color-ink-3);
-    margin: 0 0 4px;
-    word-break: keep-all;
-  }
-  .tablet-step-visual {
-    flex: 1;
-    min-height: 0;
+  /* 안쪽 페이지 — 표지 flip 시 노출되는 paper 면 + 예시 수식 */
+  .book-cover-page {
+    position: absolute;
+    inset: 6px 6px 6px 16px;
+    background:
+      linear-gradient(180deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0) 18%),
+      var(--color-paper);
+    border-radius: 0 8px 8px 0;
+    padding: 22px 18px;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: flex-start;
     gap: 10px;
-    padding: 4px 0;
+    z-index: 1;
   }
-
-  /* Shared sub-nav for screen mocks */
-  .mock-subnav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 4px 8px;
-    border-bottom: 1px solid var(--color-hairline-soft);
-    font-family: var(--font-sans);
-    font-size: 11px;
-    color: var(--color-ink-3);
-    margin-bottom: 10px;
+  .book-cover-page-formula {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 26px;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
   }
-  .mock-subnav-count {
+  .book-cover-page-caption {
     font-family: var(--font-mono);
-    font-size: 10.5px;
-    letter-spacing: 0.04em;
+    font-size: 9.5px;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
     color: var(--color-ink-3);
-    flex-shrink: 0;
+  }
+  @media (max-width: 980px) {
+    .book-cover-page {
+      padding: 16px 12px;
+    }
+    .book-cover-page-formula {
+      font-size: 18px;
+    }
+    .book-cover-page-caption {
+      font-size: 8.5px;
+    }
+  }
+  @media (max-width: 600px) {
+    .book-cover-page {
+      padding: 10px 8px;
+    }
+    .book-cover-page-formula {
+      font-size: 12px;
+    }
+    .book-cover-page-caption {
+      display: none;
+    }
   }
 
-  /* Shared radio dot (S1 학년, S2 단원, S3 mode) */
-  .mock-radio-dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 9999px;
-    border: 2px solid var(--color-hairline);
-    background: var(--color-canvas-pure);
-    flex-shrink: 0;
-    position: relative;
+  /* 표지 앞면 — hover 시 좌측 spine 축 (transform-origin 0% 50%) 으로
+   * 168° 회전. backface-visibility: hidden 으로 회전 90°+ 시 자동 사라짐,
+   * 그 뒤 .book-cover-page 가 노출.
+   */
+  .book-cover-front {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-book);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 22px 18px 22px 28px;
+    color: var(--color-on-ink);
+    transform-origin: 0% 50%;
+    transform: rotateY(0);
+    transition: transform 980ms cubic-bezier(0.22, 1, 0.36, 1);
+    backface-visibility: hidden;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      0 0 0 1px rgba(0, 0, 0, 0.06);
+    z-index: 2;
   }
-  .mock-radio-dot.empty {
-    border-color: var(--color-hairline);
+  .book-cover:hover .book-cover-front,
+  .book-cover:focus-visible .book-cover-front {
+    transform: rotateY(-168deg);
   }
-  .active > .mock-radio-dot,
-  .mock-mode-card.active .mock-radio-dot,
-  .mock-grade-radio.active .mock-radio-dot,
-  .mock-topic-card.active .mock-radio-dot {
-    border-color: var(--color-ink);
-  }
-  .active > .mock-radio-dot::after,
-  .mock-mode-card.active .mock-radio-dot::after,
-  .mock-grade-radio.active .mock-radio-dot::after,
-  .mock-topic-card.active .mock-radio-dot::after {
+
+  /* Spine shadow (좌측 24px) — DESIGN.md L749 spec */
+  .book-cover-front::before {
     content: "";
     position: absolute;
-    inset: 2px;
-    border-radius: 9999px;
-    background: var(--color-ink);
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 24px;
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0) 80%);
+    border-radius: var(--radius-book) 0 0 var(--radius-book);
+    pointer-events: none;
   }
 
-  /* S0 — Workspace mock (ink hero band + 2 entry cards) */
-  .mock-ws {
+  /* Paper edge (우측 5px repeating gradient) — DESIGN.md L750 spec */
+  .book-cover-paper {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    right: 0;
+    width: 5px;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.55) 0 1px,
+      rgba(255, 255, 255, 0.10) 1px 2px
+    );
+    border-radius: 0 4px 4px 0;
+    pointer-events: none;
+  }
+
+  /* 4개 표지 그라데이션 — DESIGN.md L748 (blue / green / orange / zinc).
+   * 검증 시그널 컬러를 차용하지 않고 시리즈용 hue 로만 사용 — pass-deep 등은
+   * 검증 의미 외 사용 금지 정책 (DESIGN.md Don'ts) 의 회피선상에 있으나,
+   * 책 표지는 검증 결과가 아닌 "주제 책의 시리즈 hue" 로 한정 해석.
+   */
+  .book-cover-isomorphic .book-cover-front {
+    background:
+      radial-gradient(120% 80% at 22% 0%, rgba(255, 255, 255, 0.20) 0%, transparent 55%),
+      linear-gradient(160deg, var(--color-primary-soft) 0%, var(--color-primary-deep) 75%);
+  }
+  .book-cover-verify .book-cover-front {
+    background:
+      radial-gradient(120% 80% at 22% 0%, rgba(255, 255, 255, 0.20) 0%, transparent 55%),
+      linear-gradient(160deg, var(--color-pass-soft) 0%, var(--color-pass-deep) 75%);
+  }
+  .book-cover-formula .book-cover-front {
+    background:
+      radial-gradient(120% 80% at 22% 0%, rgba(255, 255, 255, 0.22) 0%, transparent 55%),
+      linear-gradient(160deg, var(--color-warn) 0%, var(--color-warn-deep) 75%);
+  }
+  .book-cover-curriculum .book-cover-front {
+    background:
+      radial-gradient(120% 80% at 22% 0%, rgba(255, 255, 255, 0.14) 0%, transparent 55%),
+      linear-gradient(160deg, var(--color-ink-2) 0%, var(--color-ink) 75%);
+  }
+
+  .book-cover-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .book-cover-series {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    color: rgba(255, 255, 255, 0.72);
+  }
+  .book-cover-brand {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .book-cover-title {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 4px;
   }
-  .mock-ws-hero {
-    background: var(--color-ink);
-    color: var(--color-on-ink);
-    padding: 22px 16px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-  }
-  .mock-ws-title {
+  .book-cover-title-ko {
     font-family: var(--font-serif);
     font-weight: 400;
-    font-size: 24px;
-    line-height: 1.1;
+    font-size: 38px;
+    line-height: 1;
     letter-spacing: -0.02em;
     color: var(--color-on-ink);
+    word-break: keep-all;
   }
-  .mock-ws-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+  .book-cover-title-en {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.66);
   }
-  .mock-ws-card {
-    background: var(--color-canvas-pure);
-    border: 1px solid var(--color-hairline-soft);
-    border-radius: 6px;
-    padding: 12px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 0;
-  }
-  .mock-ws-card.disabled {
-    opacity: 1;
-  }
-  .mock-ws-card-title {
-    font-family: var(--font-sans);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--color-ink);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .mock-ws-card.disabled .mock-ws-card-title {
-    color: var(--color-ink-4);
-  }
-  .mock-ws-card-desc {
-    font-family: var(--font-sans);
-    font-size: 10.5px;
-    line-height: 1.45;
-    color: var(--color-ink-2);
-  }
-  .mock-ws-card.disabled .mock-ws-card-desc {
-    color: var(--color-ink-3);
-  }
-  .mock-ws-card-bullets {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+
+  .book-cover-bottom {
     display: flex;
     flex-direction: column;
     gap: 2px;
   }
-  .mock-ws-card-bullets li {
-    font-family: var(--font-sans);
-    font-size: 10px;
-    color: var(--color-ink-3);
+  .book-cover-glyph {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 44px;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: rgba(255, 255, 255, 0.88);
   }
-  .mock-ws-card-bullets li::before {
-    content: "·  ";
-    color: var(--color-ink-4);
-  }
-  .mock-ws-card.disabled .mock-ws-card-bullets li {
-    color: var(--color-ink-4);
-  }
-  .mock-ws-card-btn {
-    margin-top: auto;
-    align-self: flex-start;
-    background: var(--color-primary);
-    color: var(--color-on-ink);
-    font-family: var(--font-sans);
-    font-size: 10.5px;
-    font-weight: 500;
-    padding: 5px 12px;
-    border-radius: 9999px;
-  }
-  .mock-ws-card-btn.disabled {
-    background: var(--color-canvas-2);
-    color: var(--color-ink-4);
-  }
-
-  /* S1 — Grade radio (3-up cards with label + desc) */
-  .mock-grade-screen {
-    display: flex;
-    flex-direction: column;
-  }
-  .mock-grade-row-radio {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-  }
-  .mock-grade-radio {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 14px;
-    border: 1px solid var(--color-hairline);
-    border-radius: 8px;
-    background: var(--color-canvas-pure);
-    min-width: 0;
-  }
-  .mock-grade-radio.active {
-    background: var(--color-soft-cloud);
-    border: 2px solid var(--color-ink);
-    padding: 11px 13px;
-  }
-  .mock-radio-text {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 0;
-    flex: 1;
-  }
-  .mock-radio-main {
-    font-family: var(--font-sans);
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1.2;
-    color: var(--color-ink);
-  }
-  .mock-radio-desc {
-    font-family: var(--font-sans);
-    font-size: 11px;
+  .book-cover-meta {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
     font-weight: 400;
-    line-height: 1.45;
-    color: var(--color-ink-3);
-    word-break: keep-all;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.7);
   }
 
-  /* S2 — Topic (filter chips + 2x2 grid) */
-  .mock-topic-screen {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  @media (max-width: 980px) {
+    .book-cover-front {
+      padding: 16px 12px 16px 22px;
+    }
+    .book-cover-title-ko {
+      font-size: 28px;
+    }
+    .book-cover-title-en {
+      font-size: 8.5px;
+      letter-spacing: 0.14em;
+    }
+    .book-cover-glyph {
+      font-size: 30px;
+    }
+    .book-cover-brand {
+      font-size: 10px;
+    }
   }
-  .mock-filter-row-chip {
-    display: flex;
-    gap: 5px;
-    flex-wrap: wrap;
-  }
-  .mock-filter-chip-pill {
-    font-family: var(--font-sans);
-    font-size: 10.5px;
-    font-weight: 500;
-    padding: 4px 10px;
-    border-radius: 9999px;
-    border: 1px solid var(--color-hairline);
-    background: var(--color-canvas-pure);
-    color: var(--color-ink);
-  }
-  .mock-filter-chip-pill.active {
-    background: var(--color-ink);
-    color: var(--color-on-ink);
-    border-color: var(--color-ink);
-  }
-  .mock-topic-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-  }
-  .mock-topic-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    border: 1px solid var(--color-hairline);
-    border-radius: 8px;
-    background: var(--color-canvas-pure);
-    min-width: 0;
-  }
-  .mock-topic-card.active {
-    background: var(--color-soft-cloud);
-    border: 2px solid var(--color-ink);
-    padding: 13px 15px;
-  }
-  .mock-topic-name {
-    font-family: var(--font-sans);
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1.3;
-    color: var(--color-ink);
-    flex: 1;
-    min-width: 0;
+  @media (max-width: 600px) {
+    .book-cover-front {
+      padding: 10px 8px 10px 16px;
+    }
+    .book-cover-top {
+      display: none;
+    }
+    .book-cover-title-ko {
+      font-size: 18px;
+    }
+    .book-cover-title-en {
+      font-size: 7px;
+      letter-spacing: 0.10em;
+    }
+    .book-cover-glyph {
+      font-size: 18px;
+    }
+    .book-cover-meta {
+      display: none;
+    }
   }
 
-  /* S4 — Verify wrapper for sub-nav */
-  .mock-verify-wrap {
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Step 2 — Intent (mode + dimensions) */
-  .mock-intent {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .mock-mode-row {
-    display: flex;
-    gap: 8px;
-  }
-  .mock-mode-card {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
-    border: 1px solid var(--color-hairline);
-    border-radius: 8px;
-    background: var(--color-canvas-pure);
-  }
-  .mock-mode-card.active {
-    background: var(--color-soft-cloud);
-    border: 2px solid var(--color-ink);
-    padding: 9px 11px;
-  }
-  .mock-mode-card .dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 9999px;
-    border: 2px solid var(--color-ink);
-    background:
-      radial-gradient(circle, var(--color-ink) 40%, transparent 42%);
-    flex-shrink: 0;
-  }
-  .mock-mode-card .dot.empty {
-    background: none;
-    border-color: var(--color-hairline);
-  }
-  .mock-mode-label {
-    font-family: var(--font-sans);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--color-ink);
-    flex: 1;
-    min-width: 0;
-  }
-  .mock-badge {
-    flex-shrink: 0;
-    font-family: var(--font-sans);
-    font-size: 10.5px;
-    font-weight: 500;
-    padding: 3px 8px;
-    border-radius: 9999px;
-  }
-  .mock-badge.pass {
-    background: var(--color-pass-100);
-    color: var(--color-pass-deep);
-  }
-  .mock-badge.concept {
-    background: var(--color-concept-100);
-    color: var(--color-concept-deep);
-  }
-  .mock-badge.warn {
-    background: var(--color-warn-100);
-    color: var(--color-warn-deep);
-  }
-  .mock-dim-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  .mock-dim-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 7px 12px;
-    border: 1px solid var(--color-hairline);
-    border-radius: 8px;
-    background: var(--color-canvas-pure);
-  }
-  .mock-dim-row.active {
-    background: var(--color-soft-cloud);
-    border: 2px solid var(--color-ink);
-    padding: 6px 11px;
-  }
-  .mock-check {
-    width: 14px;
-    height: 14px;
-    border-radius: 4px;
-    border: 2px solid var(--color-hairline);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 9px;
-    font-weight: 600;
-    color: var(--color-on-ink);
-    flex-shrink: 0;
-  }
-  .mock-dim-row.active .mock-check {
-    background: var(--color-ink);
-    border-color: var(--color-ink);
-  }
-  .mock-dim-key {
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    color: var(--color-ink-3);
-    flex-shrink: 0;
-  }
-  .mock-dim-row.active .mock-dim-key {
-    color: var(--color-ink);
-  }
-  .mock-dim-text {
-    font-family: var(--font-sans);
-    font-size: 12.5px;
-    color: var(--color-ink);
-    flex: 1;
-    min-width: 0;
-  }
-
-  /* Step 3 — Verify (6 steps) — fixed grid for clean per-row alignment */
-  .mock-verify {
-    display: flex;
-    flex-direction: column;
-    border-top: 1px solid var(--color-hairline-soft);
-  }
-  .mock-step-row {
-    display: grid;
-    grid-template-columns: 36px 1fr 110px 22px;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--color-hairline-soft);
-    border-left: 3px solid transparent;
-    min-height: 34px;
-  }
-  .mock-step-row.active {
-    border-left-color: var(--color-ink);
-  }
-  .mock-step-idx {
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    color: var(--color-ink-3);
-    letter-spacing: 0.04em;
-    text-align: center;
-  }
-  .mock-step-name {
-    font-family: var(--font-sans);
-    font-size: 12.5px;
-    font-weight: 500;
-    color: var(--color-ink);
-    min-width: 0;
-    text-align: left;
-  }
-  .mock-step-row.pending .mock-step-name,
-  .mock-step-row.pending .mock-step-idx {
-    color: var(--color-ink-4);
-  }
-  .mock-step-sum {
-    font-family: var(--font-sans);
-    font-size: 11px;
-    color: var(--color-ink-3);
-    text-align: right;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .mock-step-row.pass .mock-step-sum {
-    color: var(--color-pass-deep);
-  }
-  .mock-step-icon {
-    width: 18px;
-    height: 18px;
-    border-radius: 9999px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--color-ink-4);
-    justify-self: center;
-  }
-  .mock-step-row.pass .mock-step-icon {
-    background: var(--color-pass-100);
-    color: var(--color-pass-deep);
-  }
-  .mock-step-row.active .mock-step-icon {
-    border: 2px solid var(--color-hairline);
-    border-top-color: var(--color-ink);
-    animation: spinner-rotate 800ms linear infinite;
-  }
-
-  /* Bottom bar — step dots navigation */
-  .tablet-bottombar {
-    height: 48px;
-    padding: 0 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 18px;
-    border-top: 1px solid var(--color-hairline-soft);
-    flex-shrink: 0;
-  }
-  .tablet-nav-arrow {
-    font-family: var(--font-sans);
-    font-size: 18px;
-    color: var(--color-ink-3);
-    line-height: 1;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 4px 10px;
-    border-radius: 9999px;
-    transition: color 150ms ease, background-color 150ms ease;
-  }
-  .tablet-nav-arrow:hover {
-    color: var(--color-ink);
-    background: var(--color-canvas-2);
-  }
-  .tablet-nav-arrow:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-  }
-  .tablet-dots {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .tablet-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 9999px;
-    background: var(--color-hairline);
-    transition: background-color 300ms ease, width 300ms ease;
-  }
-  .tablet-dot.active {
-    width: 20px;
-    background: var(--color-ink);
-  }
-
-  /* Home indicator */
-  .tablet-home-indicator {
+  /* ─────────────────────────────────────────────────────────────
+   * Floating math tokens (DESIGN.md {component.floating-token}).
+   *   `translate` (개별 프로퍼티) 로 mouse parallax,
+   *   `transform` 로 idle drift — 두 transform 채널이 cascade 로 합쳐진다.
+   *   depth (0.3~0.8) 별로 parallax 폭 차등 (DESIGN.md L671: -40px ~ -24px).
+   * ──────────────────────────────────────────────────────────── */
+  .floating-tokens {
     position: absolute;
-    bottom: 6px;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .floating-token {
+    position: absolute;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 300;
+    font-size: 22px;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    color: rgba(96, 165, 250, 0.55);
+    white-space: nowrap;
+    user-select: none;
+    animation: token-drift 9s ease-in-out infinite both;
+    translate:
+      calc(var(--mouse-x, 0) * -40px * var(--depth, 0.5))
+      calc(var(--mouse-y, 0) * -24px * var(--depth, 0.5));
+    transition: translate 360ms ease-out;
+  }
+  .floating-token.is-mono {
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: rgba(113, 113, 122, 0.55);
+  }
+  @keyframes token-drift {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  /* SCREENS.md L48 — mobile (<600px) 에선 6 → 3 개로 축소 */
+  @media (max-width: 600px) {
+    .floating-token:nth-child(n + 4) {
+      display: none;
+    }
+    .floating-token {
+      font-size: 16px;
+    }
+    .floating-token.is-mono {
+      font-size: 9.5px;
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────
+   * Hint pill — "마우스를 올리면 표지가 펼쳐집니다".
+   * SCREENS.md L49 + DESIGN.md {component.hint-pill}. paper bg + mono.
+   * book-stage 진입 시 is-faded 로 fade out (240ms).
+   * ──────────────────────────────────────────────────────────── */
+  .book-stage-hint {
+    position: absolute;
+    bottom: 18px;
     left: 50%;
     transform: translateX(-50%);
-    width: 120px;
-    height: 4px;
+    background: rgba(251, 248, 241, 0.85);
+    color: var(--color-ink-3);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+    border: 1px solid var(--color-rule);
+    border-radius: var(--radius-pill);
+    padding: 7px 14px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 280ms ease;
+    z-index: 4;
+    white-space: nowrap;
+  }
+  .book-stage-hint.is-faded {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .book-stage-hint-dot {
+    width: 5px;
+    height: 5px;
     border-radius: 9999px;
-    background: var(--color-ink);
-    opacity: 0.85;
+    background: var(--color-primary-soft);
+    box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.18);
+  }
+  @media (max-width: 600px) {
+    .book-stage-hint {
+      bottom: 6px;
+      font-size: 9.5px;
+      padding: 5px 10px;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -2788,15 +2492,24 @@
     .filter-chip,
     .sub-nav .crumb,
     .spinner-dot,
-    .tablet-step,
-    .tablet-dot,
-    .mock-step-row.active .mock-step-icon {
+    .book-cover,
+    .book-cover-front,
+    .floating-token,
+    .book-stage-hint {
       transition: none !important;
       animation: none !important;
     }
     .spinner-dot {
       border-top-color: var(--color-ink-3);
       opacity: 0.6;
+    }
+    .book-cover,
+    .floating-token {
+      translate: 0 0 !important;
+    }
+    .book-cover:hover .book-cover-front,
+    .book-cover:focus-visible .book-cover-front {
+      transform: rotateY(0) !important;
     }
   }
 }

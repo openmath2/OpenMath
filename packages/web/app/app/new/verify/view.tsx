@@ -19,6 +19,7 @@ type Props = {
   topic: Topic | null;
   mode: "structural" | "conceptual" | null;
   dims: string[];
+  sourceProblemText: string;
 };
 
 const STATUS_ICON: Record<Step["status"], string> = {
@@ -88,7 +89,13 @@ function stateLabel(status: Step["status"]): string {
   }
 }
 
-export function VerifyView({ grade, topic, mode, dims }: Props) {
+function sourceQuery(sourceProblemText: string): string {
+  return sourceProblemText.length > 0
+    ? `&source=${encodeURIComponent(sourceProblemText)}`
+    : "";
+}
+
+export function VerifyView({ grade, topic, mode, dims, sourceProblemText }: Props) {
   const valid =
     grade !== null && topic !== null && mode !== null && dims.length > 0;
 
@@ -96,8 +103,8 @@ export function VerifyView({ grade, topic, mode, dims }: Props) {
     if (!valid || grade === null || topic === null || mode === null) {
       return null;
     }
-    return { grade, topic: topic.code, mode, dims };
-  }, [valid, grade, topic, mode, dims]);
+    return { grade, topic: topic.code, mode, dims, sourceProblemText };
+  }, [valid, grade, topic, mode, dims, sourceProblemText]);
 
   /* hook 은 input 이 null 이면 stream 을 시작하지 않는다. invalid 가드. */
   const stream = useVerificationStream(input);
@@ -241,7 +248,7 @@ export function VerifyView({ grade, topic, mode, dims }: Props) {
           <div className="right">
             {isError || isCancelled ? (
               <Link
-                href={`/app/new/verify?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}`}
+                href={`/app/new/verify?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}${sourceQuery(sourceProblemText)}`}
                 className="btn btn-primary"
                 prefetch={false}
                 replace
@@ -251,7 +258,7 @@ export function VerifyView({ grade, topic, mode, dims }: Props) {
               </Link>
             ) : isDone ? (
               <Link
-                href={`/app/new/result?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}`}
+                href={`/app/new/result?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}${sourceQuery(sourceProblemText)}`}
                 className="btn btn-primary"
               >
                 <span>결과 보기</span>

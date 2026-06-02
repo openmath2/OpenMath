@@ -14,28 +14,28 @@ const columns: FooterColumn[] = [
   {
     title: "소개",
     links: [
-      { label: "OpenMath 이란", href: "#about" },
-      { label: "동형의 정의", href: "#isomorphism" },
-      { label: "검증 6단계", href: "#verification" },
-      { label: "변경 이력", href: "#changelog" },
+      { label: "OpenMath 홈", href: "/" },
+      { label: "검증 예시", href: "/samples" },
+      { label: "문제 생성", href: "/app" },
+      { label: "학년 선택", href: "/app/new/grade" },
     ],
   },
   {
     title: "도움말",
     links: [
-      { label: "자주 묻는 질문", href: "#faq" },
-      { label: "사용 가이드", href: "#guide" },
-      { label: "키보드 단축키", href: "#shortcuts" },
-      { label: "접근성", href: "#a11y" },
+      { label: "워크스페이스", href: "/app" },
+      { label: "샘플 문항", href: "/samples" },
+      { label: "로그인", href: "/login" },
+      { label: "PDF 출력", href: "/app/new/export" },
     ],
   },
   {
     title: "피드백",
     links: [
       { label: "이메일", href: "mailto:openmath@capstone.kr" },
-      { label: "사용성 설문", href: "#survey" },
-      { label: "이슈 트래커", href: "#issues" },
-      { label: "강사 인터뷰 신청", href: "#interview" },
+      { label: "데모 시작", href: "/app/new/grade" },
+      { label: "결과 화면", href: "/app/new/result" },
+      { label: "홈으로", href: "/" },
     ],
   },
 ];

@@ -14,6 +14,7 @@ type Props = {
     topic?: string | string[];
     mode?: string | string[];
     dims?: string | string[];
+    source?: string | string[];
   };
 };
 
@@ -37,6 +38,7 @@ export default function ResultPage({ searchParams }: Props) {
   const topic = findTopic(pickFirst(searchParams.topic));
   const mode = parseMode(pickFirst(searchParams.mode));
   const dims = parseDims(pickFirst(searchParams.dims));
+  const sourceProblemText = pickFirst(searchParams.source) ?? "";
 
   const problems =
     topic !== null && mode !== null
@@ -49,6 +51,7 @@ export default function ResultPage({ searchParams }: Props) {
       topic={topic}
       mode={mode}
       dims={dims}
+      sourceProblemText={sourceProblemText}
       problems={problems}
     />
   );

@@ -3,18 +3,24 @@
 
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
+import { streamSSE } from "hono/streaming";
 
 import { GenerateRequestSchema } from "../../schemas/index.js";
-import type { VerificationWorkflowDeps } from "../../workflows/verification-workflow.js";
+import { pipeProgressToSse } from "../sse/progress-stream.js";
+import type { RunOptions, VerificationWorkflowDeps } from "../../workflows/verification-workflow.js";
+import { runVerificationWorkflow } from "../../workflows/verification-workflow.js";
 
-export function createGenerateRoute(_deps: VerificationWorkflowDeps): Hono {
+export function createGenerateRoute(deps: VerificationWorkflowDeps, options?: RunOptions): Hono {
   const app = new Hono();
 
   app.post(
     "/api/generate",
     zValidator("json", GenerateRequestSchema),
-    () => {
-      throw new Error("POST /api/generate: not implemented yet");
+    (c) => {
+      const request = c.req.valid("json");
+      return streamSSE(c, async (stream) => {
+        await pipeProgressToSse(stream, runVerificationWorkflow(deps, request, options));
+      });
     },
   );
 

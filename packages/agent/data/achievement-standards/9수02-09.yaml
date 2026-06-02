@@ -1,0 +1,31 @@
+code: 9수02-09
+title: 이차방정식을 풀 수 있다
+school_level: middle
+grade: 3
+techniques:
+  required_at_least_one_of:
+    - factorization
+    - root_relation
+  forbidden:
+    - calculus
+evaluation_dimensions:
+  - id: A
+    description: 이차식을 인수분해하여 해를 구한다
+    must_preserve: true
+  - id: B
+    description: 해를 원래 식에 대입해 검산한다
+    must_preserve: true
+difficulty_range:
+  - easy
+  - medium
+problem_types_supported:
+  - short_answer
+  - objective
+structural_transforms:
+  - kind: coefficient_swap
+    range: [-12, 12]
+    exclude_zero: true
+  - kind: sign_flip
+conceptual_transforms:
+  - kind: present_via_root_relations
+    hint: 두 근의 합과 곱 조건으로 다시 제시

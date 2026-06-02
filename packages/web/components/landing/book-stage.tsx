@@ -1,66 +1,108 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { BrandMark } from "./brand-mark";
+import { useEffect, useRef, useState } from "react";
 
 /* ─────────────────────────────────────────────────────────────
- * Tablet (iPad) showcase — OpenMath 사용법 4단계 walkthrough.
- * 단일 column 레이아웃으로 overflow 해결. 각 단계마다 step 표시 +
- * 타이틀 + 짧은 설명 + 미니 UI 목업 (학년 / 의도 / 검증 / 결과).
- * 5초마다 fade-in 으로 자동 전환.
+ * Book stack — landing hero 시그니처.
+ * SCREENS.md L47-49 / MOCKUPS.md L54-65 / DESIGN.md {component.book-cover}.
+ *
+ * 4권 시리즈 (동형 · 검증 · 수식 · 교육과정) 가 perspective 1800px 안에서
+ * rotateX(28°) 로 살짝 뒤로 기울어 책장에 진열된 모습. 표지마다 다른
+ * 그라데이션 (blue / green / orange / zinc) 으로 OpenMath 의 4개 가치 축을
+ * 시각화. 표지에 마우스를 올리면 좌측 spine 을 축으로 168° 펼쳐지며
+ * 안쪽 페이지 (예시 수식) 가 드러난다.
+ *
+ * 떠다니는 수식 토큰 (∑ⁿₖ₌₁ k² 등) 6개가 책 주변에 흩어져 있고,
+ * 스테이지 내부 마우스 위치 (CSS var --mouse-x/y 0 ~ ±0.5) 에 따라
+ * 토큰들이 data-depth 차등으로 parallax 이동한다.
+ *
+ * prefers-reduced-motion: reduce 시 mouse parallax + idle drift + flip
+ * 전부 무력화 (CSS 측 @media + JS 측 effect 단축).
  * ──────────────────────────────────────────────────────────── */
 
-type StepKind = "workspace" | "grade" | "topic" | "intent" | "verify";
+type BookKind = "isomorphic" | "verify" | "formula" | "curriculum";
 
-type Step = {
-  number: number;
-  label: string;
-  title: string;
-  desc: string;
-  kind: StepKind;
+type Book = {
+  kind: BookKind;
+  series: string;
+  titleKo: string;
+  titleEn: string;
+  glyph: string;
+  meta: string;
+  innerFormula: string;
+  innerCaption: string;
+  ariaLabel: string;
 };
 
-const STEPS: Step[] = [
+const BOOKS: readonly Book[] = [
   {
-    number: 1,
-    label: "워크스페이스",
-    title: "검증된 문제 한 세트",
-    desc: "학년 → 단원 → 의도 → 검증 → PDF. 다섯 단계 동형 출제.",
-    kind: "workspace",
+    kind: "isomorphic",
+    series: "VOL. 01",
+    titleKo: "동형",
+    titleEn: "Isomorphism",
+    glyph: "≅",
+    meta: "structural · conceptual",
+    innerFormula: "(x − 2)(x + 5)",
+    innerCaption: "same approach · different surface",
+    ariaLabel: "동형 — 구조 동형과 개념 동형의 두 모드",
   },
   {
-    number: 2,
-    label: "학년 선택",
-    title: "어느 학년인가요?",
-    desc: "이번 출제의 대상 학년을 고르세요.",
-    kind: "grade",
-  },
-  {
-    number: 3,
-    label: "단원 선택",
-    title: "어느 단원인가요?",
-    desc: "2022 개정 교육과정의 성취기준 단위로 정렬.",
-    kind: "topic",
-  },
-  {
-    number: 4,
-    label: "의도 확인",
-    title: "어떻게 출제할까요?",
-    desc: "동형 모드와 보존할 평가 차원을 선택합니다.",
-    kind: "intent",
-  },
-  {
-    number: 5,
-    label: "검증 진행",
-    title: "검증하고 있습니다",
-    desc: "생성과 검증을 6 단계로 진행합니다. 보통 5 ~ 30 초.",
     kind: "verify",
+    series: "VOL. 02",
+    titleKo: "검증",
+    titleEn: "Verification",
+    glyph: "✓",
+    meta: "SymPy · 6 gates",
+    innerFormula: "sympy.solve(eq, x)",
+    innerCaption: "deterministic gate",
+    ariaLabel: "검증 — SymPy 결정론 6단계 검증",
+  },
+  {
+    kind: "formula",
+    series: "VOL. 03",
+    titleKo: "수식",
+    titleEn: "Symbolic",
+    glyph: "∫",
+    meta: "LaTeX · KaTeX",
+    innerFormula: "∫ x² dx",
+    innerCaption: "rendered with KaTeX",
+    ariaLabel: "수식 — LaTeX 기반 수식 처리와 출력",
+  },
+  {
+    kind: "curriculum",
+    series: "VOL. 04",
+    titleKo: "교육과정",
+    titleEn: "Curriculum",
+    glyph: "敎",
+    meta: "2022 개정 · 중1–중3",
+    innerFormula: "9수04-12",
+    innerCaption: "achievement standards",
+    ariaLabel: "교육과정 — 2022 개정 중학 수학 전 단원",
   },
 ];
 
+type FloatingToken = {
+  text: string;
+  depth: number;
+  top: string;
+  left: string;
+  variant: "glyph" | "mono";
+};
+
+/* 6개 (desktop) — `floating-token:nth-child(n+4)` CSS 가 mobile 에서 3개로 축소 */
+const TOKENS: readonly FloatingToken[] = [
+  { text: "∑ⁿₖ₌₁ k²", depth: 0.8, top: "10%", left: "6%", variant: "glyph" },
+  { text: "√(b² − 4ac)", depth: 0.5, top: "76%", left: "78%", variant: "glyph" },
+  { text: "π", depth: 0.7, top: "22%", left: "90%", variant: "glyph" },
+  { text: "y = mx + b", depth: 0.4, top: "84%", left: "5%", variant: "glyph" },
+  { text: "sympy.simplify(...)", depth: 0.35, top: "45%", left: "2%", variant: "mono" },
+  { text: "verified ✓", depth: 0.6, top: "58%", left: "88%", variant: "mono" },
+];
+
 export function BookStage() {
-  const [stepIdx, setStepIdx] = useState(0);
+  const stageRef = useRef<HTMLDivElement | null>(null);
   const [reduceMotion, setReduceMotion] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -70,288 +112,98 @@ export function BookStage() {
     return () => mq.removeEventListener("change", handler);
   }, []);
 
-  /* setStepIdx 의 functional updater 만 사용하므로 stepIdx 를 deps 에 넣을
-   * 필요가 없다. 넣으면 step 전환마다 timer 가 재생성되어 주기가 어긋난다.
+  /* 마우스 parallax — stage 내부 위치를 normalize (-0.5..0.5) 해서 CSS var 로 publish.
+   * 책 (×12px) + 토큰 (×depth × -40px) 이 동일 var 를 받아 차등 반응.
+   * reduced-motion 시 effect 자체를 등록하지 않음.
    */
   useEffect(() => {
     if (reduceMotion) return;
-    const id = window.setInterval(() => {
-      setStepIdx((i) => (i + 1) % STEPS.length);
-    }, 5000);
-    return () => window.clearInterval(id);
+    const node = stageRef.current;
+    if (!node) return;
+    const handleMove = (e: MouseEvent): void => {
+      const rect = node.getBoundingClientRect();
+      const nx = (e.clientX - rect.left) / rect.width - 0.5;
+      const ny = (e.clientY - rect.top) / rect.height - 0.5;
+      node.style.setProperty("--mouse-x", nx.toFixed(3));
+      node.style.setProperty("--mouse-y", ny.toFixed(3));
+    };
+    const handleLeave = (): void => {
+      node.style.setProperty("--mouse-x", "0");
+      node.style.setProperty("--mouse-y", "0");
+    };
+    window.addEventListener("mousemove", handleMove, { passive: true });
+    node.addEventListener("mouseleave", handleLeave);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      node.removeEventListener("mouseleave", handleLeave);
+    };
   }, [reduceMotion]);
 
-  const goNext = (): void => setStepIdx((i) => (i + 1) % STEPS.length);
-  const goPrev = (): void =>
-    setStepIdx((i) => (i - 1 + STEPS.length) % STEPS.length);
-
-  const step = STEPS[stepIdx] ?? STEPS[0]!;
-
   return (
-    <div className="book-stage">
-      <div className="tablet-frame">
-        <div className="tablet-screen">
-          {/* Status bar */}
-          <div className="tablet-statusbar">
-            <span>9:30 AM · 5월 20일</span>
-            <span className="tablet-statusbar-right">
-              <span>100%</span>
-              <span className="tablet-battery" aria-hidden="true" />
-            </span>
-          </div>
+    <div
+      ref={stageRef}
+      className={"book-stage" + (reduceMotion ? " is-reduced-motion" : "")}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div className="floating-tokens" aria-hidden="true">
+        {TOKENS.map((t, i) => (
+          <span
+            key={t.text}
+            className={"floating-token" + (t.variant === "mono" ? " is-mono" : "")}
+            style={{
+              top: t.top,
+              left: t.left,
+              ["--depth" as string]: t.depth,
+              animationDelay: `${(i * 0.7).toFixed(2)}s`,
+            }}
+          >
+            {t.text}
+          </span>
+        ))}
+      </div>
 
-          {/* App nav — brand left, CTA right */}
-          <div className="tablet-appnav">
-            <div className="tablet-brand">
-              <BrandMark />
-              <span>OpenMath</span>
+      <div className="book-stack">
+        {BOOKS.map((book, idx) => (
+          <article
+            key={book.kind}
+            className={`book-cover book-cover-${book.kind}`}
+            role="img"
+            aria-label={book.ariaLabel}
+            style={{ animationDelay: `${(idx * 0.35).toFixed(2)}s` }}
+          >
+            <div className="book-cover-page" aria-hidden="true">
+              <span className="book-cover-page-formula">{book.innerFormula}</span>
+              <span className="book-cover-page-caption">{book.innerCaption}</span>
             </div>
-            <button
-              type="button"
-              className="tablet-cta-btn"
-              onClick={goNext}
-              aria-label="다음 단계로"
-            >
-              <span>문제 생성하기</span>
-              <span aria-hidden="true">→</span>
-            </button>
-          </div>
 
-          {/* Body — single column step walkthrough */}
-          <div className="tablet-body">
-            <div className="tablet-step" key={stepIdx}>
-              <div className="tablet-step-head">
-                <span className="tablet-step-label">{step.label}</span>
-                <span className="tablet-step-count">
-                  <strong>{step.number}</strong>
-                  <span>{" "}/ {STEPS.length}</span>
+            <div className="book-cover-front">
+              <span className="book-cover-paper" aria-hidden="true" />
+              <header className="book-cover-top">
+                <span className="book-cover-series">{book.series}</span>
+                <span className="book-cover-brand">OpenMath</span>
+              </header>
+              <div className="book-cover-title">
+                <span className="book-cover-title-ko">{book.titleKo}</span>
+                <span className="book-cover-title-en">{book.titleEn}</span>
+              </div>
+              <footer className="book-cover-bottom">
+                <span className="book-cover-glyph" aria-hidden="true">
+                  {book.glyph}
                 </span>
-              </div>
-              <h4 className="tablet-step-title">{step.title}</h4>
-              <p className="tablet-step-desc">{step.desc}</p>
-              <div className="tablet-step-visual">
-                {step.kind === "workspace" ? <MockWorkspace /> : null}
-                {step.kind === "grade" ? <MockGrade /> : null}
-                {step.kind === "topic" ? <MockTopic /> : null}
-                {step.kind === "intent" ? <MockIntent /> : null}
-                {step.kind === "verify" ? <MockVerify /> : null}
-              </div>
+                <span className="book-cover-meta">{book.meta}</span>
+              </footer>
             </div>
-          </div>
-
-          {/* Bottom bar — step indicator dots + interactive arrows */}
-          <div className="tablet-bottombar">
-            <button
-              type="button"
-              className="tablet-nav-arrow"
-              onClick={goPrev}
-              aria-label="이전 단계"
-            >
-              ←
-            </button>
-            <div className="tablet-dots">
-              {STEPS.map((_, i) => (
-                <span
-                  key={i}
-                  className={"tablet-dot" + (i === stepIdx ? " active" : "")}
-                />
-              ))}
-            </div>
-            <button
-              type="button"
-              className="tablet-nav-arrow"
-              onClick={goNext}
-              aria-label="다음 단계"
-            >
-              →
-            </button>
-          </div>
-
-          {/* Home indicator */}
-          <div className="tablet-home-indicator" aria-hidden="true" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ───────── Step visuals ───────── */
-
-/* S0 — Workspace */
-function MockWorkspace() {
-  return (
-    <div className="mock-ws">
-      <div className="mock-ws-hero">
-        <span className="mock-ws-title">검증된 문제 한 세트.</span>
-      </div>
-      <div className="mock-ws-grid">
-        <div className="mock-ws-card">
-          <span className="mock-ws-card-title">새 문제 만들기</span>
-          <span className="mock-ws-card-desc">
-            학년 · 단원 · 평가 차원을 골라 동형 문제를 만듭니다.
-          </span>
-          <ul className="mock-ws-card-bullets">
-            <li>5 ~ 30 초 출제</li>
-            <li>SymPy 산술 검증</li>
-            <li>A4 PDF 다운로드</li>
-          </ul>
-          <span className="mock-ws-card-btn">시작하기 →</span>
-        </div>
-        <div className="mock-ws-card disabled">
-          <span className="mock-ws-card-title">이 문제처럼</span>
-          <span className="mock-ws-card-desc">
-            기존 문제 이미지에서 동형을 추출합니다.
-          </span>
-          <ul className="mock-ws-card-bullets">
-            <li>OCR 이미지 입력</li>
-            <li>LaTeX 자동 추출</li>
-            <li>같은 평가 차원 보존</li>
-          </ul>
-          <span className="mock-ws-card-btn disabled">준비 중</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* S1 — Grade selection */
-function MockGrade() {
-  return (
-    <div className="mock-grade-screen">
-      <div className="mock-subnav">
-        <span>← 워크스페이스 / 새 문제 만들기</span>
-        <span className="mock-subnav-count">(1/4)</span>
-      </div>
-      <div className="mock-grade-row-radio">
-        {[
-          { lbl: "중1", desc: "수와 연산 · 일차방정식", on: false },
-          { lbl: "중2", desc: "식의 계산 · 일차함수", on: false },
-          { lbl: "중3", desc: "제곱근 · 이차방정식", on: true },
-        ].map((g) => (
-          <span
-            key={g.lbl}
-            className={"mock-grade-radio" + (g.on ? " active" : "")}
-          >
-            <span className="mock-radio-dot" />
-            <span className="mock-radio-text">
-              <span className="mock-radio-main">{g.lbl}</span>
-              <span className="mock-radio-desc">{g.desc}</span>
-            </span>
-          </span>
+          </article>
         ))}
       </div>
-    </div>
-  );
-}
 
-/* S2 — Topic selection */
-function MockTopic() {
-  return (
-    <div className="mock-topic-screen">
-      <div className="mock-subnav">
-        <span>← 학년 선택 · 중3</span>
-        <span className="mock-subnav-count">(2/4)</span>
-      </div>
-      <div className="mock-filter-row-chip">
-        {["전체", "수와 연산", "문자와 식", "함수", "기하"].map((f, i) => (
-          <span
-            key={f}
-            className={"mock-filter-chip-pill" + (i === 0 ? " active" : "")}
-          >
-            {f}
-          </span>
-        ))}
-      </div>
-      <div className="mock-topic-grid">
-        {[
-          { name: "제곱근과 실수", on: false },
-          { name: "이차방정식", on: true },
-          { name: "이차함수와 그래프", on: false },
-          { name: "삼각비", on: false },
-        ].map((t) => (
-          <span
-            key={t.name}
-            className={"mock-topic-card" + (t.on ? " active" : "")}
-          >
-            <span className="mock-radio-dot" />
-            <span className="mock-topic-name">{t.name}</span>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* S3 — Intent (동형 모드 + 평가 차원) */
-function MockIntent() {
-  return (
-    <div className="mock-intent">
-      <div className="mock-subnav">
-        <span>← 단원 선택 · 이차방정식</span>
-        <span className="mock-subnav-count">(3/4) 의도 확인</span>
-      </div>
-      <div className="mock-mode-row">
-        <span className="mock-mode-card active">
-          <span className="mock-radio-dot" />
-          <span className="mock-mode-label">구조 동형</span>
-          <span className="mock-badge pass">✓ 구조</span>
-        </span>
-        <span className="mock-mode-card">
-          <span className="mock-radio-dot empty" />
-          <span className="mock-mode-label">개념 동형</span>
-          <span className="mock-badge concept">✦ 개념</span>
-        </span>
-      </div>
-      <div className="mock-dim-list">
-        {[
-          { k: "A", text: "인수분해 또는 근의 공식 사용", on: true },
-          { k: "B", text: "판별식으로 해의 종류 해석", on: true },
-          { k: "C", text: "구한 해를 원식에 대입 검증", on: false },
-        ].map((d) => (
-          <span
-            key={d.k}
-            className={"mock-dim-row" + (d.on ? " active" : "")}
-          >
-            <span className="mock-check">{d.on ? "✓" : ""}</span>
-            <span className="mock-dim-key">[{d.k}]</span>
-            <span className="mock-dim-text">{d.text}</span>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* S4 — Verify (검증 6 단계) */
-function MockVerify() {
-  const steps = [
-    { idx: "1/6", name: "RAG 검색", state: "pass", sum: "12개 참조" },
-    { idx: "2/6", name: "의도 추출", state: "pass", sum: "학습 목표 · 제약" },
-    { idx: "3/6", name: "문제 생성", state: "active", sum: "진행 중…" },
-    { idx: "4/6", name: "산술 검증 (SymPy)", state: "pending", sum: "·" },
-    { idx: "5/6", name: "독립 재풀이", state: "pending", sum: "·" },
-    { idx: "6/6", name: "학습 목표 매핑", state: "pending", sum: "·" },
-  ];
-  return (
-    <div className="mock-verify-wrap">
-      <div className="mock-subnav">
-        <span>← 의도 확인 · 중3 · 이차방정식</span>
-        <span className="mock-subnav-count">(4/4) 검증 진행</span>
-      </div>
-      <div className="mock-verify">
-        {steps.map((s) => (
-          <span
-            key={s.idx}
-            className={"mock-step-row " + s.state}
-          >
-            <span className="mock-step-idx">{s.idx}</span>
-            <span className="mock-step-name">{s.name}</span>
-            <span className="mock-step-sum">{s.sum}</span>
-            <span className="mock-step-icon">
-              {s.state === "pass" ? "✓" : s.state === "active" ? "" : "·"}
-            </span>
-          </span>
-        ))}
+      <div
+        className={"book-stage-hint" + (hovered ? " is-faded" : "")}
+        aria-hidden={hovered ? "true" : "false"}
+      >
+        <span className="book-stage-hint-dot" aria-hidden="true" />
+        마우스를 올리면 표지가 펼쳐집니다
       </div>
     </div>
   );

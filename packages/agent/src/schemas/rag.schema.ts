@@ -34,6 +34,7 @@ export const RagQuerySchema = z.object({
   topic_name: z.string().optional(),
   difficulty: DifficultySchema.optional(),
   problem_type: ProblemTypeSchema.optional(),
+  source_problem_text: z.string().min(1).optional(),
 
   intent: IntentSchema.optional(),
 

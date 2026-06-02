@@ -56,11 +56,11 @@ export function LoginForm() {
           <span>로그인 유지</span>
         </label>
         <div className="auth-find-links">
-          <Link href="#find-id">아이디 찾기</Link>
+          <Link href="mailto:openmath@capstone.kr">아이디 찾기</Link>
           <span className="auth-find-sep" aria-hidden="true">
             ·
           </span>
-          <Link href="#forgot">비밀번호 찾기</Link>
+          <Link href="mailto:openmath@capstone.kr">비밀번호 찾기</Link>
         </div>
       </div>
 
