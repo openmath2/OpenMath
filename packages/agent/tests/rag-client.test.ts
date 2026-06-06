@@ -87,6 +87,97 @@ describe("createInMemoryRagClient", () => {
 
     expect(results).toHaveLength(0);
   });
+
+  it("matches app achievement code against corpus achievement_code", async () => {
+    const jsonlPath = await writeFixture([
+      canonicalRecord({
+        problem_id: "111:train:linear-equation",
+        school_level: "middle",
+        grade: 1,
+        topic_name: "일차방정식",
+        achievement_code: "9수02-03",
+        achievement_standard: "일차방정식을 풀 수 있다.",
+        question_text: "일차방정식 2x+3=7을 풀어라.",
+        answer_text: "2",
+        problem_type: "short_answer",
+        difficulty: "medium",
+        confidence: 1,
+      }),
+    ]);
+
+    const rag = createInMemoryRagClient({ jsonlPath });
+    const results = await rag.search({
+      school_level: "middle",
+      grade: 1,
+      topic_code: "9수02-03",
+      k: 3,
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.item_id).toBe("111:train:linear-equation");
+  });
+
+  it("rejects records whose mapped code matches but topic text contradicts the requested topic", async () => {
+    const jsonlPath = await writeFixture([
+      canonicalRecord({
+        problem_id: "111:train:bad-statistics-mapping",
+        school_level: "middle",
+        grade: 3,
+        topic_name: "분산과 표준편차",
+        achievement_code: "9수02-08",
+        achievement_standard: "다항식의 곱셈과 인수분해를 할 수 있다.",
+        question_text: "5개의 변량의 표준편차를 구하여라.",
+        answer_text: "2",
+        problem_type: "objective",
+        difficulty: "medium",
+        confidence: 1,
+      }),
+    ]);
+
+    const rag = createInMemoryRagClient({ jsonlPath });
+    const results = await rag.search({
+      school_level: "middle",
+      grade: 3,
+      topic_code: "9수02-08",
+      topic_name: "다항식의 곱셈과 인수분해",
+      problem_type: "objective",
+      difficulty: "medium",
+      k: 3,
+    });
+
+    expect(results).toHaveLength(0);
+  });
+
+  it("does not match a broader algebra factorization topic for prime factorization", async () => {
+    const jsonlPath = await writeFixture([
+      canonicalRecord({
+        problem_id: "111:train:algebra-factorization",
+        school_level: "middle",
+        grade: 1,
+        topic_name: "다항식의 인수분해",
+        achievement_code: "9수01-01",
+        achievement_standard: "자연수를 소인수분해 할 수 있다.",
+        question_text: "x^{2}-5x+6을 인수분해하여라.",
+        answer_text: "(x-2)(x-3)",
+        problem_type: "objective",
+        difficulty: "medium",
+        confidence: 1,
+      }),
+    ]);
+
+    const rag = createInMemoryRagClient({ jsonlPath });
+    const results = await rag.search({
+      school_level: "middle",
+      grade: 1,
+      topic_code: "9수01-01",
+      topic_name: "소인수분해",
+      problem_type: "objective",
+      difficulty: "medium",
+      k: 3,
+    });
+
+    expect(results).toHaveLength(0);
+  });
 });
 
 async function writeFixture(records: unknown[]): Promise<string> {

@@ -103,7 +103,14 @@ export function VerifyView({ grade, topic, mode, dims, sourceProblemText }: Prop
     if (!valid || grade === null || topic === null || mode === null) {
       return null;
     }
-    return { grade, topic: topic.code, mode, dims, sourceProblemText };
+    return {
+      grade,
+      topic: topic.code,
+      topicName: topic.name,
+      mode,
+      dims,
+      sourceProblemText,
+    };
   }, [valid, grade, topic, mode, dims, sourceProblemText]);
 
   /* hook 은 input 이 null 이면 stream 을 시작하지 않는다. invalid 가드. */

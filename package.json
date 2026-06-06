@@ -12,6 +12,7 @@
     "test:python": "cd packages/math-engine && uv run pytest",
     "test": "pnpm test:node && pnpm test:python",
     "typecheck": "pnpm -F @openmath/agent typecheck && pnpm -F @openmath/web typecheck",
+    "sweep:generate": "node scripts/sweep-generate.mjs",
     "lint:python": "cd packages/math-engine && uv run ruff check .",
     "prepare": "husky"
   },

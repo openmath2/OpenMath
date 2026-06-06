@@ -12,6 +12,7 @@
 
 import { z } from "zod";
 
+import { GenerationKindSchema } from "./generation-kind.schema.js";
 import { IntentSchema } from "./intent.schema.js";
 
 export const IsomorphicModeSchema = z.enum(["structural", "conceptual"]);
@@ -32,6 +33,7 @@ export type GenerationMeta = z.infer<typeof GenerationMetaSchema>;
 export const GeneratedProblemSchema = z.object({
   candidate_id: z.string().uuid(),
   mode: IsomorphicModeSchema,
+  generation_kind: GenerationKindSchema,
 
   question_text: z.string().min(1), // LaTeX
   expected_answer: z.string().min(1), // LaTeX
