@@ -4,6 +4,7 @@
 import type { SolverAgent } from "../agents/index.js";
 import type { GateResult, GeneratedProblem, SolveAttempt } from "../schemas/index.js";
 import type { MathEngineClient } from "../tools/math-engine-client.js";
+import { sameAnswer } from "../tools/answer-equivalence.js";
 import { withTimeout } from "../policies/timeout-policy.js";
 
 export interface IndependentResolveDeps {
@@ -32,7 +33,7 @@ export async function independentResolve(
       () => deps.solver.solve(input.candidate),
       { ms: deps.perStepTimeoutMs ?? 30_000, label: "re_solve" },
     );
-    const matches = await sameAnswer(deps.mathEngine, input.candidate.expected_answer, attempt.derived_answer);
+    const matches = await sameAnswer(deps.mathEngine, input.candidate, attempt.derived_answer);
     return {
       data: attempt,
       gate: {
@@ -49,7 +50,7 @@ export async function independentResolve(
           ? undefined
           : {
               code: "independent_resolve_mismatch",
-              message: "Independent solver answer differs from the expected SymPy-normalized answer",
+              message: `Independent solver answer differs from expected=${input.candidate.expected_answer}; derived=${attempt.derived_answer}`,
             },
       },
     };
@@ -71,36 +72,4 @@ export async function independentResolve(
       },
     };
   }
-}
-
-async function sameAnswer(
-  mathEngine: MathEngineClient,
-  expectedAnswer: string,
-  derivedAnswer: string,
-): Promise<boolean> {
-  const expected = parseAnswers(expectedAnswer);
-  const derived = parseAnswers(derivedAnswer);
-  if (expected.length === 0 || derived.length === 0) return false;
-  const expectedCanonical = await canonicalizeAll(mathEngine, expected);
-  const derivedCanonical = await canonicalizeAll(mathEngine, derived);
-  if (expectedCanonical.length !== derivedCanonical.length) return false;
-  return expectedCanonical.every((value, index) => value === derivedCanonical[index]);
-}
-
-function parseAnswers(answer: string): string[] {
-  return answer
-    .split(/[,;]|또는|or/)
-    .map((part) => part.trim())
-    .map((part) => part.replace(/^[a-zA-Z]\s*=\s*/, ""))
-    .filter((part) => part.length > 0);
-}
-
-async function canonicalizeAll(mathEngine: MathEngineClient, answers: string[]): Promise<string[]> {
-  const canonical = await Promise.all(
-    answers.map(async (answer) => {
-      const result = await mathEngine.simplify({ expr: answer });
-      return result.simplified.replace(/\s+/g, "");
-    }),
-  );
-  return canonical.sort();
 }

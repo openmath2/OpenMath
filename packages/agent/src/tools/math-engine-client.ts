@@ -6,6 +6,8 @@
  * 디스커버리: 환경변수 MATH_ENGINE_URL (현재 하드코딩, Q-7 closure 후 조정).
  */
 
+import { toSympyInput } from "./sympy-input.js";
+
 export interface SolveRequest {
   equation: string;
   variable?: string;
@@ -122,11 +124,22 @@ export function createMathEngineClient(
 
   return {
     health: () => request("/health", { method: "GET" }, parseHealthResponse),
-    solve: (req) => post("/solve", req, parseSolveResponse),
-    verify: (req) => post("/verify", req, parseVerifyResponse),
-    simplify: (req) => post("/simplify", req, parseSimplifyResponse),
+    solve: (req) =>
+      post("/solve", { ...req, equation: toSympyInput(req.equation) }, parseSolveResponse),
+    verify: (req) =>
+      post(
+        "/verify",
+        { expr1: toSympyInput(req.expr1), expr2: toSympyInput(req.expr2) },
+        parseVerifyResponse,
+      ),
+    simplify: (req) =>
+      post("/simplify", { expr: toSympyInput(req.expr) }, parseSimplifyResponse),
     differentiate: (req) =>
-      post("/differentiate", req, parseDifferentiateResponse),
+      post(
+        "/differentiate",
+        { ...req, expr: toSympyInput(req.expr) },
+        parseDifferentiateResponse,
+      ),
     limit: (req) => post("/limit", req, parseLimitResponse),
   };
 }

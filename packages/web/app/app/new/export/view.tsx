@@ -66,10 +66,28 @@ function storageKey(
     "openmath:verification-result",
     grade,
     topic.code,
+    topic.name,
     mode,
     [...dims].sort().join(","),
     sourceProblemText,
   ].join("|");
+}
+
+function resultHref(
+  grade: Grade,
+  topic: Topic,
+  mode: "structural" | "conceptual" | null,
+  dims: readonly string[],
+  sourceProblemText: string,
+): string {
+  const params = new URLSearchParams({
+    grade: String(grade),
+    topic: topic.code,
+  });
+  if (mode !== null) params.set("mode", mode);
+  if (dims.length > 0) params.set("dims", [...dims].join(","));
+  if (sourceProblemText.length > 0) params.set("source", sourceProblemText);
+  return `/app/new/result?${params.toString()}`;
 }
 
 function parseStoredProblem(raw: unknown): StoredProblem | null {
@@ -244,10 +262,11 @@ export function ExportView({
   }
 
   if (displayProblems.length === 0) {
+    const backHref = resultHref(grade, topic, mode, dims, sourceProblemText);
     return (
       <>
         <nav className="container-app sub-nav" aria-label="단계 이동">
-          <Link href="/app/new/result" className="crumb">
+          <Link href={backHref} className="crumb">
             <span aria-hidden="true">←</span>
             <span>결과</span>
           </Link>
@@ -258,7 +277,7 @@ export function ExportView({
             결과 화면에서 ★ 별표로 문항을 채택한 뒤 다시
             오세요.
           </p>
-          <Link href="/app/new/result" className="btn btn-primary">
+          <Link href={backHref} className="btn btn-primary">
             <span>결과로 돌아가기</span>
             <span aria-hidden="true">→</span>
           </Link>
@@ -272,6 +291,7 @@ export function ExportView({
     /* 브라우저 print API — 시스템 dialog 에서 "PDF 로 저장" 선택. */
     window.print();
   };
+  const backHref = resultHref(grade, topic, mode, dims, sourceProblemText);
 
   /* 옵션 변경 핸들러 */
   const setTitle = (v: string): void =>
@@ -287,7 +307,7 @@ export function ExportView({
     <>
       <nav className="container-app sub-nav" aria-label="단계 이동">
         <div>
-          <Link href="/app/new/result" className="crumb">
+          <Link href={backHref} className="crumb">
             <span aria-hidden="true">←</span>
             <span>결과</span>
           </Link>
@@ -487,7 +507,7 @@ export function ExportView({
       <div className="action-bar-sticky">
         <div className="container-app action-bar-inner">
           <div className="left">
-            <Link href="/app/new/result" className="btn btn-secondary">
+            <Link href={backHref} className="btn btn-secondary">
               <span aria-hidden="true">←</span>
               <span>결과로</span>
             </Link>

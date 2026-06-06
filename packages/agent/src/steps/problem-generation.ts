@@ -15,8 +15,14 @@ import type {
   Strategy,
 } from "../schemas/index.js";
 import type { MathEngineClient } from "../tools/math-engine-client.js";
+import { extractEquationText } from "../tools/equation-extractor.js";
 import { formatLatex } from "../tools/latex-formatter.js";
 import { withTimeout } from "../policies/timeout-policy.js";
+import {
+  deterministicGuardReplacement,
+  deterministicTopicGuardHints,
+} from "./problem-generation-guards.js";
+import { deterministicInitialCandidate } from "./problem-generation-deterministic.js";
 
 export interface ProblemGenerationDeps {
   generator: GeneratorAgent;
@@ -50,6 +56,11 @@ export async function generateProblem(
   const refinedBy: string[] = [];
   try {
     const candidate = await withTimeout(async () => {
+      const initial = input.refs.length > 0 ? deterministicInitialCandidate(input) : null;
+      if (initial !== null) {
+        refinedBy.push("deterministic-topic-generator");
+        return initial;
+      }
       let current = await deps.generator.generate({
         request: input.request,
         intent: input.intent,
@@ -62,6 +73,28 @@ export async function generateProblem(
 
       const rounds = deps.maxCriticRounds ?? 2;
       for (let round = 0; round < rounds; round += 1) {
+        const guardHints = deterministicTopicGuardHints(input.request, current);
+        if (guardHints.length > 0) {
+          refinedBy.push("deterministic-topic-guard");
+          const replacement = deterministicGuardReplacement(input.request, current);
+          if (replacement !== null) {
+            current = replacement;
+            continue;
+          }
+          current = await deps.refiner.refine({
+            prior: current,
+            request: input.request,
+            intent: input.intent,
+            refs: input.refs,
+            strategy: input.strategy,
+            attempt: input.attempt,
+            hints: guardHints,
+          });
+          current = await normalizeExpectedAnswer(deps.mathEngine, current);
+          refinedBy.push("refiner");
+          continue;
+        }
+
         const critique = await deps.critic.critique({
           candidate: current,
           intent: input.intent,
@@ -133,11 +166,30 @@ async function normalizeExpectedAnswer(
   mathEngine: MathEngineClient,
   candidate: GeneratedProblem,
 ): Promise<GeneratedProblem> {
-  if (!candidate.question_text.includes("=")) return candidate;
-  const solved = await mathEngine.solve({ equation: candidate.question_text });
+  if (candidate.generation_kind !== "equation") return candidate;
+  if (hasChoiceMarkers(candidate.question_text)) return candidate;
+  const equation = extractEquationText(candidate.question_text);
+  if (equation === null) return candidate;
+  const solved = await solveForNormalization(mathEngine, equation);
+  if (solved === null) return candidate;
   if (solved.solutions.length === 0) return candidate;
   return {
     ...candidate,
     expected_answer: solved.solutions.join(", "),
   };
+}
+
+function hasChoiceMarkers(text: string): boolean {
+  return /[①②③④⑤⑥⑦⑧⑨]|\([1-9]\)|[1-9][).]/u.test(text);
+}
+
+async function solveForNormalization(
+  mathEngine: MathEngineClient,
+  equation: string,
+): Promise<{ readonly solutions: readonly string[] } | null> {
+  try {
+    return await mathEngine.solve({ equation });
+  } catch {
+    return null;
+  }
 }

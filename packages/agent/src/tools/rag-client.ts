@@ -36,6 +36,7 @@ type OpenMathRagRecord = {
     semester?: 1 | 2 | null;
     topic_code?: string | null;
     topic_name: string;
+    achievement_code?: string | null;
     achievement_standard?: string | null;
     achievement_confidence?: number;
   };
@@ -163,7 +164,7 @@ function toIndexedProblem(record: OpenMathRagRecord): IndexedProblem {
     school_level: record.curriculum.school_level,
     grade: record.curriculum.grade,
     semester: record.curriculum.semester ?? null,
-    topic_code: record.curriculum.topic_code ?? null,
+    topic_code: record.curriculum.achievement_code ?? record.curriculum.topic_code ?? null,
     topic_name: record.curriculum.topic_name,
     achievement_standard: record.curriculum.achievement_standard ?? null,
     question_text: record.problem.question_text,
@@ -216,8 +217,8 @@ function matchesQuery(
   }
   if (
     query.topic_name &&
-    !containsNormalized(searchableText(row), query.topic_name) &&
-    tokenOverlap(query.topic_name, searchableText(row)) === 0
+    !containsNormalized(topicAlignmentText(row), query.topic_name) &&
+    tokenOverlap(query.topic_name, topicAlignmentText(row)) === 0
   ) {
     return false;
   }
@@ -296,6 +297,19 @@ function searchableText(row: IndexedProblem): string {
     .join("\n");
 }
 
+function topicAlignmentText(row: IndexedProblem): string {
+  return [
+    row.problem.topic_name,
+    row.problem.question_text,
+    row.problem.answer_text,
+    row.problem.explanation_text,
+    row.retrievalText.split("\n").find((line) => line.startsWith("단원:")),
+    row.embeddingText.split("\n")[0],
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 function containsNormalized(haystack: string, needle: string): boolean {
   return normalizeText(haystack).includes(normalizeText(needle));
 }
@@ -332,8 +346,7 @@ function normalizeText(text: string): string {
 function tokensMatch(queryToken: string, targetToken: string): boolean {
   return (
     queryToken === targetToken ||
-    (queryToken.length >= 2 && targetToken.includes(queryToken)) ||
-    (targetToken.length >= 2 && queryToken.includes(targetToken))
+    (queryToken.length >= 2 && targetToken.includes(queryToken))
   );
 }
 

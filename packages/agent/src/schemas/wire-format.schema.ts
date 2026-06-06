@@ -49,6 +49,7 @@ export const WireResultProblemSchema = z.object({
   explanation_latex: z.string().optional(),
   isomorphism: z.enum(["structural", "conceptual"]),
   preserved_dimensions: z.array(z.string()),
+  source_refs: z.array(z.string()),
   verification_status: WireVerificationStatusSchema,
 });
 export type WireResultProblem = z.infer<typeof WireResultProblemSchema>;

@@ -43,14 +43,39 @@ export function createConstraintCriticAgent(
         intent: input.intent,
         strategy: input.strategy === null ? "" : JSON.stringify(input.strategy, null, 2),
       });
-      const { object } = await generateObject({
-        model: deps.model,
-        schema: CritiqueSchema,
-        mode: "json",
-        temperature: prompt.metadata.temperature,
-        prompt: rendered,
-      });
-      return object;
+      try {
+        const { object } = await generateObject({
+          model: deps.model,
+          schema: CritiqueSchema,
+          mode: "json",
+          temperature: prompt.metadata.temperature,
+          prompt: rendered,
+        });
+        return object;
+      } catch (error) {
+        const text = modelTextFromError(error);
+        if (text !== null) {
+          return parseCritiqueJson(text);
+        }
+        throw error;
+      }
     },
   };
+}
+
+export function parseCritiqueJson(text: string): Critique {
+  return CritiqueSchema.parse(JSON.parse(escapeRawBackslashes(text)));
+}
+
+function escapeRawBackslashes(text: string): string {
+  return text.replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
+}
+
+function modelTextFromError(error: unknown): string | null {
+  if (!hasTextProperty(error)) return null;
+  return typeof error.text === "string" ? error.text : null;
+}
+
+function hasTextProperty(value: unknown): value is { readonly text?: unknown } {
+  return typeof value === "object" && value !== null && "text" in value;
 }
