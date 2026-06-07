@@ -8,6 +8,8 @@ import {
   type Topic,
   gradeLabel,
 } from "../topic/data";
+import { LatexMixed } from "@/components/math/latex-renderer";
+import examplesData from "../topic/examples.json";
 
 type IsomorphismMode = "structural" | "conceptual";
 
@@ -25,7 +27,24 @@ type ReferenceProblem = {
   title: string;
   body: string;
   sourceProblemText: string;
+  difficulty?: "easy" | "medium" | "hard";
 };
+
+type ExampleEntry = {
+  id: string;
+  achievement_code_2015: string;
+  topic_name_2015: string;
+  difficulty: "easy" | "medium" | "hard";
+  problem_type: "objective" | "essay" | "short_answer" | "subjective";
+  question_text: string;
+  answer_text: string;
+};
+
+const bakedExamples = (
+  examplesData as {
+    units: Record<string, { examples: ExampleEntry[] }>;
+  }
+).units;
 
 const modes: ModeOption[] = [
   {
@@ -47,48 +66,29 @@ const modes: ModeOption[] = [
 ];
 
 function referenceProblems(topic: Topic): ReferenceProblem[] {
-  if (topic.code === "9수01-05") {
-    return [
-      {
-        id: "sqrt-basic",
-        title: "제곱근 기본형",
-        body: "x² = 5 를 만족하는 실수 x를 모두 구한다.",
-        sourceProblemText: "x**2 - 5 = 0",
-      },
-      {
-        id: "sqrt-expression",
-        title: "근호 표현형",
-        body: "제곱해서 7이 되는 두 수를 근호로 나타낸다.",
-        sourceProblemText: "x**2 - 7 = 0",
-      },
-      {
-        id: "real-number",
-        title: "실수 분류형",
-        body: "√9, -√5, 0.3 중 유리수와 무리수를 구분한다.",
-        sourceProblemText: "x**2 - 9 = 0",
-      },
-    ];
+  const baked = bakedExamples[topic.code]?.examples;
+  if (baked && baked.length > 0) {
+    return baked.map((ex, idx) => ({
+      id: ex.id,
+      title: `${topic.name} · 예시 ${idx + 1}`,
+      body: ex.question_text,
+      sourceProblemText: ex.question_text,
+      difficulty: ex.difficulty,
+    }));
   }
   return [
     {
-      id: `${topic.code}-basic`,
-      title: `${topic.name} 기본형`,
+      id: `${topic.code}-standard`,
+      title: `${topic.name} · 성취기준 기반`,
       body: topic.achievement,
       sourceProblemText: topic.achievement,
     },
-    {
-      id: `${topic.code}-structural`,
-      title: "구조 보존형",
-      body: "풀이 단계는 유지하고 수치와 표현만 바꾼다.",
-      sourceProblemText: topic.achievement,
-    },
-    {
-      id: `${topic.code}-conceptual`,
-      title: "개념 보존형",
-      body: "학습 목표는 유지하되 문항 맥락을 바꾼다.",
-      sourceProblemText: topic.achievement,
-    },
   ];
+}
+
+function difficultyLabel(d: ReferenceProblem["difficulty"]): string | null {
+  if (d === undefined) return null;
+  return d === "easy" ? "쉬움" : d === "medium" ? "보통" : "어려움";
 }
 
 type Props = {
@@ -98,7 +98,7 @@ type Props = {
 };
 
 export function IntentPicker({ grade, topic, candidates }: Props) {
-  const [mode, setMode] = useState<IsomorphismMode | null>(null);
+  const [mode, setMode] = useState<IsomorphismMode | null>("structural");
   const refs = topic === null ? [] : referenceProblems(topic);
   const [selectedRef, setSelectedRef] = useState<string>(refs[0]?.id ?? "");
   const [checked, setChecked] = useState<Set<string>>(
@@ -173,8 +173,8 @@ export function IntentPicker({ grade, topic, candidates }: Props) {
           어떻게 출제할까요?
         </h1>
         <p className="page-subtitle">
-          동형 방식과 보존할 평가 차원을 골라 주세요. 검증 6 단계가 이
-          기준을 따라 진행됩니다.
+          동형 방식 · 기준 문항 · 보존할 평가 차원을 골라 주세요. 검증 6 단계가
+          이 기준을 따라 진행됩니다.
         </p>
 
         {/* S3-A — 동형 모드 */}
@@ -228,27 +228,39 @@ export function IntentPicker({ grade, topic, candidates }: Props) {
             구조동형은 풀이 구조를, 개념동형은 학습 목표를 이 기준 문항에서 가져옵니다.
           </p>
           <div
-            className="mode-grid"
+            className="reference-list"
             role="radiogroup"
             aria-labelledby="reference-heading"
           >
-            {refs.map((ref) => (
-              <label key={ref.id} className="intent-radio-card">
-                <input
-                  type="radio"
-                  name="reference-problem"
-                  value={ref.id}
-                  checked={selectedRef === ref.id}
-                  onChange={() => setSelectedRef(ref.id)}
-                  className="sr-only"
-                />
-                <span className="dot" aria-hidden="true" />
-                <span className="label">
-                  <span className="label-main">{ref.title}</span>
-                  <span className="label-desc">{ref.body}</span>
-                </span>
-              </label>
-            ))}
+            {refs.map((ref) => {
+              const diff = difficultyLabel(ref.difficulty);
+              return (
+                <label key={ref.id} className="intent-radio-card">
+                  <input
+                    type="radio"
+                    name="reference-problem"
+                    value={ref.id}
+                    checked={selectedRef === ref.id}
+                    onChange={() => setSelectedRef(ref.id)}
+                    className="sr-only"
+                  />
+                  <span className="dot" aria-hidden="true" />
+                  <span className="label">
+                    <span className="label-main">
+                      <span>{ref.title}</span>
+                      {diff !== null ? (
+                        <span className="example-badge example-badge-diff">
+                          {diff}
+                        </span>
+                      ) : null}
+                    </span>
+                    <span className="label-desc">
+                      <LatexMixed source={ref.body} />
+                    </span>
+                  </span>
+                </label>
+              );
+            })}
           </div>
         </section>
 
