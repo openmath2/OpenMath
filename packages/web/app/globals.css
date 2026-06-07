@@ -779,6 +779,9 @@
     background: var(--color-canvas-pure);
     min-height: 100vh;
   }
+  .app-canvas .container-app {
+    max-width: 1600px;
+  }
   .container-app {
     max-width: 1280px;
     margin: 0 auto;
@@ -1041,9 +1044,10 @@
     flex-shrink: 0;
   }
 
-  /* page-body — S1~S6 공통 본문 영역 */
+  /* page-body — S1~S6 공통 본문 영역. padding shorthand 사용 금지: container-app 의 좌우 padding(40px) 을 덮어쓰면 좁은 뷰포트에서 콘텐츠가 가장자리에 붙음. */
   .page-body {
-    padding: 48px 0 56px;
+    padding-top: 48px;
+    padding-bottom: 56px;
   }
   .page-title {
     font-family: var(--font-serif);
@@ -1291,6 +1295,20 @@
     .mode-grid {
       grid-template-columns: 1fr;
     }
+  }
+
+  /* reference-list (S3-B) — 기준 문항 라디오 1-column. corpus 문제 길이가 가변이라 카드 높이 들쭉날쭉 + KaTeX inline 폭 보존 위해 stack 레이아웃. */
+  .reference-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .reference-list .intent-radio-card .label-desc {
+    overflow-wrap: anywhere;
+  }
+  .reference-list .intent-radio-card .label-desc .katex {
+    max-width: 100%;
+    overflow-x: auto;
   }
 
   /* dimension-list (S3-B vertical stack) */
@@ -2511,5 +2529,229 @@
     .book-cover:focus-visible .book-cover-front {
       transform: rotateY(0) !important;
     }
+  }
+
+  /* topic-picker (S2) — 2-column: 좌 단원 카드 / 우 예시 패널. 좁은 폭에서도 2-col 유지하여 옆에 같이 보이도록. min-width:0 으로 컬럼 자유 축소. */
+  .topic-picker .topic-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    gap: clamp(16px, 2vw, 32px);
+    align-items: start;
+  }
+  .topic-picker .topic-grid-1col {
+    grid-template-columns: 1fr;
+  }
+  @media (max-width: 768px) {
+    .topic-picker .topic-layout {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+  }
+
+  /* example-panel — sticky 우측 패널. max-height = 페이지헤더(breadcrumb+title+subtitle+filter ≈ 300px) + action-bar(80px) 차감하여 짧은 뷰포트(vh~650)에서도 잘리지 않음. 내부 .example-list 만 스크롤. min-height 는 빈 상태(empty)에만 적용. */
+  .example-panel {
+    position: sticky;
+    top: 24px;
+    max-height: calc(100dvh - 400px);
+    background: var(--color-canvas-pure);
+    border: 1px solid var(--color-rule);
+    border-radius: 12px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+  }
+  @media (max-width: 768px) {
+    .example-panel {
+      position: static;
+      max-height: none;
+      overflow: visible;
+    }
+  }
+  .example-panel:has(.example-panel-empty) {
+    min-height: 240px;
+  }
+
+  .example-panel-empty {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--color-ink-3);
+  }
+  .example-panel-empty-title {
+    font-family: var(--font-serif);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--color-ink-2);
+    margin: 0;
+  }
+  .example-panel-empty-desc {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .example-panel-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--color-rule-soft);
+  }
+  .example-panel-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .example-panel-title {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--color-ink);
+    margin: 0;
+    line-height: 1.2;
+  }
+  .example-panel-desc {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--color-ink-3);
+    line-height: 1.55;
+    margin: 0;
+  }
+  .example-panel-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-ink-4);
+    letter-spacing: 0.02em;
+    margin: 0;
+  }
+
+  .example-list {
+    list-style: none;
+    padding: 0 4px 0 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .example-card {
+    background: var(--color-canvas);
+    border: 1px solid var(--color-rule-soft);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .example-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .example-index {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-ink-3);
+    letter-spacing: 0.04em;
+  }
+  .example-badge {
+    font-family: var(--font-sans);
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 4px;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+  }
+  .example-badge-diff {
+    background: var(--color-pass-50);
+    color: var(--color-pass-deep);
+  }
+  .example-badge-type {
+    background: var(--color-canvas-2);
+    color: var(--color-ink-2);
+  }
+  .example-question {
+    font-family: var(--font-sans);
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--color-ink);
+  }
+  .example-answer {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    padding-top: 8px;
+    border-top: 1px dashed var(--color-rule-soft);
+  }
+  .example-answer-label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--color-ink-3);
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+  .example-answer-value {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--color-ink-2);
+    line-height: 1.5;
+  }
+  .example-panel-footer {
+    font-family: var(--font-sans);
+    font-size: 11.5px;
+    color: var(--color-ink-4);
+    line-height: 1.55;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-rule-soft);
+  }
+
+  @media (max-height: 800px) {
+    .topic-picker.page-body { padding-top: 24px; padding-bottom: 32px; }
+    .topic-picker .page-title { font-size: 26px; margin-bottom: 4px; }
+    .topic-picker .page-subtitle { font-size: 13.5px; margin-bottom: 16px; max-width: none; }
+    .topic-picker .filter-row { margin-bottom: 16px; }
+    .topic-picker .filter-chip { height: 30px; padding: 6px 14px; font-size: 12px; }
+    .topic-picker .topic-layout { gap: 20px; }
+    .topic-picker .intent-radio-card { padding: 12px 14px; font-size: 14.5px; }
+    .topic-picker .intent-radio-card .label-main { font-size: 14.5px; }
+    .topic-picker .intent-radio-card .label-desc { font-size: 12.5px; margin-top: 2px; }
+
+    .example-panel { max-height: calc(100dvh - 300px); padding: 14px 16px; gap: 8px; }
+    .example-panel-header { padding-bottom: 10px; gap: 6px; }
+    .example-panel-title { font-size: 18px; }
+    .example-panel-desc { font-size: 12px; }
+    .example-panel-meta { font-size: 10.5px; }
+    .example-card { padding: 10px 12px; gap: 6px; }
+    .example-card-meta { gap: 6px; }
+    .example-question { font-size: 12.5px; line-height: 1.55; }
+    .example-answer { padding-top: 6px; gap: 8px; }
+    .example-answer-value { font-size: 12px; }
+    .example-panel-footer { font-size: 10.5px; padding-top: 8px; }
+  }
+
+  @media (max-height: 680px) {
+    .topic-picker.page-body { padding-top: 16px; padding-bottom: 24px; }
+    .topic-picker .page-title { font-size: 22px; margin-bottom: 2px; }
+    .topic-picker .page-subtitle { display: none; }
+    .topic-picker .filter-row { margin-bottom: 12px; }
+    .topic-picker .filter-chip { height: 28px; padding: 5px 12px; }
+    .topic-picker .topic-layout { gap: 16px; }
+    .topic-picker .intent-radio-card { padding: 10px 12px; }
+
+    .example-panel { max-height: calc(100dvh - 220px); padding: 12px 14px; gap: 6px; }
+    .example-panel-title { font-size: 16px; }
+    .example-card { padding: 8px 10px; gap: 5px; }
+    .example-question { font-size: 12px; line-height: 1.5; }
+    .example-panel-footer { padding-top: 6px; }
   }
 }
