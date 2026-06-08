@@ -40,10 +40,10 @@ LLM access is pluggable: direct OpenAI/Anthropic, or via [CLIProxyAPI](https://g
 
 ## Status
 
-- **`math-engine`** — operational. 5 endpoints (`/solve`, `/verify`, `/simplify`, `/differentiate`, `/limit`) + 19 pytest passing.
-- **`agent`** — scaffolded per spec; 42 TS files with stable interfaces + Zod schemas. Implementations pending (search `throw new Error(".*: not implemented yet")`).
-- **`web`** — Landing page + DESIGN.md spec scaffolded. `pnpm build` green, static prerender. 추가 화면 (S0~S6) 마이그레이션은 FE 담당.
-- **L0 architecture** — Proposed (D-1 ~ D-9). **L1 domain** — Draft. L2 contracts·L3 modules: TBD.
+- **`math-engine`** — operational. 5 endpoints (`/solve`, `/verify`, `/simplify`, `/differentiate`, `/limit`) + 20 pytest passing.
+- **`agent`** — implemented per spec; 48 TS source files with stable interfaces + Zod schemas. No stubs remain (`grep "not implemented yet" packages/agent/src` returns 0 matches).
+- **`web`** — Landing + S0~S6 workflow screens + DESIGN.md spec implemented. `pnpm build` green. S5/S6 (결과·출력)은 현재 mock 데이터 기반 — agent SSE 연동 진행 중.
+- **L0 architecture** — Proposed (D-1 ~ D-12). **L1 domain** — Draft. L2 contracts·L3 modules: TBD.
 
 ## Development
 
@@ -55,9 +55,9 @@ pnpm typecheck       # tsc --noEmit on agent + web
 pnpm build           # production build (agent + web)
 ```
 
-- Agent: `http://localhost:3000` (SSE at `POST /api/generate`)
-- Math Engine: `http://localhost:8000`
-- Web: `http://localhost:3001` (landing)
+- Agent: `http://localhost:31415` (SSE at `POST /api/generate`)
+- Math Engine: `http://localhost:16180`
+- Web: `http://localhost:27182` (landing)
 
 ### LLM 환경 설정 (필수)
 
@@ -101,11 +101,11 @@ LLM_MODEL=claude-3-5-sonnet-20241022
 
 ### 포트 충돌 회피
 
-다른 프로세스(Mantis, 별도 Next.js 서버 등)가 3000번을 점유하면 `pnpm dev:all` 시 agent가 `EADDRINUSE`로 실패. 다음 단계로 회피:
+다른 프로세스(Mantis, 별도 Next.js 서버 등)가 31415번을 점유하면 `pnpm dev:all` 시 agent가 `EADDRINUSE`로 실패. 다음 단계로 회피:
 
 ```bash
 # 1. 충돌 확인
-lsof -i :3000
+lsof -i :31415
 
 # 2. agent 포트 변경
 PORT=3002 pnpm dev
@@ -118,7 +118,7 @@ echo "NEXT_PUBLIC_AGENT_URL=http://localhost:3002" > packages/web/.env.local
 pnpm -F @openmath/web dev
 ```
 
-`NEXT_PUBLIC_AGENT_URL`이 미설정이면 web은 `http://localhost:3000`을 호출하므로 포트 변경 시 반드시 `.env.local` 갱신.
+`NEXT_PUBLIC_AGENT_URL`이 미설정이면 web은 `http://localhost:31415`를 호출하므로 포트 변경 시 반드시 `.env.local` 갱신.
 
 ### 데모 실행 절차 (캡스톤)
 
@@ -133,7 +133,7 @@ cp packages/agent/.env.example packages/agent/.env
 # 2. (매 시연) 세 서비스 기동
 pnpm dev:all
 
-# 3. (브라우저) http://localhost:3001 → S0 → 학년(중3) → 단원(이차방정식)
+# 3. (브라우저) http://localhost:27182 → S0 → 학년(중3) → 단원(이차방정식)
 #    → 평가 차원(인수분해 또는 근의 공식 사용 + 판별식) → 생성
 
 # 4. (검증) S4 6단계 ✓ → S5 결과 3문항 → S6 PDF
@@ -142,7 +142,7 @@ pnpm dev:all
 또는 직접 SSE:
 
 ```bash
-curl -sN -X POST http://localhost:3000/api/generate \
+curl -sN -X POST http://localhost:31415/api/generate \
   -H "Content-Type: application/json" \
   -d '{"grade":3,"topic":"9수02-09","mode":"structural","dims":["인수분해 또는 근의 공식 사용","판별식으로 해의 종류 해석"]}'
 ```
@@ -163,7 +163,7 @@ packages/
 │   └── data/                   # corpus JSONL + strategy YAML — hand-off slot
 ├── math-engine/                # Python — SymPy verification HTTP
 │   ├── src/                    # FastAPI app + routers
-│   └── tests/                  # pytest (19 tests)
+│   └── tests/                  # pytest (20 tests)
 └── web/                        # Node 22 — Next.js 14 App Router + Tailwind v4
     ├── DESIGN.md               # 디자인 시스템 spec (editorial + productivity 듀얼-서피스)
     ├── app/

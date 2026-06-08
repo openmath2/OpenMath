@@ -4,9 +4,9 @@ import { z } from "zod";
 
 export const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  PORT: z.coerce.number().int().min(1).max(65535).default(3000),
+  PORT: z.coerce.number().int().min(1).max(65535).default(31415),
 
-  MATH_ENGINE_URL: z.string().url().default("http://localhost:8000"),
+  MATH_ENGINE_URL: z.string().url().default("http://localhost:16180"),
 
   LLM_PROVIDER: z
     .enum(["openai", "openai-compatible", "anthropic-via-compatible", "cliproxy"])

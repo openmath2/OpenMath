@@ -20,7 +20,7 @@ export function createApp(deps: AppDeps): Hono {
   app.use(
     "*",
     cors({
-      origin: ["http://localhost:3001", "http://127.0.0.1:3001"],
+      origin: ["http://localhost:27182", "http://127.0.0.1:27182"],
       allowHeaders: ["Content-Type", "Accept"],
       allowMethods: ["GET", "POST", "OPTIONS"],
     }),

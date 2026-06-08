@@ -29,6 +29,8 @@
 | D-7 (RagClient) | `packages/agent/src/tools/rag-client.ts` |
 | D-8 (.md frontmatter) | `packages/agent/src/tools/prompt-loader.ts`, `packages/agent/prompts/*.md` |
 | D-9 (Next.js 14 + 듀얼-서피스 디자인) | `packages/web/`, `packages/web/DESIGN.md` |
+| D-11 (I-G4 투명 노출 정책) | `packages/agent/src/server/routes/generate.ts`, `packages/web/DESIGN.md` `{component.result-card-failed}` |
+| D-12 (S0-B OCR v2 보류) | `packages/web/` S0 카드 disabled 상태 |
 | [`docs/specs/domain.md`](docs/specs/domain.md) §2 도메인 | `packages/agent/src/schemas/*.schema.ts` |
 | 불변식 I-V1 ~ I-V5 | `assertVerificationInvariants` |
 | 불변식 I-I1 ~ I-I3 | `IntentSchema.regex` + `assertIntentInvariants` |
@@ -42,9 +44,9 @@
 |---|---|
 | 의존성 설치 + git hooks | `pnpm install` |
 | 세 서비스 동시 dev | `pnpm dev:all` |
-| agent만 dev | `pnpm dev` (`:3000`) |
-| math-engine만 dev | `pnpm dev:math` (`:8000`) |
-| web만 dev | `pnpm dev:web` (`:3001`) |
+| agent만 dev | `pnpm dev` (`:31415`) |
+| math-engine만 dev | `pnpm dev:math` (`:16180`) |
+| web만 dev | `pnpm dev:web` (`:27182`) |
 | Node typecheck (agent + web) | `pnpm typecheck` |
 | Node unit test (agent) | `pnpm -F @openmath/agent test` |
 | Node integration test | `pnpm -F @openmath/agent test:integration` |
@@ -147,21 +149,21 @@ agent 코드를 *건드리지 않고* 동작이 바뀌는 영역.
 
 ---
 
-## 9. 진입점 우선순위 (현재 미구현)
+## 9. 진입점 현황 (구현 완료)
 
-`grep -rn "not implemented yet" packages/agent/src` 로 14곳 확인 가능.
+`grep -rn "not implemented yet" packages/agent/src` 로 0곳 — 아래 진입점 모두 구현 완료.
 
 | Priority | 파일 | 비고 |
 |---|---|---|
-| P0 | `tools/math-engine-client.ts` `createMathEngineClient` | math-engine은 작동 중. 첫 통합 |
-| P0 | `tools/prompt-loader.ts` `createFsPromptLoader` | gray-matter + handlebars |
-| P0 | `tools/llm-provider.ts` `resolveLanguageModel` | CLIProxyAPI 우선 |
-| P1 | `tools/rag-client.ts` `createInMemoryRagClient` | JSONL + filter |
-| P1 | `agents/*-agent.ts` (4개) | `generateObject` + prompt 로드 |
-| P1 | `steps/*.ts` (6개) | agents/tools 얇은 wrapper |
-| P2 | `workflows/verification-workflow.ts` | async generator + I-V invariant assert |
-| P2 | `server/routes/generate.ts` + `sse/progress-stream.ts` | streamSSE 흘리기 |
-| P3 | `src/index.ts` `main` | dep wiring (10줄) |
+| P0 | `tools/math-engine-client.ts` `createMathEngineClient` | 구현 완료 |
+| P0 | `tools/prompt-loader.ts` `createFsPromptLoader` | 구현 완료 (gray-matter + handlebars) |
+| P0 | `tools/llm-provider.ts` `resolveLanguageModel` | 구현 완료 (CLIProxyAPI 우선) |
+| P1 | `tools/rag-client.ts` `createInMemoryRagClient` | 구현 완료 (JSONL + filter) |
+| P1 | `agents/*-agent.ts` (4개) | 구현 완료 |
+| P1 | `steps/*.ts` (6개) | 구현 완료 |
+| P2 | `workflows/verification-workflow.ts` | 구현 완료 |
+| P2 | `server/routes/generate.ts` + `sse/progress-stream.ts` | 구현 완료 |
+| P3 | `src/index.ts` `main` | 구현 완료 |
 
 ---
 
@@ -169,7 +171,7 @@ agent 코드를 *건드리지 않고* 동작이 바뀌는 영역.
 
 - [`README.md`](README.md) — 프로젝트 무엇·왜·누구
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — 브랜치·hook·커밋·CI 규칙
-- [`docs/specs/architecture.md`](docs/specs/architecture.md) — L0 시스템 경계, 결정 8개, Open Questions 4개
+- [`docs/specs/architecture.md`](docs/specs/architecture.md) — L0 시스템 경계, 결정 12개, Open Questions 4개
 - [`docs/specs/domain.md`](docs/specs/domain.md) — L1 도메인 개념 + 불변식 17개
 - [`docs/product/`](docs/product/) — 사용자 측 기획 5종 + HTML preview (2026-05-07 핸드오프)
 - [`docs/PROGRESS.md`](docs/PROGRESS.md) — 데이터 파이프라인 + 에이전트 실험 보고 (2026-04-03)
