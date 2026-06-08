@@ -2,7 +2,7 @@
 
 OpenMath 프론트엔드 (Next.js 14 App Router + Tailwind v4).
 
-랜딩 페이지 보일러플레이트 + [DESIGN.md](./DESIGN.md) 디자인 시스템 spec. 1차 핸드오프 시점에는 `/` 랜딩 1 화면만 작동.
+랜딩 페이지 보일러플레이트 + [DESIGN.md](./DESIGN.md) 디자인 시스템 spec. 현재 `/`, `/login`, `/samples`, `/app/*` (S0~S6) 가 작동.
 
 ---
 
@@ -10,10 +10,10 @@ OpenMath 프론트엔드 (Next.js 14 App Router + Tailwind v4).
 
 ```bash
 pnpm install            # 루트에서 1회
-pnpm -F @openmath/web dev    # http://localhost:3001
+pnpm -F @openmath/web dev    # http://localhost:27182
 ```
 
-`agent` 서비스 (포트 3000) 가 동시에 떠 있어야 SSE 엔드포인트를 호출할 수 있다. `pnpm dev:all` 사용 권장.
+`agent` 서비스 (포트 31415) 가 동시에 떠 있어야 SSE 엔드포인트를 호출할 수 있다. `pnpm dev:all` 사용 권장.
 
 ## 디렉토리
 
@@ -54,25 +54,26 @@ npx @google/design.md lint DESIGN.md
 
 `broken-ref` 는 error, 나머지는 warning. lint 통과 = front matter 와 prose 의 토큰 참조가 모두 resolve 됨.
 
-## SSE Consumption (후속 PR)
+## SSE Consumption
 
-`agent` 의 `POST /api/generate` 가 6 단계 검증 progress 를 SSE 로 흘림. 1차 핸드오프에는 미포함.
+`agent` 의 `POST /api/generate` 가 6 단계 검증 progress 를 SSE 로 흘림. 현재 구현됨 (`hooks/use-verification-stream.ts`).
 
 **중요**: 브라우저 `EventSource` 는 GET 전용. `POST /api/generate` 와 호환되지 않음. 두 가지 선택지:
 - (A) **`@microsoft/fetch-event-source`** 사용 — production 패턴 (OpenDerisk, Openinary, Kodus AI 채택). custom hook `hooks/use-verification-stream.ts` 안에 `fetchEventSource` 래핑 + `AbortController` cleanup.
 - (B) `agent` 측에서 `GET /api/generate?…` 로 변경 — 표준 `EventSource` 사용 가능.
 
-후속 PR 에서 (A) 채택 잠정. `useChat` (Vercel AI SDK) 은 AI SDK 의 `data-*` 메시지 스트림 프로토콜 전용이라 임의 SSE 이벤트 이름 (`step_started`, `pipeline_completed`) 과 호환 안 됨.
+현재 구현은 (A) `@microsoft/fetch-event-source` 채택. `useChat` (Vercel AI SDK) 은 AI SDK 의 `data-*` 메시지 스트림 프로토콜 전용이라 임의 SSE 이벤트 이름 (`step_started`, `pipeline_completed`) 과 호환 안 됨.
 
 이벤트 종류 (`docs/specs/architecture.md` D-6):
 - `step` — `{ index: 1-6, name: string, status: 'started' | 'completed' | 'failed' }`
+- `preview` — `{ latex: string }` (중간 후보 LaTeX 미리보기)
 - `result` — `GeneratedProblem[]` (검증 통과한 문항 묶음)
 - `error` — `{ stage: string, message: string }`
 
-후속 PR scope:
-- `lib/sse-client.ts` + `hooks/use-verification-stream.ts` (`fetchEventSource` + `AbortController` cleanup)
+구현 내역:
+- `hooks/use-verification-stream.ts` (`fetchEventSource` + `AbortController` cleanup) — 구현 완료
 - React 18 strict-mode 더블 마운트 방어 (cleanup 함수)
-- `agent` 측 CORS 설정 (`Access-Control-Allow-Origin: http://localhost:3001`)
+- `agent` 측 CORS 설정 (`Access-Control-Allow-Origin: http://localhost:27182`)
 - `@openmath/agent` 워크스페이스 dep 추가 + Zod 스키마 import (`@openmath/agent/schemas`)
 
 ## 폰트 로딩

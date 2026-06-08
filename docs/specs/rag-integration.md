@@ -62,8 +62,8 @@ CORPUS_JSONL=/absolute/path/to/rag_problem_generation_dataset/openmath_rag_recor
 예시 로컬 `.env`:
 
 ```env
-PORT=3000
-MATH_ENGINE_URL=http://localhost:8000
+PORT=31415
+MATH_ENGINE_URL=http://localhost:16180
 CORPUS_JSONL=/Users/<name>/dev/AI_HUB_data/rag_problem_generation_dataset/openmath_rag_records.jsonl
 ```
 

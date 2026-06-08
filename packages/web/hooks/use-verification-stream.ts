@@ -17,7 +17,7 @@ import { useEffect, useReducer, useRef } from "react";
  * 로컬 타입을 사용한다. 추후 zod 스키마 import 로 검증을 강화한다.
  * ──────────────────────────────────────────────────────────── */
 
-export const STEP_NAMES: readonly string[] = [
+const STEP_NAMES: readonly string[] = [
   "RAG 검색",
   "의도 추출",
   "문제 생성",
@@ -68,7 +68,7 @@ export type StreamInput = {
   mode: "structural" | "conceptual";
   dims: readonly string[];
   sourceProblemText?: string;
-  /** override agent endpoint. defaults to NEXT_PUBLIC_AGENT_URL or localhost:3000 */
+  /** override agent endpoint. defaults to NEXT_PUBLIC_AGENT_URL or localhost:31415 */
   endpoint?: string;
 };
 
@@ -241,7 +241,7 @@ class FatalStreamError extends Error {}
 function defaultEndpoint(): string {
   const env =
     typeof process !== "undefined" ? process.env.NEXT_PUBLIC_AGENT_URL : undefined;
-  return env ?? "http://localhost:3000";
+  return env ?? "http://localhost:31415";
 }
 
 function verificationStorageKey(input: StreamInput): string {
