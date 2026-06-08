@@ -12,6 +12,7 @@ import type {
   RagResult,
   Strategy,
 } from "../schemas/index.js";
+import { generationKindForTopic, getGenerateRequestTopicCode } from "../schemas/index.js";
 import type { PromptLoader } from "../tools/prompt-loader.js";
 
 export interface GeneratorAgentInput {
@@ -38,11 +39,11 @@ const LlmGeneratedCandidateSchema = z.object({
   question_text: z
     .string()
     .min(1)
-    .describe("SymPy-parseable x equation, transformed from the selected source problem"),
+    .describe("Generated Korean middle-school math problem matching the requested generation kind"),
   expected_answer: z
     .string()
     .min(1)
-    .describe("Comma-separated exact solutions using sqrt(...) when needed"),
+    .describe("Exact answer in a compact plain-text math format"),
   proposed_solution_trace: z
     .string()
     .min(1)
@@ -53,8 +54,10 @@ export function createGeneratorAgent(deps: GeneratorAgentDeps): GeneratorAgent {
   return {
     async generate(input) {
       const prompt = await deps.prompts.load(deps.promptId);
+      const generationKind = generationKindForTopic(getGenerateRequestTopicCode(input.request));
       const rendered = prompt.render({
         request: input.request,
+        generationKind,
         intent: input.intent,
         refs: input.refs,
         strategy: input.strategy === null ? "" : JSON.stringify(input.strategy, null, 2),
@@ -71,6 +74,7 @@ export function createGeneratorAgent(deps: GeneratorAgentDeps): GeneratorAgent {
       return {
         candidate_id: randomUUID(),
         mode: input.request.mode === "conceptual" ? "conceptual" : "structural",
+        generation_kind: generationKind,
         question_text: object.question_text,
         expected_answer: object.expected_answer,
         proposed_solution_trace: object.proposed_solution_trace,

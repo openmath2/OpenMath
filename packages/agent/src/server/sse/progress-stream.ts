@@ -9,8 +9,23 @@ export async function pipeProgressToSse(
   stream: SSEStreamingApi,
   events: AsyncGenerator<ProgressEvent, unknown, void>,
 ): Promise<void> {
-  for await (const event of events) {
-    const wire = toWireSseEvent(event);
+  try {
+    for await (const event of events) {
+      const wire = toWireSseEvent(event);
+      await stream.writeSSE({
+        event: wire.event,
+        data: JSON.stringify(wire.data),
+      });
+    }
+  } catch {
+    const wire = toWireSseEvent({
+      type: "error",
+      stage: "orchestrator",
+      code: "workflow_exception",
+      message: "Verification workflow failed before streaming completed",
+      recoverable: false,
+      timestamp: new Date().toISOString(),
+    });
     await stream.writeSSE({
       event: wire.event,
       data: JSON.stringify(wire.data),

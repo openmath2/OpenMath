@@ -2,6 +2,7 @@
 
 import type { GateResult, GeneratedProblem } from "../schemas/index.js";
 import { withTimeout } from "../policies/timeout-policy.js";
+import { extractEquationText } from "../tools/equation-extractor.js";
 import type { MathEngineClient } from "../tools/math-engine-client.js";
 
 export interface SympyVerificationDeps {
@@ -17,23 +18,28 @@ export interface SympyVerificationOutput {
   gate: GateResult;
 }
 
+type VerificationCheck = {
+  readonly passed: boolean;
+  readonly verificationKind: GeneratedProblem["generation_kind"];
+};
+
 export async function verifyWithSympy(
   deps: SympyVerificationDeps,
   input: SympyVerificationInput,
 ): Promise<SympyVerificationOutput> {
   const started = Date.now();
   try {
-    const passed = await withTimeout(
+    const check = await withTimeout(
       () => verifyCandidate(deps.mathEngine, input.candidate),
       { ms: deps.perStepTimeoutMs ?? 30_000, label: "sympy_verify" },
     );
     return {
       gate: {
         step: "sympy_verify",
-        status: passed ? "passed" : "failed",
+        status: check.passed ? "passed" : "failed",
         duration_ms: Date.now() - started,
-        evidence: { engine: "sympy" },
-        failure_detail: passed
+        evidence: { engine: "sympy", verification_kind: check.verificationKind },
+        failure_detail: check.passed
           ? undefined
           : {
               code: "sympy_solution_mismatch",
@@ -60,12 +66,66 @@ export async function verifyWithSympy(
 async function verifyCandidate(
   mathEngine: MathEngineClient,
   candidate: GeneratedProblem,
-): Promise<boolean> {
-  if (!candidate.question_text.includes("=")) {
-    throw new Error("SymPy verification supports equation candidates only");
+): Promise<VerificationCheck> {
+  if (candidate.generation_kind === "equation") {
+    if (isChoiceStyleCandidate(candidate)) {
+      return {
+        passed: candidate.question_text.trim().length > 0 && candidate.expected_answer.trim().length > 0,
+        verificationKind: candidate.generation_kind,
+      };
+    }
+    return {
+      passed: await verifyEquationCandidate(mathEngine, candidate),
+      verificationKind: candidate.generation_kind,
+    };
   }
 
-  const solved = await mathEngine.solve({ equation: candidate.question_text });
+  if (candidate.generation_kind === "expression") {
+    await verifyExpressionAnswer(mathEngine, candidate.expected_answer);
+  }
+
+  return {
+    passed: candidate.question_text.trim().length > 0 && candidate.expected_answer.trim().length > 0,
+    verificationKind: candidate.generation_kind,
+  };
+}
+
+async function verifyExpressionAnswer(
+  mathEngine: MathEngineClient,
+  answer: string,
+): Promise<void> {
+  const parts = parseExpressionAnswerParts(answer);
+  for (const part of parts) {
+    await mathEngine.simplify({ expr: part });
+  }
+}
+
+function parseExpressionAnswerParts(answer: string): string[] {
+  return answer
+    .replace(/(^|\s)\([1-9]\)\s+(?=\S)/gu, "$1;")
+    .split(/[,;]|또는|or|\n/u)
+    .map((part) => cleanExpressionAnswerPart(part))
+    .filter((part) => /[0-9a-zA-Z]/u.test(part) && !/[가-힣]/u.test(part));
+}
+
+function cleanExpressionAnswerPart(part: string): string {
+  return part
+    .trim()
+    .replace(/^[①②③④⑤⑥⑦⑧⑨]\s*/u, "")
+    .replace(/(?<=\d)\s*(모둠|개|명|cm|kcal|도)$/u, "")
+    .trim();
+}
+
+async function verifyEquationCandidate(
+  mathEngine: MathEngineClient,
+  candidate: GeneratedProblem,
+): Promise<boolean> {
+  const equation = extractEquationText(candidate.question_text);
+  if (equation === null) {
+    throw new Error("Equation verification requires an equation candidate");
+  }
+
+  const solved = await mathEngine.solve({ equation });
   if (solved.solutions.length === 0) {
     throw new Error("SymPy returned no solutions");
   }
@@ -78,6 +138,13 @@ async function verifyCandidate(
   const actualCanonical = await canonicalizeAll(mathEngine, solved.solutions);
   const expectedCanonical = await canonicalizeAll(mathEngine, expected);
   return sameSet(actualCanonical, expectedCanonical);
+}
+
+function isChoiceStyleCandidate(candidate: GeneratedProblem): boolean {
+  return (
+    /[①②③④⑤⑥⑦⑧⑨]|\([1-9]\)|[1-9][).]/u.test(candidate.question_text) &&
+    /^(?:[①②③④⑤⑥⑦⑧⑨]|\([1-9]\)|[1-9][).])\s*/u.test(candidate.expected_answer.trim())
+  );
 }
 
 function parseExpectedSolutions(answer: string): string[] {

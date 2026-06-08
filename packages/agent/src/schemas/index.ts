@@ -5,6 +5,7 @@
  */
 
 export * from "./generate-request.schema.js";
+export * from "./generation-kind.schema.js";
 export * from "./generated-problem.schema.js";
 export * from "./intent.schema.js";
 export * from "./critique.schema.js";

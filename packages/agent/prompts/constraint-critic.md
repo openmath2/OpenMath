@@ -39,6 +39,8 @@ updated: 2026-05-18
 `Critique` 형식 JSON:
 - `passes: boolean`
 - `hints: string[]` — 통과 못 했다면 Refiner가 반영할 *구체적* 힌트
+- JSON 문자열 안에 backslash를 쓰지 말 것. `\sqrt`, `\(`, `\frac` 같은 LaTeX 예시를 쓰면 안 된다.
+- `hints`는 plain Korean 문장으로만 써라. 수식 예시가 필요하면 "제곱근 표기를 JSON 안전한 plain text로 쓰라"처럼 말로 설명하라.
 
 # Constraints
 

@@ -96,6 +96,7 @@ function storageKey(
     "openmath:verification-result",
     grade,
     topic.code,
+    topic.name,
     mode,
     [...dims].sort().join(","),
     sourceProblemText,

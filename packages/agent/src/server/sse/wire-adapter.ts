@@ -44,17 +44,39 @@ export function toWireStepEvent(event: StepEvent): WireStepEvent {
     index: meta.index,
     name: meta.name,
     status: mapStepStatus(event),
-    summary: null,
+    summary: readGateFailureSummary(event.data),
   };
 }
 
 function readGateStatus(data: unknown): "passed" | "failed" | "skipped" | null {
-  if (typeof data !== "object" || data === null || !("gate" in data)) return null;
-  const gate = data.gate;
-  if (typeof gate !== "object" || gate === null || !("status" in gate)) return null;
-  const status = gate.status;
+  const gate = readGate(data);
+  if (gate === null) return null;
+  const status = gate["status"];
   if (status === "passed" || status === "failed" || status === "skipped") return status;
   return null;
+}
+
+function readGateFailureSummary(data: unknown): string | null {
+  const gate = readGate(data);
+  if (gate === null) return null;
+  const detail = asRecord(gate["failure_detail"]);
+  if (detail === null) return null;
+  const code = detail["code"];
+  const message = detail["message"];
+  if (typeof code !== "string" || typeof message !== "string") return null;
+  return `${code}: ${message}`;
+}
+
+function readGate(data: unknown): Record<string, unknown> | null {
+  const outer = asRecord(data);
+  if (outer === null) return null;
+  return asRecord(outer["gate"]);
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
+  const entries: Array<[string, unknown]> = Object.entries(value);
+  return Object.fromEntries(entries);
 }
 
 function mapVerificationStatus(
@@ -81,6 +103,7 @@ export function toWireResultProblem(
     answer_latex: problem.expected_answer,
     isomorphism: problem.mode,
     preserved_dimensions: preservedDimensions(problem),
+    source_refs: problem.source_refs,
     verification_status: mapVerificationStatus(verification.overall),
   };
 }

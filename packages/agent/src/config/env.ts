@@ -1,5 +1,8 @@
 /** Environment variable validation. */
 
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { z } from "zod";
 
 export const EnvSchema = z.object({
@@ -31,7 +34,7 @@ export const EnvSchema = z.object({
 export type Env = z.infer<typeof EnvSchema>;
 
 export function loadEnv(): Env {
-  const parsed = EnvSchema.safeParse(process.env);
+  const parsed = EnvSchema.safeParse({ ...readDotenvFiles(), ...process.env });
   if (!parsed.success) {
     throw new Error(
       `Invalid environment variables:\n${parsed.error.issues
@@ -40,4 +43,44 @@ export function loadEnv(): Env {
     );
   }
   return parsed.data;
+}
+
+function readDotenvFiles(): Record<string, string> {
+  const values: Record<string, string> = {};
+  for (const path of dotenvCandidates()) {
+    if (!existsSync(path)) continue;
+    Object.assign(values, parseDotenv(readFileSync(path, "utf8")));
+  }
+  return values;
+}
+
+function dotenvCandidates(): readonly string[] {
+  const cwd = process.cwd();
+  return [...new Set([resolve(cwd, ".env"), resolve(cwd, "packages/agent/.env")])];
+}
+
+function parseDotenv(source: string): Record<string, string> {
+  const values: Record<string, string> = {};
+  for (const line of source.split(/\r?\n/u)) {
+    const trimmed = line.trim();
+    if (trimmed.length === 0 || trimmed.startsWith("#")) continue;
+    const body = trimmed.startsWith("export ") ? trimmed.slice(7).trim() : trimmed;
+    const separator = body.indexOf("=");
+    if (separator <= 0) continue;
+    const key = body.slice(0, separator).trim();
+    const rawValue = body.slice(separator + 1).trim();
+    if (!/^[A-Za-z_][A-Za-z0-9_]*$/u.test(key)) continue;
+    values[key] = unquote(rawValue);
+  }
+  return values;
+}
+
+function unquote(value: string): string {
+  if (value.length >= 2 && value.startsWith('"') && value.endsWith('"')) {
+    return value.slice(1, -1).replaceAll("\\n", "\n").replaceAll('\\"', '"');
+  }
+  if (value.length >= 2 && value.startsWith("'") && value.endsWith("'")) {
+    return value.slice(1, -1);
+  }
+  return value;
 }

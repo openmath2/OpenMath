@@ -61,6 +61,36 @@ describe("SSE wire adapter", () => {
     });
   });
 
+  it("includes failed gate details in step summaries", () => {
+    const wire = toWireSseEvent({
+      type: "step",
+      step: "objective_map",
+      status: "done",
+      timestamp: "2026-05-21T00:00:00.000Z",
+      data: {
+        gate: {
+          step: "objective_map",
+          status: "failed",
+          duration_ms: 1,
+          failure_detail: {
+            code: "intent_topic_mismatch",
+            message: "Intent does not match requested topic",
+          },
+        },
+      },
+    });
+
+    expect(wire).toEqual({
+      event: "step",
+      data: {
+        index: 6,
+        name: "학습 목표 매핑",
+        status: "failed",
+        summary: "intent_topic_mismatch: Intent does not match requested topic",
+      },
+    });
+  });
+
   it("sanitizes retry reasons and internal errors", () => {
     const retry = toWireSseEvent({
       type: "retry",
@@ -99,6 +129,7 @@ describe("SSE wire adapter", () => {
     const problem: GeneratedProblem = {
       candidate_id: "00000000-0000-0000-0000-000000000001",
       mode: "structural",
+      generation_kind: "equation",
       question_text: "x**2 - 5*x + 6 = 0",
       expected_answer: "2, 3",
       proposed_solution_trace: "(x - 2)(x - 3) = 0",
@@ -146,6 +177,7 @@ describe("SSE wire adapter", () => {
     if (wire.event !== "result") throw new Error("expected result event");
     expect(wire.data[0]?.id).toBe(problem.candidate_id);
     expect(wire.data[0]?.verification_status).toBe("pass");
+    expect(wire.data[0]?.source_refs).toEqual(["seed-9수02-09-001"]);
     expect(wire.data[0]?.explanation_latex).toBeUndefined();
     expect(wire.data[0]?.preserved_dimensions).toEqual([
       "이차식을 인수분해하여 해를 구한다",
@@ -182,6 +214,34 @@ describe("SSE wire adapter", () => {
           name: "RAG 검색",
           status: "completed",
           summary: null,
+        }),
+      },
+    ]);
+  });
+
+  it("turns pre-yield workflow errors into frontend-visible SSE errors", async () => {
+    const written: Array<{ event?: string; data: string | Promise<string> }> = [];
+    const stream = {
+      async writeSSE(message: { event?: string; data: string | Promise<string> }) {
+        written.push(message);
+      },
+    };
+
+    async function* events(): AsyncGenerator<ProgressEvent, void, void> {
+      throw new Error("Verification workflow requires intentModel");
+    }
+
+    await pipeProgressToSse(
+      stream as Parameters<typeof pipeProgressToSse>[0],
+      events(),
+    );
+
+    expect(written).toEqual([
+      {
+        event: "error",
+        data: JSON.stringify({
+          stage: "orchestrator",
+          message: "검증 파이프라인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
         }),
       },
     ]);
@@ -263,6 +323,7 @@ describe("SymPy verification fail-closed behavior", () => {
   const candidate: GeneratedProblem = {
     candidate_id: "00000000-0000-0000-0000-000000000004",
     mode: "structural",
+    generation_kind: "equation",
     question_text: "x**2 - 5*x + 6 = 0",
     expected_answer: "2, 3",
     proposed_solution_trace: "internal trace",
@@ -315,6 +376,48 @@ describe("SymPy verification fail-closed behavior", () => {
       { mathEngine: fakeMathEngine(["3", "2"]) },
       { candidate },
     );
+    expect(result.gate.status).toBe("passed");
+  });
+
+  it("routes expression candidates through expression verification", async () => {
+    const expressionCandidate: GeneratedProblem = {
+      ...candidate,
+      candidate_id: "00000000-0000-0000-0000-000000000005",
+      generation_kind: "expression",
+      question_text: "다항식 (x + 3)(x - 5)를 전개하시오.",
+      expected_answer: "x**2 - 2*x - 15",
+    };
+
+    const result = await verifyWithSympy(
+      { mathEngine: fakeMathEngine([]) },
+      { candidate: expressionCandidate },
+    );
+
+    expect(result.gate.status).toBe("passed");
+    expect(result.gate.evidence).toMatchObject({
+      verification_kind: "expression",
+    });
+  });
+
+  it("routes choice-label equation candidates through non-solve verification", async () => {
+    const choiceCandidate: GeneratedProblem = {
+      ...candidate,
+      question_text:
+        "다음 중 이차방정식의 꼴로 정리할 수 없는 것은? ① x^2=1 ② x^2+x=0 ③ 2x^2=3 ④ x^2+1=x^2+2",
+      expected_answer: "④",
+    };
+    const mathEngine: MathEngineClient = {
+      ...fakeMathEngine([]),
+      solve: async () => {
+        throw new Error("solve should not be called");
+      },
+    };
+
+    const result = await verifyWithSympy(
+      { mathEngine },
+      { candidate: choiceCandidate },
+    );
+
     expect(result.gate.status).toBe("passed");
   });
 
