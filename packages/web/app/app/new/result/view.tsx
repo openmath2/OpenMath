@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { LatexRenderer } from "@/components/math/latex-renderer";
-import { type Grade, type Topic, gradeLabel } from "../topic/data";
+import { type Grade, type SchoolLevel, type Topic, gradeLabel } from "../topic/data";
 import type { ResultProblem } from "./mock";
 
 type Filter = "all" | "structural" | "conceptual" | "warn";
 
 type Props = {
+  schoolLevel: SchoolLevel;
   grade: Grade | null;
   topic: Topic | null;
   mode: "structural" | "conceptual" | null;
@@ -86,7 +87,8 @@ function matchesFilter(p: ResultProblem, filter: Filter): boolean {
 }
 
 function storageKey(
-  grade: Grade,
+  schoolLevel: SchoolLevel,
+  grade: Grade | null,
   topic: Topic,
   mode: "structural" | "conceptual",
   dims: string[],
@@ -95,6 +97,7 @@ function storageKey(
   return [
     "openmath:verification-result",
     grade,
+    schoolLevel,
     topic.code,
     topic.name,
     mode,
@@ -149,6 +152,7 @@ function toResultProblem(problem: StoredProblem, index: number, dims: string[]):
 
 export function ResultView({
   grade,
+  schoolLevel,
   topic,
   mode,
   dims,
@@ -161,10 +165,10 @@ export function ResultView({
 
   useEffect(() => {
     setDisplayProblems(problems);
-    if (grade === null || topic === null || mode === null) return;
+    if ((schoolLevel === "middle" && grade === null) || topic === null || mode === null) return;
     try {
       const raw = window.sessionStorage.getItem(
-        storageKey(grade, topic, mode, dims, sourceProblemText),
+        storageKey(schoolLevel, grade, topic, mode, dims, sourceProblemText),
       );
       if (raw === null) return;
       const parsed: unknown = JSON.parse(raw);
@@ -177,14 +181,14 @@ export function ResultView({
     } catch {
       setDisplayProblems(problems);
     }
-  }, [grade, topic, mode, dims, sourceProblemText, problems]);
+  }, [schoolLevel, grade, topic, mode, dims, sourceProblemText, problems]);
 
   const visible = useMemo(
     () => displayProblems.filter((p) => matchesFilter(p, filter)),
     [displayProblems, filter],
   );
 
-  if (grade === null || topic === null || mode === null) {
+  if ((schoolLevel === "middle" && grade === null) || topic === null || mode === null) {
     return (
       <>
         <nav className="container-app sub-nav" aria-label="단계 이동">
@@ -222,10 +226,11 @@ export function ResultView({
 
   const adoptedCount = adopted.size;
   const passedCount = displayProblems.filter((p) => p.status !== "fail").length;
-  const verifyHref = `/app/new/verify?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}${sourceQuery(sourceProblemText)}`;
+  const gradeParam = grade === null ? "common" : grade;
+  const verifyHref = `/app/new/verify?school=${schoolLevel}&grade=${gradeParam}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}${sourceQuery(sourceProblemText)}`;
   const exportHref =
     adoptedCount > 0
-      ? `/app/new/export?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}${sourceQuery(sourceProblemText)}&adopted=${Array.from(adopted).join(",")}`
+      ? `/app/new/export?school=${schoolLevel}&grade=${gradeParam}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}${sourceQuery(sourceProblemText)}&adopted=${Array.from(adopted).join(",")}`
       : null;
 
   return (
@@ -240,7 +245,7 @@ export function ResultView({
           <span className="crumb-current">결과</span>
         </div>
         <span className="progress" aria-hidden="true">
-          {gradeLabel(grade)} · {topic.name}
+          {gradeLabel(grade, schoolLevel)} · {topic.name}
         </span>
       </nav>
 
