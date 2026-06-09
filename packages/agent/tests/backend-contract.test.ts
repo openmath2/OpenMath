@@ -33,6 +33,27 @@ describe("FE-compatible generate contract", () => {
     expect(parsed.difficulty).toBe("medium");
   });
 
+  it("accepts high-school common-math requests from the web hook", () => {
+    const parsed = GenerateRequestSchema.parse({
+      school_level: "high",
+      grade: null,
+      topic: "10공수01-01",
+      topic_name: "다항식의 연산",
+      mode: "structural",
+      dims: ["다항식의 표준 풀이 절차를 단계별로 수행"],
+    });
+
+    expect(parsed.school_level).toBe("high");
+    expect(parsed.grade).toBeNull();
+    expect(parsed.topic).toBe("10공수01-01");
+  });
+
+  it("rejects middle-school requests without grade", () => {
+    expect(() =>
+      GenerateRequestSchema.parse({ grade: null, topic: "9수02-09", mode: "structural" }),
+    ).toThrow(/Middle school requests require grade/);
+  });
+
   it("rejects requests without topic or topic_code", () => {
     expect(() =>
       GenerateRequestSchema.parse({ grade: 3, mode: "structural" }),
