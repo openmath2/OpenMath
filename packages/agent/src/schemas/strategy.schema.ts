@@ -65,7 +65,7 @@ export const StrategySchema = z.object({
   code: z.string().regex(OBJECTIVE_CODE_PATTERN), // I-T1
   title: z.string().min(1),
   school_level: SchoolLevelSchema,
-  grade: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  grade: z.union([z.literal(1), z.literal(2), z.literal(3)]).nullable(),
 
   techniques: z.object({
     required_at_least_one_of: z.array(z.string()),

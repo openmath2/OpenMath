@@ -16,8 +16,8 @@ describe("createFsStrategyLoader", () => {
 
     const all = await loader.loadAll();
     expect(all.map((strategy) => strategy.code)).toEqual(
-      expect.arrayContaining(["9수02-03", "9수02-07", "9수02-09", "9수01-05"]),
+      expect.arrayContaining(["9수02-03", "9수02-07", "9수02-09", "9수01-05", "10공수01-01"]),
     );
-    expect(all).toHaveLength(12);
+    expect(all).toHaveLength(43);
   });
 });
