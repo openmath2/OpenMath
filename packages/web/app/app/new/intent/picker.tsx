@@ -5,8 +5,10 @@ import { useState } from "react";
 import {
   type EvaluationCandidate,
   type Grade,
+  type SchoolLevel,
   type Topic,
   gradeLabel,
+  topicScopeLabel,
 } from "../topic/data";
 import { LatexMixed } from "@/components/math/latex-renderer";
 import examplesData from "../topic/examples.json";
@@ -92,12 +94,13 @@ function difficultyLabel(d: ReferenceProblem["difficulty"]): string | null {
 }
 
 type Props = {
+  schoolLevel: SchoolLevel;
   grade: Grade | null;
   topic: Topic | null;
   candidates: EvaluationCandidate[];
 };
 
-export function IntentPicker({ grade, topic, candidates }: Props) {
+export function IntentPicker({ schoolLevel, grade, topic, candidates }: Props) {
   const [mode, setMode] = useState<IsomorphismMode | null>("structural");
   const refs = topic === null ? [] : referenceProblems(topic);
   const [selectedRef, setSelectedRef] = useState<string>(refs[0]?.id ?? "");
@@ -105,7 +108,7 @@ export function IntentPicker({ grade, topic, candidates }: Props) {
     () => new Set(candidates.filter((c) => c.default).map((c) => c.key)),
   );
 
-  if (grade === null || topic === null) {
+  if ((schoolLevel === "middle" && grade === null) || topic === null) {
     return (
       <>
         <nav className="container-app sub-nav" aria-label="단계 이동">
@@ -144,7 +147,7 @@ export function IntentPicker({ grade, topic, candidates }: Props) {
   const dims = Array.from(checked).sort().join(",");
   const source = refs.find((ref) => ref.id === selectedRef)?.sourceProblemText ?? refs[0]?.sourceProblemText ?? "";
   const generateHref = canSubmit
-    ? `/app/new/verify?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims}&source=${encodeURIComponent(source)}`
+    ? `/app/new/verify?school=${schoolLevel}&grade=${grade === null ? "common" : grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims}&source=${encodeURIComponent(source)}`
     : null;
 
   return (
@@ -152,7 +155,7 @@ export function IntentPicker({ grade, topic, candidates }: Props) {
       <nav className="container-app sub-nav" aria-label="단계 이동">
         <div>
           <Link
-            href={`/app/new/topic?grade=${grade}`}
+            href={`/app/new/topic?school=${schoolLevel}&grade=${grade === null ? "common" : grade}`}
             className="crumb"
           >
             <span aria-hidden="true">←</span>
@@ -160,7 +163,7 @@ export function IntentPicker({ grade, topic, candidates }: Props) {
           </Link>
           <span className="crumb-sep" aria-hidden="true">·</span>
           <span className="crumb-current">
-            {gradeLabel(grade)} · {topic.name}
+            {gradeLabel(grade, schoolLevel)} · {topic.name}
           </span>
         </div>
         <span className="progress" aria-label="4 단계 중 3 단계">
@@ -173,8 +176,8 @@ export function IntentPicker({ grade, topic, candidates }: Props) {
           어떻게 출제할까요?
         </h1>
         <p className="page-subtitle">
-          동형 방식 · 기준 문항 · 보존할 평가 차원을 골라 주세요. 검증 6 단계가
-          이 기준을 따라 진행됩니다.
+          {topicScopeLabel(topic)} 기준입니다. 동형 방식 · 기준 문항 · 보존할 평가 차원을 골라 주세요.
+          검증 6 단계가 이 기준을 따라 진행됩니다.
         </p>
 
         {/* S3-A — 동형 모드 */}
