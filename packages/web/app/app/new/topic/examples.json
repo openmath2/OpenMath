@@ -1,50 +1,52 @@
 {
-  "generated_at": "2026-06-06T15:47:54.774Z",
-  "corpus_source": "openmath_rag_records.jsonl",
-  "note": "임시 mini-매핑 기반. D-13 도입 후 mapping-2022-to-2015.yaml 로 이관.",
+  "schema_version": "openmath-topic-examples-v2",
   "units": {
     "9수01-01": {
       "ui_name": "소인수분해",
+      "school_level": "middle",
       "grade": 1,
-      "candidate_pool": 1317,
+      "course": "중학교 수학",
+      "candidate_pool": 319,
       "examples": [
         {
-          "id": "110:train:21709_51439",
+          "id": "real-110-train-21721_51492",
           "achievement_code_2015": "9수01-01",
-          "topic_name_2015": "소수와 합성수",
-          "difficulty": "easy",
+          "topic_name_2015": "소인수분해",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "자연수 $a$보다 작은 소수가 $4$ 개일 때, $a$가 될 수 있는 수의 개수를 구하여라.",
-          "answer_text": "$4$ 개"
+          "question_text": "$48=2^a\\times3$, $18=2\\times3^b$일 때, $a+b$의 값을 구하여라. (단, $a$, $b$는 자연수)",
+          "answer_text": "$6$"
         },
         {
-          "id": "110:train:21726_51553",
-          "achievement_code_2015": "9수04-05",
-          "topic_name_2015": "소인수 구하기",
-          "difficulty": "easy",
+          "id": "real-110-train-21721_51493",
+          "achievement_code_2015": "9수01-01",
+          "topic_name_2015": "소인수분해",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "$N(x)$는 자연수 $x$를 소인수분해하였을 때, 소인수들의 합을 나타낸다. 예를 들어 $N(2)=2$, $N(10)=7$이다. $N(84)=a$일 때, $N(a)$의 값을 구하여라.",
-          "answer_text": "$N(a)=5$"
+          "question_text": "$252=2^a\\times3^2\\times7$, $270=2\\times3^b\\times5$일 때, $b-a$의 값을 구하여라. (단, $a$, $b$는 자연수)",
+          "answer_text": "$1$"
         },
         {
-          "id": "110:train:21722_51626",
+          "id": "real-110-train-21721_51654",
           "achievement_code_2015": "9수01-01",
-          "topic_name_2015": "소인수분해한 결과에서 밑과 지수구하기",
-          "difficulty": "easy",
+          "topic_name_2015": "소인수분해",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "$225$를 $a^x\\times b^y$으로 소인수분해하였을 때, 자연수 $a$, $b$, $x$, $y$에 대하여 $a+b-x+y$의 값을 구하여라. (단, $a$, $b$는 서로 다른 소수, $a<b$)",
-          "answer_text": "$8$"
+          "question_text": "$126=2\\times3^a\\times7$, $275=5^b\\times11$일 때, $a\\times b$의 값을 구하여라. (단, $a$, $b$는 자연수)",
+          "answer_text": "$4$"
         }
       ]
     },
     "9수01-02": {
       "ui_name": "정수와 유리수",
+      "school_level": "middle",
       "grade": 1,
-      "candidate_pool": 429,
+      "course": "중학교 수학",
+      "candidate_pool": 292,
       "examples": [
         {
-          "id": "110:train:34314_135764",
-          "achievement_code_2015": "9수01-03",
+          "id": "real-110-train-34314_135764",
+          "achievement_code_2015": "9수01-02",
           "topic_name_2015": "정수와 유리수",
           "difficulty": "easy",
           "problem_type": "essay",
@@ -52,168 +54,178 @@
           "answer_text": "$4$"
         },
         {
-          "id": "110:train:5277_1316",
-          "achievement_code_2015": "9수04-05",
-          "topic_name_2015": "절댓값 구하기",
+          "id": "real-110-train-34314_135765",
+          "achievement_code_2015": "9수01-02",
+          "topic_name_2015": "정수와 유리수",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "$5.2$의 절댓값을 $a$, 절댓값이 $\\frac{1}{5}$인 수 중 양수를 $b$라 할 때, $a+b$의 값을 구하여라.",
-          "answer_text": "$\\frac{27}{5}$"
+          "question_text": "수직선 위에서 $-\\frac{5}{3}$보다 작은 수 중에서 가장 큰 정수를 $a$, $\\frac{7}{3}$에 가장 가까운 정수를 $b$라 할 때, $\\vert a \\vert \\div \\vert b \\vert$의 값을 구하여라.",
+          "answer_text": "$1$"
         },
         {
-          "id": "110:train:41290_160520",
-          "achievement_code_2015": "9수04-05",
-          "topic_name_2015": "절댓값의 성질",
+          "id": "real-110-train-34314_159927",
+          "achievement_code_2015": "9수01-02",
+          "topic_name_2015": "정수와 유리수",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "수직선에서 두 수 $a$, $b$를 나타내는 두 점의 한가운데 있는 점이 나타내는 수가 $3$이다. $\\vert a \\vert=5$일 때, $b$의 값을 모두 구하여라.",
-          "answer_text": "$1$, $11$"
+          "question_text": "수직선 위에서 $-\\frac{12}{7}$보다 작은 수 중에서 가장 큰 정수를 $a$, $\\frac{11}{4}$에 가장 가까운 정수를 $b$라 할 때, $|a|-|b|$의 값을 구하여라.",
+          "answer_text": "$-1$"
         }
       ]
     },
     "9수01-03": {
       "ui_name": "유리수의 사칙연산",
+      "school_level": "middle",
       "grade": 1,
-      "candidate_pool": 847,
+      "course": "중학교 수학",
+      "candidate_pool": 32,
       "examples": [
         {
-          "id": "110:train:22056_57440",
-          "achievement_code_2015": "9수01-01",
-          "topic_name_2015": "덧셈, 뺄셈, 곱셈, 나눗셈의 혼합 계산",
+          "id": "real-30-train-S3_중등_1_000063",
+          "achievement_code_2015": "9수01-03",
+          "topic_name_2015": "유리수의 사칙연산",
           "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "다음 수직선 위의 두 점 A, B 사이의 거리를 $2\\text{ }:\\text{ }3$으로 나누는 점이 C일 때, 점 C가 나타내는 수를 구하여라.",
-          "answer_text": "$0$"
+          "problem_type": "subjective",
+          "question_text": "다음 수를 양수와 음수로 분류하시오.\n$-6, +\\frac{2}{3}, 0, -3, +2. 5, +5, -0. 25, -1$",
+          "answer_text": "양수 $+\\frac{2}{3}, +2. 5, +5$, 음수 $-6, -3, -0. 25, -1$"
         },
         {
-          "id": "110:train:22059_56609",
-          "achievement_code_2015": "9수01-01",
-          "topic_name_2015": "실생활에서의 혼합 계산",
+          "id": "real-30-train-S3_중등_1_000064",
+          "achievement_code_2015": "9수01-03",
+          "topic_name_2015": "유리수의 사칙연산",
           "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "수연이와 은주는 가위바위보를 하여 이기면 $+3$ 점, 지면 $+1$ 점을 얻는 놀이를 하고 있다. $10$ 번 가위바위보를 하여 수연이가 $7$ 번 이겼다고 할 때, 두 사람의 점수의 차를 구하여라. (단, 비기는 경우는 없다.)",
-          "answer_text": "$8$ 점"
+          "problem_type": "subjective",
+          "question_text": "아래 수에 대하여 다음을 구하시오.\n① 0보다 큰 수 ② 0보다 작은 수\n$-\\frac{3}{20}, +\\frac{8}{2}, +3. 5, 0, +4, -3, -2. 1$",
+          "answer_text": "① $+\\frac{8}{2}, +3. 5, +4 \\quad$ ② $-\\frac{3}{20}, -3, -2. 1$"
         },
         {
-          "id": "111:train:00041_60688",
-          "achievement_code_2015": "9수01-04",
-          "topic_name_2015": "유리수의 덧셈과 실생활",
+          "id": "real-30-train-S3_중등_1_000065",
+          "achievement_code_2015": "9수01-03",
+          "topic_name_2015": "유리수의 사칙연산",
           "difficulty": "easy",
-          "problem_type": "short_answer",
-          "question_text": "다음과 같이 두 단계를 거쳐 값을 산출하는 프로그램이 있다. $1$단계 : 초기 입력값에 $5$를 더한다.$2$단계 : $1$단계의 값에 $-7$을 더한다. 그러나 실수로 $2$단계에서 $+7$을 더하였더니 값이 $22$가 되었다. 초기 입력값과 바르게 계산한 값을 구하여라.",
-          "answer_text": "초기 입력값 : $10$, 바르게 계산한 값 : $8$"
+          "problem_type": "subjective",
+          "question_text": "아래 수에 대하여 다음을 구하시오.\n① 양의 유리수\n② 음의 유리수\n③ 정수\n④ 정수가 아닌 유리수\n$+1, +\\frac{2}{3}, 0, -1, +3, -\\frac{6}{2}, -\\frac{1}{2}$",
+          "answer_text": "① $+1. +\\frac{2}{3}, +3$\n② $-1, -\\frac{6}{2}, -\\frac{1}{2}$\n③ $+1, 0, -1, +3, \\underbrace{-\\frac{6}{2}}_{=-3}$\n④ $+\\frac{2}{3}, -\\frac{1}{2}$"
         }
       ]
     },
     "9수02-01": {
       "ui_name": "문자의 사용과 식의 값",
+      "school_level": "middle",
       "grade": 1,
-      "candidate_pool": 670,
+      "course": "중학교 수학",
+      "candidate_pool": 147,
       "examples": [
         {
-          "id": "110:train:41537_161689",
-          "achievement_code_2015": "9수03-14",
-          "topic_name_2015": "식의 값의 활용 - 식이 주어진 경우",
-          "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "기온이 $x °C$일 때, 공기 중에서 소리의 속력은 초속 $(331+0.6x) m$이다. 기온이 $20°C$일 때 $A$지점에 있는 사람이 들은 소리를 $5$ 초 후에 $B$지점에 있는 사람이 들었다고 할 때, $A$지점과 $B$지점 사이의 거리를 구하여라. (단, 소리가 난 지점, $A$지점, $B$지점은 이 순서로 한 직선 위에 있다.)",
-          "answer_text": "$1715$ m"
-        },
-        {
-          "id": "110:train:22838_61353",
+          "id": "real-111-train-00041_41042",
           "achievement_code_2015": "9수02-01",
-          "topic_name_2015": "식의 값의 활용 - 식을 만들어야 하는 경우",
+          "topic_name_2015": "문자의 사용과 식의 값",
           "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "가로의 길이가 $10$, 세로의 길이가 $9$인 직사각형 모양의 잔디밭에서 다음 그림과 같이 너비가 일정한 길을 만들려고 한다. (1) 길이 넓이를 $x,y$를 사용한 식으로 나타내어라.  (2) $x=2$$,$ $y=1$일 때, 길의 넓이를 구하여라.",
-          "answer_text": "(1) $10x+9y-xy$ (2) $27$"
+          "problem_type": "objective",
+          "question_text": "$x=\\frac{1}{\\sqrt{2}-1}$일 때, $ x^{2}-2 x-3 $의 값은? ① $-5$ ② $-4$ ③ $-3$ ④ $-2$ ⑤ $-1$",
+          "answer_text": "④"
         },
         {
-          "id": "110:train:34380_136707",
-          "achievement_code_2015": "9수04-05",
-          "topic_name_2015": "식의 값",
+          "id": "real-111-train-00041_41043",
+          "achievement_code_2015": "9수02-01",
+          "topic_name_2015": "문자의 사용과 식의 값",
           "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "$a=\\frac{1}{3}$, $b=\\frac{1}{4}$, $c=\\frac{1}{5}$일 때, $\\frac{2}{a}+\\frac{4}{b}+\\frac{1}{c}$의 값을 구하여라.",
-          "answer_text": "$27$"
+          "problem_type": "objective",
+          "question_text": "$ x=\\frac{4}{2 \\sqrt{5}-4} $ 일 때, $ x^{2}-8 x+15 $ 의 값은? ①$19$ ②$20$ ③$21$ ④$24$ ⑤$25$",
+          "answer_text": "①"
+        },
+        {
+          "id": "real-111-train-00041_45688",
+          "achievement_code_2015": "9수02-01",
+          "topic_name_2015": "문자의 사용과 식의 값",
+          "difficulty": "medium",
+          "problem_type": "objective",
+          "question_text": "$ a=9.6, b=0.2 $일 때, $ a^{2}-a b-6 b^{2} $의 값은? ①$9$ ②$90$ ③$900$ ④$9000$ ⑤$90000$",
+          "answer_text": "②"
         }
       ]
     },
     "9수02-02": {
       "ui_name": "일차식의 계산",
+      "school_level": "middle",
       "grade": 1,
-      "candidate_pool": 696,
+      "course": "중학교 수학",
+      "candidate_pool": 135,
       "examples": [
         {
-          "id": "110:train:22841_61542",
+          "id": "real-30-train-S3_중등_1_000093",
           "achievement_code_2015": "9수02-02",
-          "topic_name_2015": "계수가 분수인 일차식의 덧셈, 뺄셈",
+          "topic_name_2015": "일차식의 계산",
           "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "식 $\\frac{x-3}{2}+\\frac{5x+2}{4}$를 계산하였을 때, $x$의 계수와 상수항의 합을 구하여라.",
-          "answer_text": "$\\frac{3}{4}$"
+          "problem_type": "subjective",
+          "question_text": "오른쪽 그림과 같이 밑변의 길이가 $a \\mathrm{~cm}$ 이고, 높이가 $h \\mathrm{~cm}$ 인 평행사변형의 넓이를 $S \\mathrm{~cm}^{2}$라고 할 때, 다음 물음에 답하고 그 과정을 서술하시오 $. $\n①평행사변형의 넓이 $S$를 $a$, $h$에 대한 식으로 나타내시오.\n② $a=5$, $h=6$ 일 때, 평행사변형의 넓이 $S$를 구하시오.\n이 이미지는 직사각형의 일부분이 잘린 형태로, 선이 있는 두 개의 측면이 있고, 각 측면에는 $h \\, \\text{cm}$ 및 $a \\, \\text{cm}$라는 특정 길이가 표시되어 있습니다 $. $",
+          "answer_text": "① $(평행사변형의 넓이)$ $=$ $(밑변의 길이)$ $\\times$ $(높이)$ 이므로 $S=a h$ 이다. ② $S=a h$에 $a=5, h=6$을 대입하면 $S=5 \\times 6=30\\left(\\mathrm{~cm}^{2}\\right)$ 이다."
         },
         {
-          "id": "110:train:22845_61567",
-          "achievement_code_2015": "9수04-05",
-          "topic_name_2015": "문자에 일차식 대입하기",
-          "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "$x$의 계수가 $-1$인 일차식이 있다. $x=3$일 때의 식의 값을 $a$, $x=-3$일 때의 식의 값을 $b$라 할 때, $a-b$의 값을 구하여라.",
-          "answer_text": "$-6$"
+          "id": "real-30-train-S3_중등_1_000094",
+          "achievement_code_2015": "9수02-02",
+          "topic_name_2015": "일차식의 계산",
+          "difficulty": "hard",
+          "problem_type": "subjective",
+          "question_text": "한 변의 길이가 $5cm$인 정사각형 모양의 색종이를 다음 그림과 같이 이어 붙였다. 이때 색종이와 색종이 사이는 $x \\mathrm{~cm}$만큼의 폭으로 겹쳐서 붙였다. 다음 물음에 답하고 그 과정을 서술하시오.\n① 색종이를 $2$ 장, $3$ 장, $4$ 장 이어 붙일 때, 색종이의 둘레의 길이를 $x$를 사용한 식으로 나타내시오. ② 색종이 $12$ 장을 이어 붙일 때, 이어 붙인 색종이의 둘레의 길이를 $x$를 사용한 식으로 나타내시오. ③ 색종이 $12$ 장을 이어 붙일 때, 이어 붙인 색종이의 넓이를 $x$를 사용한 식으로 나타내시오.",
+          "answer_text": "① 색종이 $2$장을 이어 붙일 때 (둘레의 길이) $=5 \\times 2 + 2(5 \\times 2 - x) = 30 - 2x(\\mathrm{~cm})$ 색종이 $3$ 장을 이어 붙일 때 (둘레의 길이) $=5 \\times 2 + 2(5 \\times 3 - 2x) = 40 - 4x(\\mathrm{~cm})$ 색종이 $4$ 장을 이어 붙일 때 (둘레의 길이) $=5 \\times 2 + 2(5 \\times 4 - 3x) = 50 - 6x(\\mathrm{~cm})$ ② 색종이 $12$ 장을 이어 붙일 때 $(둘레의 길이) = 5 \\times 2 + 2(5 \\times 12 - 11x) = 10 + 2(60 - 11x)$ \\[ = 10 + 120 - 22x = 130 - 22x(\\mathrm{~cm}) \\] ③ 색종이 $2$ 장을 이어 붙일 때 (넓이) $=5(5 \\times 2 - x)\\left(\\mathrm{cm}^{2}\\right)$ 색종이 $3$ 장을 이어 붙일 때 (넓이) $=5 \\times 2 + 2(5 \\times 2 - x) = 30 - 2x(\\mathrm{~cm})$1 색종이 $4$ 장을 이어 붙일 때 (넓이) $=5 \\times 2 + 2(5 \\times 2 - x) = 30 - 2x(\\mathrm{~cm})$3 따라서 색종이 $12$ 장을 이어 붙일 때 $=5 \\times 2 + 2(5 \\times 2 - x) = 30 - 2x(\\mathrm{~cm})$5"
         },
         {
-          "id": "110:train:6013_19692",
-          "achievement_code_2015": "9수04-05",
-          "topic_name_2015": "일차식이 되기 위한 조건",
+          "id": "real-30-train-S3_중등_1_000102",
+          "achievement_code_2015": "9수02-02",
+          "topic_name_2015": "일차식의 계산",
           "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "식 $ax^2-3ax+2x^2+x-5$를 계산하였을 때, $x$에 대한 일차식이 되도록 하는 수 $a$의 값을 구하여라.",
-          "answer_text": "$a=-2$"
+          "problem_type": "subjective",
+          "question_text": "$x=3$ 일 때, 다음 식의 값을 구하시오.\n① $x-3$ ② $3-2 x$ ③ $x^{2}-8$ ④ $x-x^{2}$",
+          "answer_text": "① 0 ② -3 ③ 1 ④ -6"
         }
       ]
     },
     "9수02-03": {
       "ui_name": "일차방정식",
+      "school_level": "middle",
       "grade": 1,
-      "candidate_pool": 395,
+      "course": "중학교 수학",
+      "candidate_pool": 1558,
       "examples": [
         {
-          "id": "110:train:41670_162196",
+          "id": "real-110-train-34388_136825",
           "achievement_code_2015": "9수02-03",
-          "topic_name_2015": "방정식의 해의 뜻",
-          "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "$x$가 절댓값이 $4$인 수일 때, 방정식 $x-3(2x+5)=5$의 해를 구하여라.",
-          "answer_text": "$x=-4$"
-        },
-        {
-          "id": "110:train:34388_136825",
-          "achievement_code_2015": "9수02-04",
-          "topic_name_2015": "일차방정식과 그 해",
+          "topic_name_2015": "일차방정식",
           "difficulty": "easy",
           "problem_type": "essay",
           "question_text": "$x$가 $8$의 약수일 때, 방정식 $\\frac{1}{5}(2x+1)=-x+3$의 해를 구하여라.",
           "answer_text": "$x=2$"
         },
         {
-          "id": "110:train:41674_162287",
-          "achievement_code_2015": "9수02-04",
-          "topic_name_2015": "계수에 소수와 분수가 혼합된 일차방정식의 풀이",
+          "id": "real-110-train-34388_136826",
+          "achievement_code_2015": "9수02-03",
+          "topic_name_2015": "일차방정식",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "$x$가 $6$의 약수일 때, 방정식 $\\frac{1}{4}(x+2)=8-x$의 해를 구하여라.",
+          "answer_text": "$x=6$"
+        },
+        {
+          "id": "real-110-train-34388_162441",
+          "achievement_code_2015": "9수02-03",
+          "topic_name_2015": "일차방정식",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "일차방정식 $0.4(x-7)=\\frac{x+6}{3}$의 해를 $x=a$라 할 때, $a$의 약수의 개수를 구하여라.",
-          "answer_text": "$12$ 개"
+          "question_text": "$x$가 $14$의 약수일 때, 방정식 $\\frac{1}{4}(3x+2)=4x-6$의 해를 구하여라.",
+          "answer_text": "$x=2$"
         }
       ]
     },
     "9수02-04": {
       "ui_name": "일차방정식의 활용",
+      "school_level": "middle",
       "grade": 1,
-      "candidate_pool": 729,
+      "course": "중학교 수학",
+      "candidate_pool": 199,
       "examples": [
         {
-          "id": "110:train:34396_136988",
+          "id": "real-110-train-34396_136988",
           "achievement_code_2015": "9수02-04",
           "topic_name_2015": "일차방정식의 활용",
           "difficulty": "easy",
@@ -222,237 +234,251 @@
           "answer_text": "$2 시간$"
         },
         {
-          "id": "110:train:7206_58956",
-          "achievement_code_2015": "9수01-01",
-          "topic_name_2015": "좌표의 활용",
+          "id": "real-110-train-34396_136989",
+          "achievement_code_2015": "9수02-04",
+          "topic_name_2015": "일차방정식의 활용",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "네 점 $A(-7, 10)$, $B(-7, 0)$, $C(1, 0)$, $D(1, 5)$를 꼭짓점으로 하는 사각형 $ABCD$의 넓이를 구하여라.",
-          "answer_text": "$60$"
+          "question_text": "나래네 가족이 주말 농장에 다녀왔는데 갈 때는 자동차를 타고 시속 $70km$로 달렸고, 올 때는 갈 때보다 $45 km$ 더 먼 길을 시속 $60 km$로 달려서 모두 $4$ 시간이 걸렸다. 주말 농장에서 집으로 돌아오는 데 걸린 시간을 구하여라.",
+          "answer_text": "$2$ 시간 $30$ 분"
         },
         {
-          "id": "110:train:41806_162697",
-          "achievement_code_2015": "9수03-06",
-          "topic_name_2015": "대칭의 활용",
+          "id": "real-110-train-34396_136991",
+          "achievement_code_2015": "9수02-04",
+          "topic_name_2015": "일차방정식의 활용",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "점 $P(-3, 2)$와 $x$축에 대하여 대칭인 점을 $A, y$축에 대하여 대칭인 점을 $B$, 원점에 대하여 대칭인 점을 $C$라 할 때, $사각형 PACB$의 둘레의 길이를 구하여라.",
-          "answer_text": "$20$"
+          "question_text": "효선이네 가족이 동물원에 다녀왔는데 갈 때는 자동차를 타고 시속 $40 km$로 달렸고, 올 때는 갈 때보다 $15 km$ 더 먼 길을 시속 $60 km$로 달려서 모두 $3 시간이$ 걸렸다. 동물원에서 집으로 돌아오는 데 걸린 시간을 구하여라.",
+          "answer_text": "$1 시간 21 분$"
         }
       ]
     },
     "9수03-01": {
       "ui_name": "함수의 개념",
+      "school_level": "middle",
       "grade": 1,
-      "candidate_pool": 18,
+      "course": "중학교 수학",
+      "candidate_pool": 24,
       "examples": [
         {
-          "id": "110:train:41809_162524",
-          "achievement_code_2015": "9수02-14",
-          "topic_name_2015": "함숫값 구하기",
+          "id": "real-30-train-S3_중등_1_000175",
+          "achievement_code_2015": "9수03-01",
+          "topic_name_2015": "함수의 개념",
           "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "함수 $f(x)=\\frac{8}{x}$에 대하여 $f(2)=a$, $f(-1)=b$라 할 때, $f(a+b)$의 값을 구하여라.",
-          "answer_text": "$-2$"
+          "problem_type": "subjective",
+          "question_text": "다음 중 제2사분면 위에 있는 점을 말하시오.\n$\\begin{array}{lll}\\mathrm{A}(-1, -5) & \\mathrm{B}(2, -1) & \\mathrm{C}(-3, 2) \\\\ \\mathrm{D}(2, 3) & \\mathrm{E}(-2, 0) & \\mathrm{F}(0, 3)\\end{array}$",
+          "answer_text": "점 $C$"
         },
         {
-          "id": "110:train:7034_2296",
-          "achievement_code_2015": "9수02-14",
-          "topic_name_2015": "함숫값 구하기",
-          "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "$y$가 $x$에 정비례하는 함수 $y=f(x)$와 반비례하는 함수 $y=g(x)$에 대하여 $f(3)=1$, $g(-4)=-2$일 때, $f(6)+g(4)$의 값을 구하여라.",
-          "answer_text": "$4$"
+          "id": "real-30-train-S3_중등_1_000176",
+          "achievement_code_2015": "9수03-01",
+          "topic_name_2015": "함수의 개념",
+          "difficulty": "hard",
+          "problem_type": "subjective",
+          "question_text": "다음 각 점을 좌표평면 위에 나타낼 때, 공통점을 말하시오.\nA(0, -3) C(-2, 0) B(0, 4) D(3, 0)",
+          "answer_text": "A, B, C, D 모두 좌표축 위에 있는 점이다."
         },
         {
-          "id": "110:train:7432_83234",
-          "achievement_code_2015": "9수02-14",
-          "topic_name_2015": "함숫값 구하기",
-          "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "함수 $f(x)=3x-5$에 대하여 $f(a)=7$, $f(-1)=b$일 때, $a+b$의 값을 구하여라.",
-          "answer_text": "$-4$"
+          "id": "real-30-train-S3_중등_1_000177",
+          "achievement_code_2015": "9수03-01",
+          "topic_name_2015": "함수의 개념",
+          "difficulty": "medium",
+          "problem_type": "subjective",
+          "question_text": "오른쪽 그림을 보고 다음 물음에 답하시오.\n① 점 $A$와 $x$축에 대하여 대칭인 점의 좌표\n② 점 $A$와 $y$축에 대하여 대칭인 점의 좌표\n③ 점 $B$와 $x$축에 대하여 대칭인 점의 좌표\n④ 점 $B$와 $y$축에 대하여 대칭인 점의 좌표\n좌표평면 위에 $B(-2, 2)$, $A(4, 3)$가 찍혀있으며, 수직선 수평선인 점선으로 축과 닿아있다. 이 이미지는 평면 좌표계의 그래프입니다. $O$는 원점을 나타내고, 점 $A$와 $B$는 각각 다른 위치에 있습니다.",
+          "answer_text": "① $(4, -3) \\quad$ ② $(-4, 3) \\quad$ ③ $(-3, -2) \\quad$ ④ $(3, 2)$"
         }
       ]
     },
     "9수04-01": {
       "ui_name": "기본 도형과 작도",
+      "school_level": "middle",
       "grade": 1,
-      "candidate_pool": 133,
+      "course": "중학교 수학",
+      "candidate_pool": 166,
       "examples": [
         {
-          "id": "111:train:00042_04154",
-          "achievement_code_2015": "9수04-05",
-          "topic_name_2015": "맞꼭지각(1)",
+          "id": "real-30-train-S3_중등_1_000519",
+          "achievement_code_2015": "9수04-01",
+          "topic_name_2015": "기본 도형과 작도",
           "difficulty": "easy",
-          "problem_type": "short_answer",
-          "question_text": "두 직각삼각형이 다음 그림과 같이 겹쳐 있을 때, $ \\angle a+\\angle b $의 값을 구하여라.",
-          "answer_text": "$90\\degree$"
+          "problem_type": "subjective",
+          "question_text": "다음 평면도형의 교점의 개수를 구하시오.\n① 정 삼각형\n②정 오각형",
+          "answer_text": "①3\n②5"
         },
         {
-          "id": "111:train:00042_04060",
-          "achievement_code_2015": "9수02-06",
-          "topic_name_2015": "수직이등분선 작도하기",
+          "id": "real-30-train-S3_중등_1_000520",
+          "achievement_code_2015": "9수04-01",
+          "topic_name_2015": "기본 도형과 작도",
           "difficulty": "easy",
-          "problem_type": "short_answer",
-          "question_text": "다음 <보기> 중 선분의 수직이등분선 작도를 이용하여 할 수 있는 작도를 모두 골라라.  <보기>㉠ 선분 $AB$를 지름으로 하는 원의 작도㉡ $∠AOB=45˚$인 각의 작도㉢ 주어진 선분을 $4$등분하는 작도 ㉣평행선의 작도",
-          "answer_text": "㉠, ㉡, ㉢"
+          "problem_type": "subjective",
+          "question_text": "오른쪽 그림과 같은 직육면체를 보고 다음을 구하시오.\n① 모서리 $\\overline{\\mathrm{AB}}$와 모서리 $\\overline{\\mathrm{BF}}$의 교점.\n② 면 $ABCD$와 면 $CGHD$의 교선 $. $\n직선 $BC$를 교선으로 가지는 두 면입니다.\n이 이미지는 직육면체(또는 상자)를 나타내며, 각 꼭짓점에 $A$, $B$, $C$, $D$, $E$, $F$, $G$, $H$라는 라벨이 붙어 있습니다.",
+          "answer_text": "① 점 $B$ ② 모서리 $CD$ ③ 면 $ABCD$, 면 $BFGC$"
         },
         {
-          "id": "111:train:00041_44058",
-          "achievement_code_2015": "9수03-03",
-          "topic_name_2015": "작도 가능한 각",
+          "id": "real-30-train-S3_중등_1_000521",
+          "achievement_code_2015": "9수04-01",
+          "topic_name_2015": "기본 도형과 작도",
           "difficulty": "easy",
-          "problem_type": "short_answer",
-          "question_text": "다음 보기 중 작도할 수 있는 각은 모두 몇 개인지 구하여라. $ 7.5^{\\circ} , 10^{\\circ} , 30^{\\circ} , 50^{\\circ} $ $ 75^{\\circ} , 120^{\\circ} , 135^{\\circ} , 150^{\\circ} $",
-          "answer_text": "$6$개"
+          "problem_type": "subjective",
+          "question_text": "다음 도형을 기호로 나타내시오.\n① 양쪽 화살표가 있는 직선\n② 점선, 직선, 점선으로 있는 직선\n③ 오른쪽으로만 화살표가 있는 직선 (반직선)\n④ 왼쪽으로만 화살표가 있는 직선 (반직선)",
+          "answer_text": "$(1) \\overleftrightarrow{P Q}$\n② $\\overline{\\mathrm{PQ}}$\n③ $\\overrightarrow{\\mathrm{PQ}}$\n④ $\\overrightarrow{\\mathrm{QP}}$"
         }
       ]
     },
     "9수05-01": {
       "ui_name": "자료의 정리와 해석",
+      "school_level": "middle",
       "grade": 1,
-      "candidate_pool": 425,
+      "course": "중학교 수학",
+      "candidate_pool": 460,
       "examples": [
         {
-          "id": "110:train:34931_140059",
-          "achievement_code_2015": "9수04-02",
-          "topic_name_2015": "줄기와 잎 그림의 이해(2)-두 자료",
+          "id": "real-111-train-00044_23188",
+          "achievement_code_2015": "9수05-01",
+          "topic_name_2015": "자료의 정리와 해석",
           "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "다음은 정재네 반 남학생과 여학생의 지난 체육 시간의 줄넘기 횟수를 조사하여 나타낸 줄기와 잎 그림이다. 남학생과 여학생 중에서 줄넘기 횟수가 각각 $5$ 번째로 많은 학생의 횟수의 차를 구하여라.",
-          "answer_text": "$7$ 회"
+          "problem_type": "objective",
+          "question_text": "다음 중 옳은 것을 모두 고르면? (정답 $2$개) ①변량과 평균이 같을 때 편차는 $0$이다. ②각 변량의 편차의 합은 항상 $1$이다. ③평균이 작을수록 산포도의 값이 크다. ④편차의 절댓값이 작을수록 변량은 평균에 가까이 있다. ⑤분산이 작을수록 변량은 평균에서 멀리 떨어져 있다.",
+          "answer_text": "①, ④"
         },
         {
-          "id": "110:train:39532_155189",
-          "achievement_code_2015": "9수04-02",
-          "topic_name_2015": "줄기와 잎 그림",
-          "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "다음은 소희네 반 학생들의 키를 조사하여 나타낸 줄기와 잎 그림인데, 일부가 가려져 보이지 않는다. 키가 $140 cm $이상 $160 cm $미만인 학생이 전체의 $40 \\%$일 때, 전체 학생 수를 구하여라.",
-          "answer_text": "$25$ 명"
+          "id": "real-111-train-00044_23196",
+          "achievement_code_2015": "9수05-01",
+          "topic_name_2015": "자료의 정리와 해석",
+          "difficulty": "medium",
+          "problem_type": "short_answer",
+          "question_text": "정환이와 희정이가 $20$점 만점의 사격 경기를 $10$차례씩 하여 아래 표와 같은 결과를 얻었다. 다음 물음에 답하여라.  <table border> <caption></caption>   <tbody>     <tr> <td>학생</td> <td>평균(점)</td>       <td>표준편차(점)</td>     </tr>     <tr>       <td>정환</td> <td>$10$</td> <td>$2$</td>     </tr>     <tr>       <td>희정</td> <td>$10$</td> <td>$6$</td>     </tr> </tbody> </table>(1) 정환이와 희정이 중 누가 더 고른 점수를 얻었다고 할 수 있는가?(2) $15$점 이상을 얻은 경기의 수가 더 많은 학생이 상을 받는다고 할 때, 상을 받을 가능성이 높은 학생은 누구인가?",
+          "answer_text": "(1) 정환(2) 희정"
         },
         {
-          "id": "110:train:9099_73871",
-          "achievement_code_2015": "9수04-02",
-          "topic_name_2015": "도수분포표의 이해(3)-비율",
+          "id": "real-111-train-00044_23200",
+          "achievement_code_2015": "9수05-01",
+          "topic_name_2015": "자료의 정리와 해석",
           "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "다음은 학생 $30$ 명의 수학 경시대회 점수를 조사하여 나타낸 도수분포표이다. 수학 경시대회 점수가 $40$ 점 미만인 학생은 전체의 몇 %인지 구하여라.",
-          "answer_text": "$20\\%$"
+          "problem_type": "short_answer",
+          "question_text": "한 반을 A, B, C, D 네 모둠으로 나누어 다트 던지기 시합을 했다. 각 모둠에서 $10$회씩 다트를 던지며, 시합에서 이기는 기준은 다음과 같다. · 점수의 합계가 큰 모둠이 이긴다. · 점수의 합계가 같은 경우, 점수가 고른 모둠이 이긴다. 다음은 각 모둠별 점수이다. 어느 모둠이 이겼는지 구하여라. (단위: 점) <table border>   <tbody>     <tr>       <td>모둠</td>       <td>$1$</td>       <td>$2$</td>       <td>$3$</td>       <td>$4$</td>       <td>$5$</td>       <td>$6$</td>       <td>$7$</td>       <td>$8$</td>       <td>$9$</td>       <td>$10$</td>       <td>합계</td>     </tr>     <tr>       <td>A</td>       <td>$4$</td>       <td>$6$</td>       <td>$6$</td>       <td>$4$</td>       <td>$8$</td>       <td>$0$</td>       <td>$2$</td>       <td>$4$</td>       <td>$8$</td>       <td>$10$</td>       <td>$52$</td>     </tr>     <tr>       <td>B</td>       <td>$4$</td>       <td>$4$</td>       <td>$6$</td>       <td>$6$</td>       <td>$8$</td>       <td>$4$</td>       <td>$10$</td>       <td>$6$</td>       <td>$10$</td>       <td>$8$</td>       <td>$66$</td>     </tr>     <tr>       <td>C</td>       <td>$6$</td>       <td>$4$</td>       <td>$8$</td>       <td>$4$</td>       <td>$4$</td>       <td>$6$</td>       <td>$8$</td>       <td>$10$</td>       <td>$10$</td>       <td>$10$</td>       <td>$70$</td>     </tr>     <tr>       <td>D</td>       <td>$8$</td>       <td>$6$</td>       <td>$6$</td>       <td>$6$</td>       <td>$8$</td>       <td>$8$</td>       <td>$6$</td>       <td>$6$</td>       <td>$8$</td>       <td>$8$</td>       <td>$70$</td>     </tr> </tbody> </table>",
+          "answer_text": "D 모둠"
         }
       ]
     },
     "9수01-04": {
       "ui_name": "유리수와 순환소수",
+      "school_level": "middle",
       "grade": 2,
-      "candidate_pool": 386,
+      "course": "중학교 수학",
+      "candidate_pool": 51,
       "examples": [
         {
-          "id": "110:train:25058_77282",
-          "achievement_code_2015": "9수01-06",
-          "topic_name_2015": "유한소수와 무한소수 구분하기",
+          "id": "real-110-train-34453_137383",
+          "achievement_code_2015": "9수01-04",
+          "topic_name_2015": "유리수와 순환소수",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "다음은 분수 $\\frac{3}{8}$을 유한소수로 나타내는 과정이다.$\\square$에 들어갈 수로 옳지 $\\underline{않은}$ 것은? $\\cfrac{3}{8}=\\cfrac{3}{2^{\\boxed{①}}}=\\cfrac{3\\times \\boxed{②}}{2^3 \\times \\boxed{③}}=\\cfrac{375}{\\boxed{④}}=\\boxed{⑤}$ ①$3$ ②$5$ ③$5^3$ ④$1000$ ⑤$0.375$",
-          "answer_text": "$②$"
+          "question_text": "한 자리의 자연수 $a$, $b$에 대하여 순환소수 $0.\\dot{a}\\dot{b}$를 기약분수로 나타내면 $\\frac{7}{33}$일 때, 순환소수 $0.b\\dot{a}$를 기약분수로 나타내어라.",
+          "answer_text": "$\\frac{11}{90}$"
         },
         {
-          "id": "110:train:25067_77257",
-          "achievement_code_2015": "9수01-06",
-          "topic_name_2015": "유한소수로 나타낼수 있는 분수 찾기",
+          "id": "real-110-train-34453_137384",
+          "achievement_code_2015": "9수01-04",
+          "topic_name_2015": "유리수와 순환소수",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "두 자연수 $a$, $b$에 대하여 $\\frac{a}{b}$를 소수로 나타낼 때, 유한소수이면 $a △ b$$=-1$이고 순환소수이면 $a △ b$$=1$이다. 이때 $(6 △ 12)+(9 △ 20)$의 값을 구하여라.",
-          "answer_text": "$-2$"
+          "question_text": "한 자리의 자연수 $a$, $b$에 대하여 순환소수 $0.\\dot{a}\\dot{b}$를 기약분수로 나타내면 $\\frac{8}{33}$일 때, 순환소수 $0.b\\dot{a}$를 기약분수로 나타내어라.",
+          "answer_text": "$\\frac{19}{45}$"
         },
         {
-          "id": "110:train:9505_85262",
-          "achievement_code_2015": "9수01-06",
-          "topic_name_2015": "유한소수가 되도록 하는 미지수의 값 구하기(1)",
-          "difficulty": "easy",
+          "id": "real-110-train-34453_137386",
+          "achievement_code_2015": "9수01-04",
+          "topic_name_2015": "유리수와 순환소수",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "$\\frac{9}{168}\\times n$을 소수로 나타내면 유한소수가 된다. 이때 $n$의 값이 될 수 있는 가장 작은 두 자리 자연수를 구하여라.",
-          "answer_text": "$14$"
+          "question_text": "한 자리의 자연수 $a$, $b$에 대하여 순환소수 $0.\\dot{a}\\dot{b}$를 기약분수로 나타내면 $\\frac{5}{11}$일 때, 순환소수 $0.b\\dot{a}$를 기약분수로 나타내어라.",
+          "answer_text": "$\\frac{49}{90}$"
         }
       ]
     },
     "9수02-05": {
       "ui_name": "식의 계산",
+      "school_level": "middle",
       "grade": 2,
-      "candidate_pool": 686,
+      "course": "중학교 수학",
+      "candidate_pool": 499,
       "examples": [
         {
-          "id": "110:train:9685_85505",
-          "achievement_code_2015": "9수01-06",
-          "topic_name_2015": "지수법칙(1)- a^m×a^n=a^m+n",
-          "difficulty": "easy",
+          "id": "real-110-train-9560_7673",
+          "achievement_code_2015": "9수02-05",
+          "topic_name_2015": "식의 계산",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "$4\\times5\\times9\\times14=2^a\\times3^b\\times5^c\\times7^d$일 때, $ab+cd$의 값을 구하여라. (단, $a$,$b$,$c $,$d$는 자연수)",
-          "answer_text": "$7$"
+          "question_text": "$1.\\dot{2}+2.\\dot{4}+3.\\dot{6}$을 계산한 값을 순환소수로 바르게 나타낸 것은? ①$7.\\dot{3}\\dot{3}$ ②$7.3\\dot{3}$ ③$7.\\dot{7}\\dot{3}$ ④$\\dot7.\\dot{3}$ ⑤$7.\\dot{3}$",
+          "answer_text": "⑤"
         },
         {
-          "id": "110:train:12599_85516",
-          "achievement_code_2015": "9수04-05",
-          "topic_name_2015": "지수법칙(2)- (am)^n =a^mn",
+          "id": "real-110-train-9560_7674",
+          "achievement_code_2015": "9수02-05",
+          "topic_name_2015": "식의 계산",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "다음  $\\square$안에 알맞은 수를 써넣어라. $a^5\\times b^3\\times(b^4)^3\\times(a^2)^2\\times b$ = $a^{\\square}b^{\\square}$",
-          "answer_text": "$9$, $16$"
+          "question_text": "$2.1\\dot{5}+3.\\dot{5}-0.3\\dot{7}$을 계산한 값을 순환소수로 바르게 나타낸 것은? $①$ $5.\\dot{5}\\dot{3}$ $②$ $5.3\\dot{3}$ $③$ $5.\\dot{3}$ $④$ $5.\\dot{3}\\dot{3}$ $⑤$ $\\dot{5}.\\dot{3}$",
+          "answer_text": "③"
         },
         {
-          "id": "110:train:25085_85531",
-          "achievement_code_2015": "9수01-06",
-          "topic_name_2015": "지수법칙(3)- a^m÷a^n=a^m-n",
-          "difficulty": "easy",
+          "id": "real-110-train-9560_77065",
+          "achievement_code_2015": "9수02-05",
+          "topic_name_2015": "식의 계산",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "다음 중 옳지 않은 것은? $\\\\㉠2^4\\div2^7>0$$\\\\㉡2^5\\div2^3>0$$\\\\㉢2^4\\div2^4=0$",
-          "answer_text": "㉢"
+          "question_text": "$3.\\dot{5}+0.\\dot{8}\\dot{3}-1.\\dot{2}\\dot{6}$을 계산한 값을 순환소수로 바르게 나타낸 것은? ①$3.0\\dot{1}\\dot{3}$  ② $3.1\\dot{3}$ ③$\\dot{3}.\\dot{1}3$ ④$\\dot{3}.1\\dot{3}$ ⑤$3.\\dot{1}\\dot{3}$",
+          "answer_text": "⑤"
         }
       ]
     },
     "9수02-06": {
       "ui_name": "일차부등식",
+      "school_level": "middle",
       "grade": 2,
-      "candidate_pool": 1069,
+      "course": "중학교 수학",
+      "candidate_pool": 966,
       "examples": [
         {
-          "id": "110:train:10670_12625",
-          "achievement_code_2015": "9수01-06",
-          "topic_name_2015": "문장을 부등식으로 나타내기",
+          "id": "real-110-train-10701_20109",
+          "achievement_code_2015": "9수02-06",
+          "topic_name_2015": "일차부등식",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "다음 문장을 부등식으로 나타내어라.  $x$의 $2$ 배에서 $1$을 뺀 수는 $x$에 $6$을 더한 수의 $3$ 배보다 작다.",
-          "answer_text": "$2x-1<3(x+6)$"
+          "question_text": "다음 중 일차부등식이 아닌 것은?$\\\\$ ① 무게가 $25 g$인 상자에 무게가 $8 g$인 구슬 $x$ 개를 넣으면 전체 무게는 $50 g$ 이하이다. $\\\\$ ② 한 변의 길이가 $2x cm$인 정사각형의 넓이는 $500 cm^2$보다 크다. $\\\\$ ③ $x km$의 거리를 시속 $4 km$로 걸을 때 걸린 시간은 $3$ 시간 이하이다. $\\\\$ ④ 한 개에 $600$ 원인 음료수 $x$ 개와 한 개에 $1000$ 원인 과자 $4$ 개의 총금액은 $9500$ 원 초과이다. $\\\\$ ⑤ 어느 학급 $50$ 명 중 남학생이 $x$ 명일 때, 여학생 $23$명 보다적다.",
+          "answer_text": "②"
         },
         {
-          "id": "110:train:10679_81342",
-          "achievement_code_2015": "9수02-11",
-          "topic_name_2015": "부등식의 해",
+          "id": "real-110-train-10703_81014",
+          "achievement_code_2015": "9수02-06",
+          "topic_name_2015": "일차부등식",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "다음 부등식 중 $x=3$이 해가 되는 것은?  ① $x+1>4$$  $$  $ ② $-x<0$ $  $$  $ ③ $2x+3<9$  ④ $\\frac{3x+3}{4}<2$$  $$  $ ⑤ $11-3x<0$",
-          "answer_text": "$②$"
+          "question_text": "부등식 $5(1-x)\\le ax+5$가 일차부등식이 되도록 하는 수 $a$의 값이 아닌 것은? ① $-5$ ② $-2$  ③ $0$  ④ $1$  ⑤ $3$",
+          "answer_text": "①"
         },
         {
-          "id": "110:train:41450_161453",
-          "achievement_code_2015": "9수02-11",
-          "topic_name_2015": "부등식의 성질(2)-a, b에 대한 식의 대소 관계가 주어진 경우",
+          "id": "real-110-train-10703_86909",
+          "achievement_code_2015": "9수02-06",
+          "topic_name_2015": "일차부등식",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "$-2a+3<6b+11$일 때, $\\square$안에 알맞은 기호를 끌어 놓아라. $3a\\square-9b-12$ $<$ $>$",
-          "answer_text": "$>$"
+          "question_text": "부등식 $-ax+4\\le x+1-2x$가 일차부등식이 되도록 하는 수 $a$의 값이 아닌 것은? ① $-2$  ② $-1$ ③ $0$  ④ $1$   ⑤ $2$",
+          "answer_text": "④"
         }
       ]
     },
     "9수02-07": {
       "ui_name": "연립일차방정식",
+      "school_level": "middle",
       "grade": 2,
-      "candidate_pool": 675,
+      "course": "중학교 수학",
+      "candidate_pool": 345,
       "examples": [
         {
-          "id": "110:train:34547_137981",
-          "achievement_code_2015": "9수02-13",
+          "id": "real-110-train-34547_137981",
+          "achievement_code_2015": "9수02-07",
           "topic_name_2015": "연립일차방정식",
           "difficulty": "easy",
           "problem_type": "essay",
@@ -460,566 +486,1066 @@
           "answer_text": "$1$개"
         },
         {
-          "id": "110:train:10229_11599",
-          "achievement_code_2015": "9수01-06",
-          "topic_name_2015": "연립방정식의 해 또는 계수가 문자로 주어질 때",
+          "id": "real-110-train-34547_137982",
+          "achievement_code_2015": "9수02-07",
+          "topic_name_2015": "연립일차방정식",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "연립방정식 의 해가 $ \\begin{cases} 5(x-2)-y=x+16+ay \\\\  b(x-2)=3(y+5)-11 \\\\  \\end{cases}$의 해가 $(3, -2)$일 때, 수 $a$, $b$에 대하여 $2a+5b$의 값을 구하여라.",
-          "answer_text": "$2$"
+          "question_text": "$x$, $y$가 자연수일 때, 일차방정식 $5x+4y=19$의 해는 $a$ 개, 일차방정식 $4x+3y=31$의 해는 $b$ 개이다. 다음 물음에 답하여라. (1) 일차방정식 $5x+4y=19$의 해의 개수를 구하여라. (2) 일차방정식 $4x+3y=31$의 해의 개수를 구하여라. (3) $a+b$의 값을 구하여라.",
+          "answer_text": "$1$개"
         },
         {
-          "id": "110:train:10342_80010",
-          "achievement_code_2015": "9수04-05",
-          "topic_name_2015": "연립방정식의 풀이-대입법",
-          "difficulty": "easy",
+          "id": "real-110-train-34547_137983",
+          "achievement_code_2015": "9수02-07",
+          "topic_name_2015": "연립일차방정식",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "다음은 연립방정식 $\\begin{cases} y=5-x \\dots ㉠ \\\\  x+3y=17 \\dots  ㉡ \\end{cases}$을 푸는 과정이다.  $\\square$ 안에 알맞은 수를 써넣어라. $㉠$을 $㉡$에 대입하면 $\\\\$ $x+3(5-x)=17$ $\\\\$ $-2x = \\square \\\\ \\therefore x=\\square$ 을 $㉠$에 대입하면 $y=\\square$",
-          "answer_text": "$2$, $-1$, $-1$, $6$"
+          "question_text": "$x$, $y$가 자연수일 때, 일차방정식 $x+2y=9$의 해는 $a$ 개, 일차방정식 $2x+3y=10$의 해는 $b$ 개이다. 다음 물음에 답하여라. (1) 일차방정식 $x+2y=9$의 해의 개수를 구하여라. (2) 일차방정식 $2x+3y=10$의 해의 개수를 구하여라. (3) $a+b$의 값을 구하여라.",
+          "answer_text": "답: $4$ 개"
         }
       ]
     },
     "9수03-02": {
       "ui_name": "일차함수와 그래프",
+      "school_level": "middle",
       "grade": 2,
-      "candidate_pool": 941,
+      "course": "중학교 수학",
+      "candidate_pool": 65,
       "examples": [
         {
-          "id": "110:train:11233_12404",
-          "achievement_code_2015": "9수02-15",
-          "topic_name_2015": "일차함수의 뜻",
+          "id": "real-110-train-34635_138527",
+          "achievement_code_2015": "9수03-02",
+          "topic_name_2015": "일차함수와 그래프",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "다음 문장에서 $y$를 $x$에 대한 식으로 나타내어라. 문구점에서 $800$ 원짜리 연필 $x$ 자루를 사고 $5000$ 원을 냈을 때의 거스름돈은 $y$ 원이다.",
-          "answer_text": "$y=5000-800x$"
+          "question_text": "일차함수 $y=-3x+2$의 그래프는 $x$절편이 $a$, $y$절편이 $b$이다. 일차함수 $y=bx+a$의 그래프의 $x$절편과 $y$절편의 합을 구하려고 한다. (1) 일차함수 $y=-3x+2$의 그래프의 $x$절편과 $y$절편을 각각 구하여라.   (2)일차함수 $y=bx+a$의 그래프의 $x$절편과 $y$절편의 합을 구하여라.",
+          "answer_text": "$x$절편 : $\\frac{2}{3}$, $y$절편 : $2$"
         },
         {
-          "id": "110:train:34631_138507",
-          "achievement_code_2015": "9수02-15",
-          "topic_name_2015": "일차함수의 그래프",
+          "id": "real-110-train-34635_138528",
+          "achievement_code_2015": "9수03-02",
+          "topic_name_2015": "일차함수와 그래프",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "일차함수 $f(x)=ax+b$에 대하여 $f(-2)=-3$, $f(2)=5$일 때, 다음 물음에 답하여라. (단, $a$, $b$는 수) (1) $a$와 $b$의 값을 각각 구하여라.   (2) $f(c)=f(5)-2f(1)$일 때, $c$의 값을 구하여라.",
-          "answer_text": "$a=2$, $b=1$"
+          "question_text": "일차함수 $y=-2x+5$의 그래프는 $x$절편이 $a$, $y$절편이 $b$이다. 일차함수 $y=bx+a$의 그래프의 $x$절편과 $y$절편의 합을 구하려고 한다. (1)일차함수 $y=-2x+5$의 그래프의 $x$절편과 $y$절편을 각각 구하여라. (2)일차함수 $y=bx+a$의 그래프의 $x$절편과 $y$절편의 합을 구하여라.",
+          "answer_text": "$x$절편 : $\\frac{5}{2}$, $y$절편 : $5$"
         },
         {
-          "id": "110:train:11261_12542",
-          "achievement_code_2015": "9수02-15",
-          "topic_name_2015": "일차함수 y=ax+b의 그래프 위의 점(1)",
+          "id": "real-110-train-34635_138529",
+          "achievement_code_2015": "9수03-02",
+          "topic_name_2015": "일차함수와 그래프",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "일차함수 $y=\\frac{3}{4}x+3$의 그래프가 점 $(p, -6)$을 지날 때, $p$의 값을 구하여라.",
-          "answer_text": "$p=-12$"
+          "question_text": "일차함수 $y=-4x+6$의 그래프는 $x$절편이 $a$, $y$절편이 $b$이다. 일차함수 $y=bx+a$의 그래프의 $x절편$과 $y절편$의 합을 구하려고 한다. (1) 일차함수 $y=-4x+6$의 그래프의 $x$절편과 $y$절편을 각각 구하여라.  (2) 일차함수 $y=bx+a$의 그래프의 $x$절편과 $y$절편의 합을 구하여라.",
+          "answer_text": "$x$절편 : $\\frac{3}{2}$, $y$절편 : $6$"
         }
       ]
     },
     "9수03-03": {
       "ui_name": "일차함수의 활용",
+      "school_level": "middle",
       "grade": 2,
-      "candidate_pool": 652,
+      "course": "중학교 수학",
+      "candidate_pool": 727,
       "examples": [
         {
-          "id": "110:train:7203_2474",
-          "achievement_code_2015": "9수03-11",
-          "topic_name_2015": "좌표의 활용",
+          "id": "real-110-train-11439_83977",
+          "achievement_code_2015": "9수03-03",
+          "topic_name_2015": "일차함수의 활용",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "네 점 $A(0, 6)$, $B(-4, 1)$, $C(5, 1)$, $D(9, 6)$을 꼭짓점으로 하는 사각형 $ABCD$의 넓이를 구하여라.",
-          "answer_text": "$45$"
+          "question_text": "다음 그림과 같은 일차함수의 그래프의 기울기를 $a$, $x$절편을 $b$, $y$절편을 $c$라 할 때, $a-b+c$의 값을 구하여라.",
+          "answer_text": "$-\\frac{11}{2}$"
         },
         {
-          "id": "110:train:9852_85693",
-          "achievement_code_2015": "9수02-09",
-          "topic_name_2015": "도형에서 단항식의 나눗셈의 활용",
+          "id": "real-110-train-11439_83978",
+          "achievement_code_2015": "9수03-03",
+          "topic_name_2015": "일차함수의 활용",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "한 대각선의 길이가 $3a^3b^7$인 마름모의 넓이가 $(3a^2b^5)^2$일 때, 이 마름모의 다른 대각선의 길이를 구하여라.",
-          "answer_text": "$6ab^3$"
+          "question_text": "다음 그림과 같은 일차함수의 그래프의 기울기를 $a$, $x$절편을 $b$, $y$절편을 $c$라 할 때, $abc$의 값을 구하여라.",
+          "answer_text": "$-25$"
         },
         {
-          "id": "110:train:10561_12284",
-          "achievement_code_2015": "9수03-14",
-          "topic_name_2015": "도형의 활용 문제",
+          "id": "real-110-train-11441_83979",
+          "achievement_code_2015": "9수03-03",
+          "topic_name_2015": "일차함수의 활용",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "가로의 길이와 세로의 길이의 합이 $25cm$인 직사각형이 있다. 가로의 길이가 세로의 길이보다 $3cm$ 더 짧을 때, 이 직사각형의 세로의 길이를 구하여라.",
-          "answer_text": "$14 cm$"
+          "question_text": "일차함수 $y=px-1$의 그래프를 $y$축의 방향으로 $5$만큼 평행이동한 그래프의 기울기가 $-2$일 때, 이 그래프의 $x$ 절편을 $q$, $y$ 절편을 $r$라 하자. 이때 수 $p, q, r$에 대하여 $pqr$의 값을 구하여라.",
+          "answer_text": "$-16$"
         }
       ]
     },
     "9수04-02": {
       "ui_name": "삼각형의 성질",
+      "school_level": "middle",
       "grade": 2,
-      "candidate_pool": 143,
+      "course": "중학교 수학",
+      "candidate_pool": 1271,
       "examples": [
         {
-          "id": "110:train:18141_38983",
-          "achievement_code_2015": "9수03-10",
-          "topic_name_2015": "삼각형의 외심의 뜻과 위치",
-          "difficulty": "easy",
+          "id": "real-110-train-15959_29425",
+          "achievement_code_2015": "9수04-02",
+          "topic_name_2015": "삼각형의 성질",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "다음은 삼각형의 세 변의 수직이등분선은 한 점에서 만남을 설명하는 과정이다.  안에 알맞은 것을 써넣어라.",
-          "answer_text": "풀이 참조"
+          "question_text": "다음 그림에서 $l // m$일 때, $\\angle x$의 크기를 구하여라.",
+          "answer_text": "$\\angle x=74\\degree$"
         },
         {
-          "id": "111:train:00043_43182",
-          "achievement_code_2015": "9수03-09",
-          "topic_name_2015": "이등변삼각형의 성질(1)-두 밑각의 크기",
-          "difficulty": "easy",
-          "problem_type": "short_answer",
-          "question_text": "다음 삼각형 $ ABC $ 에서 $ \\overline{AB}=\\overline{AC} $ 일 때, $ \\angle x $ 의 크기를 구하여라.",
-          "answer_text": "(1) $ 30^{\\circ} $ (2) $ 81^{\\circ} $"
+          "id": "real-110-train-15959_29426",
+          "achievement_code_2015": "9수04-02",
+          "topic_name_2015": "삼각형의 성질",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "다음 그림에서 $l // m$일 때, $\\angle x$의 크기를 구하여라. ",
+          "answer_text": "$\\angle x=42\\degree$"
         },
         {
-          "id": "111:train:00043_43276",
-          "achievement_code_2015": "9수03-09",
-          "topic_name_2015": "이등변삼각형의 성질(2)-수직이등분선",
-          "difficulty": "easy",
-          "problem_type": "short_answer",
-          "question_text": "$ \\overline{AB}=\\overline{AC} $ 인 $ \\triangle ABC $ 에서 $ \\overline{BC} $를 점 B에서부터 $ n: 2 m, n: m, m: n, m^{2}: n^{2}   (m>0, n>0) $으로 나누는 점을 각각 $P, Q, R, S$라 한다. $ \\angle \\mathrm{P A R}=\\angle \\mathrm{Q A S}=90^{\\degree} $일 때, $ \\frac{m}{n} $의 값을 구하여라.",
-          "answer_text": "$ 2 $"
+          "id": "real-110-train-15959_32404",
+          "achievement_code_2015": "9수04-02",
+          "topic_name_2015": "삼각형의 성질",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "다음 그림에서 $l // m$일 때, $\\angle x$의 크기를 구하여라.",
+          "answer_text": "$\\angle x=85\\degree$"
         }
       ]
     },
     "9수04-03": {
       "ui_name": "사각형의 성질",
+      "school_level": "middle",
       "grade": 2,
-      "candidate_pool": 201,
+      "course": "중학교 수학",
+      "candidate_pool": 934,
       "examples": [
         {
-          "id": "110:train:18734_115455",
-          "achievement_code_2015": "9수01-06",
-          "topic_name_2015": "평행사변형이 되는 조건의 응용(2)-각의 크기, 변의 길이",
+          "id": "real-110-train-18780_105396",
+          "achievement_code_2015": "9수04-03",
+          "topic_name_2015": "사각형의 성질",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "다음 그림에서 $\\square ABCD$가 직사각형일 때, $\\angle x$의 크기를 구하여라.",
+          "answer_text": "$\\angle x=50\\degree$"
+        },
+        {
+          "id": "real-110-train-18780_41075",
+          "achievement_code_2015": "9수04-03",
+          "topic_name_2015": "사각형의 성질",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "다음 그림에서 $\\square$$ABCD$가 직사각형일 때, $\\angle ACD$의 크기를 구하여라.",
+          "answer_text": "$\\angle ACD=29\\degree$"
+        },
+        {
+          "id": "real-110-train-18780_41076",
+          "achievement_code_2015": "9수04-03",
+          "topic_name_2015": "사각형의 성질",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "다음은 평행사변형 $ABCD$에서 $\\angle B$와 $\\angle D$의 이등분선이 $\\overline{AD}$, $\\overline{BC}$와 만나는 점을 각각 $E$, $F$라 할 때, $\\square BFDE$가 어떤 사각형인지 구하는 과정이다. 빈칸에 알맞은 것을 채워라.",
-          "answer_text": "풀이 참조"
-        },
-        {
-          "id": "111:train:00043_43841",
-          "achievement_code_2015": "9수03-11",
-          "topic_name_2015": "평행사변형이 되는 조건",
-          "difficulty": "easy",
-          "problem_type": "objective",
-          "question_text": "다음 사각형 중에서 평행사변형이라고 할 수 없는 것을 모두 고르면? (정답 $2$개)",
-          "answer_text": "③, ⑤"
-        },
-        {
-          "id": "111:train:00043_43880",
-          "achievement_code_2015": "9수03-13",
-          "topic_name_2015": "평행사변형이 되는 조건의 응용(1)-설명하기",
-          "difficulty": "easy",
-          "problem_type": "short_answer",
-          "question_text": "다음 $\\square ABCD$가 평행사변형일 때, 색칠한 부분의 사각형이 평행사변형이 되는 조건을 말하여라.",
-          "answer_text": "(1) 한 쌍의 대변이 평행하고, 그 길이가 같다."
+          "question_text": "다음 그림에서 $\\square ABCD$가 직사각형일 때, $\\angle x$의 크기를 구하여라.",
+          "answer_text": "$\\angle x=47\\degree$"
         }
       ]
     },
     "9수04-04": {
       "ui_name": "도형의 닮음",
+      "school_level": "middle",
       "grade": 2,
-      "candidate_pool": 254,
+      "course": "중학교 수학",
+      "candidate_pool": 249,
       "examples": [
         {
-          "id": "111:train:00041_36222",
-          "achievement_code_2015": "9수03-13",
-          "topic_name_2015": "SAS닮음을 이용하여 변의 길이 구하기",
+          "id": "real-110-train-19320_108330",
+          "achievement_code_2015": "9수04-04",
+          "topic_name_2015": "도형의 닮음",
           "difficulty": "easy",
-          "problem_type": "short_answer",
-          "question_text": "두 선분 $AB$와 $CD$가 점 $O$에서 만나고,$ 3 \\overline{AO}=\\overline{DO}, \\overline{CO}=\\frac{1}{3}  \\overline{BO} $일 때, $ \\frac{\\overline{AC}}{\\overline{BD}} $의 값을 구하여라.",
-          "answer_text": "$ \\frac{1}{3} $"
+          "problem_type": "essay",
+          "question_text": "다음 그림에서 $\\triangle ABC \\backsim\\triangle DFE$이고 $\\triangle ABC$와 $\\triangle DFE$의 닮음비가 $8:5$일 때, $\\triangle DFE$의 둘레의 길이를 구하여라.",
+          "answer_text": "$60 cm$"
         },
         {
-          "id": "111:train:00041_36233",
-          "achievement_code_2015": "9수03-13",
-          "topic_name_2015": "AA닮음을 이용하여 변의 길이 구하기(2)",
-          "difficulty": "easy",
-          "problem_type": "short_answer",
-          "question_text": "다음 평행사변형 $ABCD$에서 $x$의 값을 구하여라.",
-          "answer_text": "$3$"
+          "id": "real-110-train-19321_46989",
+          "achievement_code_2015": "9수04-04",
+          "topic_name_2015": "도형의 닮음",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "다음 그림의 두 평행사변형 $ABCD$, $EFGH$에 대하여 $\\square ABCD\\backsim\\square EFGH$이고 닮음비가 $3 : 4$일 때, $\\square EFGH$의 둘레의 길이를 구하여라.",
+          "answer_text": "$88 cm$"
         },
         {
-          "id": "111:train:00043_47737",
-          "achievement_code_2015": "9수03-13",
-          "topic_name_2015": "직각삼각형의 닮음",
+          "id": "real-110-train-19321_46990",
+          "achievement_code_2015": "9수04-04",
+          "topic_name_2015": "도형의 닮음",
           "difficulty": "easy",
-          "problem_type": "short_answer",
-          "question_text": "$ \\overline{AB}=8 \\mathrm{~cm}, \\overline{BC}=6 \\mathrm{~cm} $ 이고 $ \\angle B=90^{\\circ} $ 인 직각삼각형 $ ABC $ 가 있다. $ \\triangle ABC $ 를 $ \\overline{AB} $를 축으로 하여 $1$회전 시켜 생기는 원뿔 안에 밑면의 반지름의 길이가 $2cm$인 원기둥을 다음 그림과 같이 그릴 때, 이 원기둥의 높이를 구하여라.",
-          "answer_text": "$ \\frac{16}{3} \\mathrm{~cm} $"
+          "problem_type": "essay",
+          "question_text": "다음 그림의 두 평행사변형 $ABCD$, $HGFE$에 대하여  $\\square ABCD$~$\\square HGFE$이고 닮음비가 $5 : 4$일 때, $\\square ABCD$의 둘레의 길이를 구하여라.",
+          "answer_text": "$90 cm$"
         }
       ]
     },
     "9수05-02": {
       "ui_name": "경우의 수와 확률",
+      "school_level": "middle",
       "grade": 2,
-      "candidate_pool": 643,
+      "course": "중학교 수학",
+      "candidate_pool": 98,
       "examples": [
         {
-          "id": "110:train:7907_4113",
-          "achievement_code_2015": "9수04-05",
-          "topic_name_2015": "수를 뽑는 경우의 수",
+          "id": "real-110-train-8714_102048",
+          "achievement_code_2015": "9수05-02",
+          "topic_name_2015": "경우의 수와 확률",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "$4$부터 $8$까지의 자연수가 각각 적힌 카드 $5$ 장 중에서 한 장의 카드를 뽑아서 나온 수를 $x$라 한다. $\\frac{1}{x}$을 소수로 나타내었을 때, 순환소수가 되는 경우의 수를 구하여라.",
-          "answer_text": "$2$"
+          "question_text": "주머니 속에 흰 바둑돌 $5$ 개와 검은 바둑돌 $3$ 개가 들어 있다. 이 주머니에서 바둑돌 $1$ 개를 꺼내 확인하고 다시 넣은 후 또 $1$ 개를 꺼낼 때, 두 개 모두 검은 바둑돌일 확률을 구하여라.",
+          "answer_text": "$\\frac{9}{64}$"
         },
         {
-          "id": "110:train:7911_4097",
-          "achievement_code_2015": "9수04-05",
-          "topic_name_2015": "주사위, 동전을 던지는 경우의 수",
-          "difficulty": "easy",
+          "id": "real-110-train-8714_102049",
+          "achievement_code_2015": "9수05-02",
+          "topic_name_2015": "경우의 수와 확률",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "서로 다른 두 개의 주사위를 동시에 던질 때, 나오는 눈의 수의 합이 $10$이 되는 경우의 수를 구하여라.",
-          "answer_text": "$3$"
+          "question_text": "주머니 속에 빨간 구슬 $3$ 개와 파란 구슬 $7$ 개가 들어 있다. 이 주머니에서 구슬 $1\\text{ }\\text{개}$를 꺼내 확인하고 다시 넣은 후 또 $1$ 개를 꺼낼 때, 첫 번째는 빨간 구슬, 두 번째는 파란 구슬일 확률을 구하여라.",
+          "answer_text": "$\\frac{21}{100}$"
         },
         {
-          "id": "110:train:34903_140204",
-          "achievement_code_2015": "9수04-05",
-          "topic_name_2015": "여러 가지 경우의 수",
+          "id": "real-110-train-8714_102051",
+          "achievement_code_2015": "9수05-02",
+          "topic_name_2015": "경우의 수와 확률",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "다음과 같이 $ㄱ$~$ㅂ$ 중에서 하나를 선택하여 사다리를 타면 상품을 받는 사다리 타기 그림을 그리는 중이다. 상품은 시계, 가방, 게임기가 있고, 시계는 가방보다 $2$ 개 더 많이 있을 때, 나머지 자리에 상품을 배치하여 그림을 완성하는 경우의 수를 구하여라. (단, 어느 것을 선택해도 상품은 $1$ 개 받는다.)",
-          "answer_text": "$3$"
+          "question_text": "상자 속에 노란 공 $2$ 개와 빨간 공 $6$ 개가 들어 있다. 이 상자에서 공 $1$개를 꺼내 확인하고 다시 넣은 후 또 $1$ 개를 꺼낼 때, 첫 번째는 노란 공, 두 번째는 빨간 공일 확률을 구하여라.",
+          "answer_text": "$\\frac{3}{16}$"
         }
       ]
     },
     "9수01-05": {
       "ui_name": "제곱근과 실수",
+      "school_level": "middle",
       "grade": 3,
-      "candidate_pool": 1444,
+      "course": "중학교 수학",
+      "candidate_pool": 450,
       "examples": [
         {
-          "id": "110:train:34441_137463",
-          "achievement_code_2015": "9수01-07",
-          "topic_name_2015": "제곱근의 뜻과 성질",
-          "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "$25$의 두 제곱근을 $a$, $b$라 할 때, 제곱근 $\\sqrt{2a+b+4}$의 값을 구하려고 한다. (단, $a>b$) (1) $a$, $b$의 값을 각각 구하여라.   (2) 제곱근 $\\sqrt{2a+b+4}$의 값을 구하여라.",
-          "answer_text": "$a=5$$,$ $b=-5$"
+          "id": "real-30-train-S3_중등_1_000072",
+          "achievement_code_2015": "9수01-05",
+          "topic_name_2015": "제곱근과 실수",
+          "difficulty": "medium",
+          "problem_type": "objective",
+          "question_text": "다음 계산 과정에서 사용된 법칙을 차례로 나열한 것은?\n$\\begin{array}{l}1+\\left\\{\\left(\\frac{3}{2}+4\\right)+\\frac{1}{2}\\right\\} \\times 4 \\\\ =1+\\left\\{\\frac{3}{2}+\\left(4+\\frac{1}{2}\\right)\\right\\} \\times 4 \\\\ =1+\\left\\{\\frac{3}{2}+\\left(\\frac{1}{2}+4\\right)\\right\\} \\times 4\\end{array}$ $\\square$ $\\square$",
+          "answer_text": "⑤ 결합법칙, 교환법칙"
         },
         {
-          "id": "110:train:11954_116148",
-          "achievement_code_2015": "9수01-07",
-          "topic_name_2015": "제곱근의 성질을 이용하여 제곱근 구하기",
-          "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "$\\sqrt{16}$의 음의 제곱근을 $A$, $(-3)^2$의 양의 제곱근을 $B$라 할 때, $A+B$의 값을 구하여라.",
-          "answer_text": "$1$"
+          "id": "real-30-train-S3_중등_1_000073",
+          "achievement_code_2015": "9수01-05",
+          "topic_name_2015": "제곱근과 실수",
+          "difficulty": "medium",
+          "problem_type": "subjective",
+          "question_text": "오른쪽 그림의 정육면체 모양의 주사위에서 마주 보는 면에 적힌 두 수의 합이 0이라고 할 때, 보이지 않는 세 면에 적힌 수들의 합을 구하고 그 과정을 서술하시오.\n-3, -8, +9가 적혀있는 정육면체 모양의 주사위.",
+          "answer_text": "$(-8)$과 마주 보는 면에 적힌 수는 $0-(-8)=0+(+8)=+8$ $(-3)$과 마주 보는 면에 적힌 수는 $0-(-3)=0+(+3)=+3$ $(+9)$와 마주 보는 면에 적힌 수는 $0-(+9)=0+(-9)=-9$ 따라서 보이지 않는 세 면에 적힌 수들의 합은 \\[ (+8)+(+3)+(-9)=(+11)+(-9)=+2 \\]"
         },
         {
-          "id": "110:train:11979_116172",
-          "achievement_code_2015": "9수01-07",
-          "topic_name_2015": "제곱근의 성질을 이용하여 계산하기",
+          "id": "real-30-train-S3_중등_1_000074",
+          "achievement_code_2015": "9수01-05",
+          "topic_name_2015": "제곱근과 실수",
           "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "$A$, $B$가 다음과 같을 때, $A+B$의 값을 구하여라. $A=\\sqrt{16}+\\sqrt{(-2)^2}-(\\sqrt{5})^2$ $B=\\sqrt{100}\\times\\sqrt{(-\\frac{1}{5})^2}$",
-          "answer_text": "$3$"
+          "problem_type": "objective",
+          "question_text": "다음 중 네 번째로 계산해야 할 곳을 말하시오.\n\\[ \\begin{array}{l} &4&-&[&5&+&3 &\\times&\\{(-2) &\\times& 4&+&(-16) &\\div& 8\\}] \\\\ &&\\uparrow&&& \\uparrow&& \\uparrow&&\\uparrow &&\\uparrow &&\\uparrow\\\\ &&㉠&&&㉡&& ㉢&&㉣&& ㉤&&㉥ \\end{array} \\]",
+          "answer_text": "㉢"
         }
       ]
     },
     "9수01-06": {
       "ui_name": "근호를 포함한 식의 계산",
+      "school_level": "middle",
       "grade": 3,
-      "candidate_pool": 57,
+      "course": "중학교 수학",
+      "candidate_pool": 369,
       "examples": [
         {
-          "id": "110:train:12231_116781",
-          "achievement_code_2015": "9수03-16",
-          "topic_name_2015": "분배법칙을 이용한 분모의 유리화",
+          "id": "real-110-train-25095_77845",
+          "achievement_code_2015": "9수01-06",
+          "topic_name_2015": "근호를 포함한 식의 계산",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "$\\frac{\\sqrt{12}+4}{\\sqrt{2}}$의 분모를 유리화하였더니 $a\\sqrt{2}+b\\sqrt{6}$이 되었다. 유리수 $a$, $b$에 대하여 $a+b$의 값을 구하여라.",
-          "answer_text": "$3$"
+          "question_text": "다음을 각각 만족시키는 세 수 $p$, $q$, $r$의 크기를 비교하여라.  $\\bullet(2x^2y^2)^2\\div(xy)^2=4x^py^2$  $\\bullet(2xy^2)^3\\times2xy=16x^4y^q$ $\\bullet\\frac{x^2}{3}\\times36x^2y^3\\div xy^4=\\frac{rx^3}{y}$",
+          "answer_text": "$p<q<r$"
         },
         {
-          "id": "111:train:00043_66779",
-          "achievement_code_2015": "9수01-07",
-          "topic_name_2015": "복잡한 형태의 분모의 유리화",
-          "difficulty": "easy",
-          "problem_type": "short_answer",
-          "question_text": "$ \\frac{2-\\sqrt{3}}{2+\\sqrt{3}}+\\frac{2+\\sqrt{3}}{2-\\sqrt{3}} $을 간단히 하여라.",
-          "answer_text": "$14$"
+          "id": "real-110-train-25095_77846",
+          "achievement_code_2015": "9수01-06",
+          "topic_name_2015": "근호를 포함한 식의 계산",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "다음을 각각 만족시키는 세 수 $p$, $q$, $r$의 크기를 비교하여라.  • $(x^3y)^2\\times2x^3y=2x^py^3$ • $(x^2y^3)^4\\div(-xy)^2=x^qy^{10}$ • $\\frac{x^2}{2}\\times6x^3y\\div\\frac{3xy^2}{4}=\\frac{rx^4}{y}$",
+          "answer_text": "$r<q<p$"
         },
         {
-          "id": "111:train:00042_82895",
-          "achievement_code_2015": "9수03-16",
-          "topic_name_2015": "곱셈 공식을 이용한 분모의 유리화",
+          "id": "real-110-train-41312_160550",
+          "achievement_code_2015": "9수01-06",
+          "topic_name_2015": "근호를 포함한 식의 계산",
           "difficulty": "easy",
-          "problem_type": "short_answer",
-          "question_text": "$\\frac{2+\\sqrt{3}}{2-\\sqrt{3}}=a+b \\sqrt{3}$ 일 때, $a+b$의 값을 구하여라. (단, $a,b$는 유리수)",
-          "answer_text": "$11 \\\\ $"
+          "problem_type": "essay",
+          "question_text": "$x=-2y$일 때, 식 $\\frac{1}{5}x^3y\\times(3xy^2)^2\\div(4xy^4)^2$의 값을 구하여라. (단, $x$, $y$는 $0$이 아닌 수)",
+          "answer_text": "$-\\frac{9}{10}$"
         }
       ]
     },
     "9수02-08": {
       "ui_name": "다항식의 곱셈과 인수분해",
+      "school_level": "middle",
       "grade": 3,
-      "candidate_pool": 493,
+      "course": "중학교 수학",
+      "candidate_pool": 541,
       "examples": [
         {
-          "id": "110:train:42115_164473",
-          "achievement_code_2015": "9수02-19",
-          "topic_name_2015": "다항식과 다항식의 곱셈",
+          "id": "real-110-train-34515_137799",
+          "achievement_code_2015": "9수02-08",
+          "topic_name_2015": "다항식의 곱셈과 인수분해",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "다음 조건을 모두 만족시키는 자연수 $A$, $B$에 대하여 $AB$를 $7$로 나누었을 때의 나머지를 구하여라. (가) $A$를 $7$로 나누었을 때의 나머지는 $5$이다. (나) $B$를 $7$로 나누었을 때의 나머지는 $4$이다.",
+          "question_text": "$(x^3-3x^2)\\div (-\\frac{x}{4})$를 계산한 식에서 각 항의 계수의 합을 구하여라.",
+          "answer_text": "$8$"
+        },
+        {
+          "id": "real-110-train-34515_137800",
+          "achievement_code_2015": "9수02-08",
+          "topic_name_2015": "다항식의 곱셈과 인수분해",
+          "difficulty": "easy",
+          "problem_type": "essay",
+          "question_text": "$(2x^3-x^2)\\div (-\\frac{x}{2})$를 계산한 식에서 각 항의 계수의 합을 구하여라.",
+          "answer_text": "$-2$"
+        },
+        {
+          "id": "real-110-train-34515_137801",
+          "achievement_code_2015": "9수02-08",
+          "topic_name_2015": "다항식의 곱셈과 인수분해",
+          "difficulty": "easy",
+          "problem_type": "essay",
+          "question_text": "$(4x^3-6x^2)\\div(-\\frac{x}{3})$를 계산한 식에서 각 항의 계수의 합을 구하여라.",
           "answer_text": "$6$"
-        },
-        {
-          "id": "110:train:9993_11168",
-          "achievement_code_2015": "9수03-16",
-          "topic_name_2015": "곱셈 공식1-(a+b)2=a2+2ab+b2, (a-b)2=a2-2ab+b2",
-          "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "$(x-7y)^2=Ax^2-Bxy+Cy^2$일 때, 수 $A$, $B$, $C$에 대하여 $A+B+C$의 값을 구하여라.",
-          "answer_text": "$64$"
-        },
-        {
-          "id": "110:train:10013_11218",
-          "achievement_code_2015": "9수03-16",
-          "topic_name_2015": "곱셈 공식4-(ax+b)(cx+d)=acx2+(ad+bc)x+bd",
-          "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "$(3x-a)(bx+1)=21x^2+cx-2$일 때, 수 $a$, $b$, $c$에 대하여 $a+b-c$의 값을 구하여라.",
-          "answer_text": "$20$"
         }
       ]
     },
     "9수02-09": {
       "ui_name": "이차방정식",
+      "school_level": "middle",
       "grade": 3,
-      "candidate_pool": 778,
+      "course": "중학교 수학",
+      "candidate_pool": 1460,
       "examples": [
         {
-          "id": "110:train:32124_118523",
-          "achievement_code_2015": "9수02-04",
-          "topic_name_2015": "이차방정식의 뜻",
+          "id": "real-110-train-32124_118521",
+          "achievement_code_2015": "9수02-09",
+          "topic_name_2015": "이차방정식",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "이차방정식 $(2x+1)(3x-1)=x^2+2x$를 $5x^2+bx+c=0$의 꼴로 나타낼 때, 수 $b$, $c$에 대하여 $bc$의 값을 구하여라.",
+          "answer_text": "$1$"
+        },
+        {
+          "id": "real-110-train-32124_118522",
+          "achievement_code_2015": "9수02-09",
+          "topic_name_2015": "이차방정식",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "이차방정식 $(x+1)(2x+3)=7x-6$을 $ax^2+bx+9=0$의 꼴로 나타낼 때, 수 $a$, $b$에 대하여 $ab$의 값을 구하여라.",
+          "answer_text": "$-4$"
+        },
+        {
+          "id": "real-110-train-32124_118523",
+          "achievement_code_2015": "9수02-09",
+          "topic_name_2015": "이차방정식",
           "difficulty": "easy",
           "problem_type": "essay",
           "question_text": "이차방정식 $(2x-3)(4x+1)=5x(x+2)$를 $3x^2+bx+c=0$의 꼴로 나타낼 때, 수 $b$, $c$에 대하여 $bc$의 값을 구하여라.",
           "answer_text": "$60$"
-        },
-        {
-          "id": "110:train:12514_17331",
-          "achievement_code_2015": "9수02-04",
-          "topic_name_2015": "AB=0의 성질을 이용하여 이차방정식의 해 구하기",
-          "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "이차방정식 $(2x+1)(x-4)=0$을 풀어라.",
-          "answer_text": "$x=-\\frac{1}{2}$ 또는 $x=4$"
-        },
-        {
-          "id": "110:train:12519_152726",
-          "achievement_code_2015": "9수02-04",
-          "topic_name_2015": "인수분해를 이용한 이차방정식의 풀이",
-          "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "이차방정식 $(x+3)(x-2)=3(x-1)$을 풀어라.",
-          "answer_text": "$x=-1$ 또는 $x=3$"
         }
       ]
     },
     "9수02-10": {
       "ui_name": "이차방정식의 활용",
+      "school_level": "middle",
       "grade": 3,
-      "candidate_pool": 610,
+      "course": "중학교 수학",
+      "candidate_pool": 233,
       "examples": [
         {
-          "id": "110:train:12610_120947",
-          "achievement_code_2015": "9수02-04",
-          "topic_name_2015": "근의 공식을 이용한 이차방정식의 풀이의 활용",
-          "difficulty": "easy",
+          "id": "real-110-train-32401_122024",
+          "achievement_code_2015": "9수02-10",
+          "topic_name_2015": "이차방정식의 활용",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "이차방정식 $px^2-2x-5=0$의 근이 $x=\\frac{1\\pm\\sqrt{q}}{4}$일 때, $p+q$의 값을 구하여라. (단, $p$, $q$는 유리수)",
-          "answer_text": "$25$"
+          "question_text": "$n$ 명 중 대표 $2$ 명을 뽑는 경우의 수는 $\\frac{n(n-1)}{2}$이다. 동아리 회원 중 대표 $2$ 명을 뽑는 경우의 수가 $78$일 때, 동아리 회원은 몇 명인지 구하여라.",
+          "answer_text": "$13$ 명"
         },
         {
-          "id": "110:train:12753_122071",
-          "achievement_code_2015": "9수01-07",
-          "topic_name_2015": "실생활 활용",
-          "difficulty": "easy",
+          "id": "real-110-train-32401_122025",
+          "achievement_code_2015": "9수02-10",
+          "topic_name_2015": "이차방정식의 활용",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "준혁이는 예지보다 $2$ 살이 적다고 한다. 예지의 나이를 제곱하면 준혁이의 나이의 제곱의 $2$ 배보다 $28$ 살이 더 적어진다고 할 때, 예지의 나이를 구하여라.",
-          "answer_text": "$10$ 살"
+          "question_text": "$n$ 명 중 대표 $2$ 명을 뽑는 경우의 수는 $\\frac{n(n-1)}{2}$이다. 피구 선수 중 대표 $2$ 명을 뽑는 경우의 수가 $120$일 때, 피구 선수는 몇 명인지 구하여라.",
+          "answer_text": "$16$ 명"
         },
         {
-          "id": "110:train:12721_122783",
-          "achievement_code_2015": "9수01-07",
-          "topic_name_2015": "도형에의 활용",
-          "difficulty": "easy",
+          "id": "real-110-train-32401_122026",
+          "achievement_code_2015": "9수02-10",
+          "topic_name_2015": "이차방정식의 활용",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "둘레의 길이가 $30$ $cm$인 직사각형의 넓이가 $56$ $cm^2$이다. 가로의 길이가 세로의 길이보다 더 길 때, 가로의 길이를 구하여라.",
-          "answer_text": "$8 cm$"
+          "question_text": "$n$ 명 중 대표 $2$ 명을 뽑는 경우의 수는 $\\frac{n(n-1)}{2}$이다. 모둠원 중 대표 $2$ 명을 뽑는 경우의 수가 $36$일 때, 모둠원은 몇 명인지 구하여라.",
+          "answer_text": "$9$ 명"
         }
       ]
     },
     "9수03-04": {
       "ui_name": "이차함수와 그래프",
+      "school_level": "middle",
       "grade": 3,
-      "candidate_pool": 825,
+      "course": "중학교 수학",
+      "candidate_pool": 81,
       "examples": [
         {
-          "id": "110:train:12835_121262",
-          "achievement_code_2015": "9수02-22",
-          "topic_name_2015": "이차함수의 그래프가 지나는 점",
-          "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "이차함수 $y=\\frac{2}{3}x^2$의 그래프가 점 $(a, 24)$를 지날 때, $a$의 값을 구하여라. (단, $a>0$)",
-          "answer_text": "$a=6$"
+          "id": "real-30-train-S3_중등_2_001594",
+          "achievement_code_2015": "9수03-04",
+          "topic_name_2015": "이차함수와 그래프",
+          "difficulty": "medium",
+          "problem_type": "subjective",
+          "question_text": "$x$와 $y$ 사이의 관계가 다음과 같을 때, 주어진 표를 완성하고, $y$가 $x$의 함수인지 아닌지 말하시오.\n① 사탕 20 개가 들어 있는 사탕 한 봉지에서 사탕 $x$ 개를 먹었을 때 남은 사탕 $y$ 개\n② 자연수 $x$보다 작은 자연수 $y$\n<div class=\"table_tabular \" style=\"text-align: center\"> <div class=\"inline-tabular\"><table id=\"tabular\"> <tbody> <tr style=\"border-top: none !important; border-bottom: none !important;\"> <td style=\"text-align: left; border-left-style: solid !important; border-left-width: 1px !important; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top-style: solid !important; border-top-width: 1px !important; width: auto; vertical-align: middle; \"><span class=\"math-inline \"> $x$</span> (개)</td> <td style=\"text-align: left; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top-style: solid !important; border-top-width: 1px !important; width: auto; vertical-align: middle; \">1</td> <td style=\"text-align: left; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top-style: solid !important; border-top-width: 1px !important; width: auto; vertical-align: middle; \">2</td> <td style=\"text-align: left; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top-style: solid !important; border-top-width: 1px !important; width: auto; vertical-align: middle; \">3</td> <td style=\"text-align: left; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top-style: solid !important; border-top-width: 1px !important; width: auto; vertical-align: middle; \">4</td> </tr> <tr style=\"border-top: none !important; border-bottom: none !important;\"> <td style=\"text-align: left; border-left-style: solid !important; border-left-width: 1px !important; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top: none !important; width: auto; vertical-align: middle; \"><span class=\"math-inline \"> $y$</span> (개)</td> <td style=\"text-align: left; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top: none !important; width: auto; vertical-align: middle; \" class=\"_empty\"></td> <td style=\"text-align: left; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top: none !important; width: auto; vertical-align: middle; \" class=\"_empty\"></td> <td style=\"text-align: left; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top: none !important; width: auto; vertical-align: middle; \" class=\"_empty\"></td> <td style=\"text-align: left; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top: none !important; width: auto; vertical-align: middle; \" class=\"_empty\"></td> </tr> </tbody> </table> </div></div>\n<div class=\"table_tabular \" style=\"text-align: center\"> <div class=\"inline-tabular\"><table id=\"tabular\"> <tbody> <tr style=\"border-top: none !important; border-bottom: none !important;\"> <td style=\"text-align: left; border-left-style: solid !important; border-left-width: 1px !important; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top-style: solid !important; border-top-width: 1px !important; width: auto; vertical-align: middle; \"><span class=\"math-inline \"> $x$</span></td> <td style=\"text-align: left; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top-style: solid !important; border-top-width: 1px !important; width: auto; vertical-align: middle; \">1</td> <td style=\"text-align: left; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top-style: solid !important; border-top-width: 1px !important; width: auto; vertical-align: middle; \">2</td> <td style=\"text-align: left; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top-style: solid !important; border-top-width: 1px !important; width: auto; vertical-align: middle; \">3</td> <td style=\"text-align: left; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top-style: solid !important; border-top-width: 1px !important; width: auto; vertical-align: middle; \">4</td> </tr> <tr style=\"border-top: none !important; border-bottom: none !important;\"> <td style=\"text-align: left; border-left-style: solid !important; border-left-width: 1px !important; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top: none !important; width: auto; vertical-align: middle; \"><span class=\"math-inline \"> $y$</span></td> <td style=\"text-align: left; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top: none !important; width: auto; vertical-align: middle; \" class=\"_empty\"></td> <td style=\"text-align: left; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top: none !important; width: auto; vertical-align: middle; \" class=\"_empty\"></td> <td style=\"text-align: left; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top: none !important; width: auto; vertical-align: middle; \" class=\"_empty\"></td> <td style=\"text-align: left; border-right-style: solid !important; border-right-width: 1px !important; border-bottom-style: solid !important; border-bottom-width: 1px !important; border-top: none !important; width: auto; vertical-align: middle; \" class=\"_empty\"></td> </tr> </tbody> </table> </div></div>",
+          "answer_text": "① 함수이다. ② 함수가 아니다."
         },
         {
-          "id": "110:train:12837_121265",
-          "achievement_code_2015": "9수02-21",
-          "topic_name_2015": "이차함수 y=ax²의 그래프의 활용",
+          "id": "real-30-train-S3_중등_2_001711",
+          "achievement_code_2015": "9수03-04",
+          "topic_name_2015": "이차함수와 그래프",
           "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "이차함수 $y=-4x^2$의 그래프가 두 점 $(a, -4)$, $(2, b)$를 지날 때, $ab$의 값을 구하여라. (단, $a<0$)",
-          "answer_text": "$16$"
+          "problem_type": "objective",
+          "question_text": "다음 보기 중 $y$가 $x$의 함수인 것을 모두 고른 것은?\n보기 상자에 다음과 같은 내용이 들어 있다. ᄀ. $x$와 $y$의 합이 8 ㄴ. 자연수 $x$의 배수 $y$ ㄷ. 재연수 $x$와 서로소인 수 $y$ ㄹ. 자연수 $x$보다 작은 자연수 $y$ ㅁ. 농도가 $x \\%$ 인 소금물 200g 속에 들어 있는 소금의 양이 $y \\mathrm{~g}$",
+          "answer_text": "③ ㄱ,ㅁ"
         },
         {
-          "id": "110:train:34879_165828",
-          "achievement_code_2015": "9수02-22",
-          "topic_name_2015": "이차함수 y=ax²의 그래프",
-          "difficulty": "easy",
-          "problem_type": "essay",
-          "question_text": "다음 조건을 만족시키는 음의 정수 $a$는 모두 몇 개인지 구하여라. 이차함수 $y=ax^2$의 그래프는 $y=-\\frac{4}{3}x^2$의 그래프보다 폭이 더 좁고, $y=-5x^2$의 그래프보다 폭이 더 넓다.",
-          "answer_text": "$3$ 개"
+          "id": "real-30-train-S3_중등_2_001778",
+          "achievement_code_2015": "9수03-04",
+          "topic_name_2015": "이차함수와 그래프",
+          "difficulty": "medium",
+          "problem_type": "objective",
+          "question_text": "다음 보기 중 $y$가 $x$의 일차함수인 것을 모두 고르시오.\n보기라고 쓰여져 있는 네모상자에 다음과 같은 내용이 들어 있다. ㄱ. 한 사람의 버스 요금이 $900$원일 때, $x$명의 버스 요금은 $y$원이다. ㄴ. 한 변의 길이가 $x \\mathrm{~cm}$인 정사각형의 넓이는 $y \\mathrm{~cm}^{2}$이다. ㄷ. $500$원짜리 연필 한 자루와 $x$원짜리 지우개 $3$ 개의 값의 합은 $y$원이다. ㄹ. $100$개의 영양제를 하루에 $x$0개씩 $x$일 동안 먹고 남은 양은 $y$개이다. ㅁ. $x$3km의 거리를 시속 $x$4로 달린 시간은 $y$시간이다.",
+          "answer_text": "ㄱ, ㄷ, ㄹ"
         }
       ]
     },
     "9수04-05": {
       "ui_name": "삼각비",
+      "school_level": "middle",
       "grade": 3,
-      "candidate_pool": 375,
+      "course": "중학교 수학",
+      "candidate_pool": 1782,
       "examples": [
         {
-          "id": "110:train:33053_127747",
-          "achievement_code_2015": "9수03-16",
-          "topic_name_2015": "직선의 기울기와 삼각비",
-          "difficulty": "easy",
+          "id": "real-110-train-14432_125221",
+          "achievement_code_2015": "9수04-05",
+          "topic_name_2015": "삼각비",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "점 $(2\\sqrt{3}, 5)$를 지나고 $x$축의 양의 방향과 이루는 각의 크기가 $60\\degree$인 직선의 방정식을 구하여라.",
-          "answer_text": "$y=\\sqrt{3}x-1$"
+          "question_text": "다음 그림과 같은 직각삼각형 $ABC$에서 $\\overline{AC}=9$이고 $\\tan B=\\frac{3}{8}$일 때, $\\triangle ABC$의 넓이를 구하여라.",
+          "answer_text": "$108$"
         },
         {
-          "id": "110:train:34260_135247",
-          "achievement_code_2015": "9수03-16",
-          "topic_name_2015": "사분원을 이용하여 삼각비의 값 구하기",
-          "difficulty": "easy",
+          "id": "real-110-train-14432_134099",
+          "achievement_code_2015": "9수04-05",
+          "topic_name_2015": "삼각비",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "이차방정식 $4x^2-4x+1=0$의 한 근을 $\\sin A$라 할 때, $\\cos3A-2\\sin2A+3\\tan A$의 값을 구하여라. (단, $0\\degree<a<90\\degree$)",
-          "answer_text": "$0$"
+          "question_text": "다음 그림과 같은 직각삼각형 $ABC$에서 $\\overline{BC}=4$이고 $\\tan C=\\frac{3}{2}$일 때, $\\triangle ABC$의 넓이를 구하여라.",
+          "answer_text": "$12$"
         },
         {
-          "id": "110:train:14517_126771",
-          "achievement_code_2015": "9수03-16",
-          "topic_name_2015": "0˚, 90˚의 삼각비의 값 구하기",
+          "id": "real-110-train-14432_22992",
+          "achievement_code_2015": "9수04-05",
+          "topic_name_2015": "삼각비",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "$\\sin45\\degree\\times\\cos45\\degree+\\sin60\\degree\\times\\tan0\\degree$를 계산하여라.",
-          "answer_text": "$\\frac{1}{2}$"
+          "question_text": "다음 그림과 같은 직각삼각형 $ABC$에서 $\\overline{BC}=12\\sqrt{2}$이고 $\\tan A=\\frac{12}{5}$일 때, $\\triangle ABC$의 넓이를 구하여라.",
+          "answer_text": "$60$"
         }
       ]
     },
     "9수04-06": {
       "ui_name": "원과 직선의 위치 관계",
+      "school_level": "middle",
       "grade": 3,
-      "candidate_pool": 117,
+      "course": "중학교 수학",
+      "candidate_pool": 547,
       "examples": [
         {
-          "id": "110:train:34302_135870",
-          "achievement_code_2015": "9수03-18",
-          "topic_name_2015": "원의 현",
+          "id": "real-110-train-16252_30826",
+          "achievement_code_2015": "9수04-06",
+          "topic_name_2015": "원과 직선의 위치 관계",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "오른쪽 그림에서 $\\overline{CM}$ 은 원 $O$의 중심을 지나고 $\\overline{AB}⊥\\overline{CM}$ 이다 $\\overline{AB} = 12cm$  (1)$\\overline{AM}$의 길이를 구하여라.  (2) $\\overline{OA}$의 길이를 구하여라.  (3) 원 $O$의 넓이를 구하여라.",
-          "answer_text": "$\\overline{AM}=6 cm$"
+          "question_text": "다음 그림은 직육면체를 잘라 만든 사각기둥이다. 모서리 $AD$와 한 점에서 만나는 모서리의 개수를 $a$ 개, 평행한 면의 개수를 $b$ 개라 할 때, $ab$의 값을 구하여라.",
+          "answer_text": "$8$"
         },
         {
-          "id": "110:train:34311_136265",
-          "achievement_code_2015": "9수03-18",
-          "topic_name_2015": "원의 접선",
+          "id": "real-110-train-16252_30828",
+          "achievement_code_2015": "9수04-06",
+          "topic_name_2015": "원과 직선의 위치 관계",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "오른쪽 그림과 같이 $\\triangle ABC$는 반지름의 길이가 $9cm$인 원 O에 외접하고 세 점 $D, E, F$는 그 접점일 때, 원$ O$와  $\\overline{OB}$의 교점을 $G$라고 하자. $\\overline{AB}=27cm$, $\\overline{AF}=15cm$, $\\overline{OG}=9cm$일때,  $\\overline{BG}$의 길이를 구하여라.",
-          "answer_text": "$\\overline{BG}=6 cm$"
+          "question_text": "다음 그림은 직육면체를 잘라 만든 사각기둥이다. 모서리 $DH$와 평행한 모서리의 개수를 $x$ 개, 수직인 면의 개수를 $y$ 개라 할 때, $x-y$의 값을 구하여라.",
+          "answer_text": "$1$"
         },
         {
-          "id": "30:train:S3_중등_3_003226",
-          "achievement_code_2015": "9수03-18",
-          "topic_name_2015": "[9수04-19] 원의 현에 관한 성질과 접선에 관한 성질을 이해한다.",
+          "id": "real-110-train-16252_30829",
+          "achievement_code_2015": "9수04-06",
+          "topic_name_2015": "원과 직선의 위치 관계",
           "difficulty": "easy",
-          "problem_type": "objective",
-          "question_text": "오른쪽 그림과 같이 반지름의 길이가 6cm 인 원 O에서 $\\overline{\\mathrm{AB}}=8 \\mathrm{~cm}$ 일 때, 원의 중심 O와 현 AB 사이의 거리는?\n구 평면도형 하단에 구를 지나는 a, b 선분(8cm)이 있으며, 그 중간H점에서 원형이 중점인 O까지 수선의 발이 그어져있다.",
-          "answer_text": "③ $2 \\sqrt{5} \\mathrm{~cm}$"
+          "problem_type": "essay",
+          "question_text": "다음 그림은 직육면체를 잘라 만든 사각기둥이다. 모서리 $EF$와 꼬인 위치에 있는 모서리의 개수를 $a$ 개, 수직인 면의 개수를 $b$ 개라 할 때, $a+b$의 값을 구하여라.",
+          "answer_text": "$5$"
         }
       ]
     },
     "9수04-07": {
       "ui_name": "원주각",
+      "school_level": "middle",
       "grade": 3,
-      "candidate_pool": 163,
+      "course": "중학교 수학",
+      "candidate_pool": 848,
       "examples": [
         {
-          "id": "110:train:34351_136731",
-          "achievement_code_2015": "9수03-19",
-          "topic_name_2015": "원주각과 중심각의 크기(1)",
-          "difficulty": "easy",
+          "id": "real-110-train-13907_132329",
+          "achievement_code_2015": "9수04-07",
+          "topic_name_2015": "원주각",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "오른쪽 그림의 원 $O$에서 $\\angle APB=30\\degree$, $\\widehat{AB}=5\\pi cm$일 때, 원$O$의 넓이를 구하여라.",
-          "answer_text": "$225\\pi cm^2$"
+          "question_text": "다음 그림에서 $\\angle APB$의 크기를 구하여라.",
+          "answer_text": "$\\angle APB$$=57\\degree$"
         },
         {
-          "id": "30:train:S3_중등_3_003250",
-          "achievement_code_2015": "9수03-19",
-          "topic_name_2015": "[9수04-20] 원주각의 성질을 이해한다.",
-          "difficulty": "easy",
-          "problem_type": "objective",
-          "question_text": "$\\begin{array}{l} \\text { 오른쪽 그림에서 } \\angle x \\text { 의 크 } \\\\ \\text { 기는? }\\end{array}$\n원형에 접해있는 ABC의 점이있고 중점 O가 있다. 각 점들은 서로 선분으로 이어져 있으며, 각 A는 X, 각O는 220도 이다.",
-          "answer_text": "⑤ $70^{\\circ}$"
+          "id": "real-110-train-13907_132330",
+          "achievement_code_2015": "9수04-07",
+          "topic_name_2015": "원주각",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "다음 그림에서 $\\angle APB$의 크기를 구하여라.",
+          "answer_text": "$\\angle APB=60\\degree$"
         },
         {
-          "id": "111:train:00044_43406",
-          "achievement_code_2015": "9수03-19",
-          "topic_name_2015": "한 호에 대한 원주각의 크기",
-          "difficulty": "easy",
-          "problem_type": "short_answer",
-          "question_text": "(1) $ \\angle AOB=\\angle a$,  $\\angle OAP=\\angle b $라 할 때, $ \\angle OBP $의 크기를 $ \\angle a$,  $\\angle b $에 관한 식으로 나타내어라. (2) 원 $O$의 반지름의 길이가 $ 12 \\mathrm{~cm}$, $\\angle AOB=75\\degree $일 때, 호 $AB$의 길이를 구하여라. 다음 그림의 원 $O$에 대하여 다음 물음에 답하여라.",
-          "answer_text": "(1) $ \\angle b-\\frac{1}{2} \\angle a $ (2) $ 5 \\pi \\mathrm{cm} $"
+          "id": "real-110-train-13907_134565",
+          "achievement_code_2015": "9수04-07",
+          "topic_name_2015": "원주각",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "다음 그림에서 $\\angle APB$의 크기를 구하여라.",
+          "answer_text": "$\\angle APB$$=52\\degree$"
         }
       ]
     },
     "9수05-03": {
       "ui_name": "대푯값과 산포도",
+      "school_level": "middle",
       "grade": 3,
-      "candidate_pool": 363,
+      "course": "중학교 수학",
+      "candidate_pool": 1089,
       "examples": [
         {
-          "id": "110:train:13459_27173",
-          "achievement_code_2015": "9수03-16",
-          "topic_name_2015": "중앙값 구하기",
-          "difficulty": "easy",
+          "id": "real-110-train-10846_81618",
+          "achievement_code_2015": "9수05-03",
+          "topic_name_2015": "대푯값과 산포도",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "다음 자료의 중앙값이 $13$일 때, $x$의 값을 구하여라. $12$ $  $ $11$  $  $  $x$     $8$  $  $  $19$  $  $  $17$",
-          "answer_text": "$x=14$"
+          "question_text": "진성이는 지난달, 이번 달 수학 시험에서 각각 $83$ 점, $88$ 점을 받았다. 다음 달 수학 시험에서 몇 점 이상을 받아야 $3$ 회의 수학 시험 점수의 평균이 $87$ 점 이상이 되는지 구하여라.",
+          "answer_text": "$90$ 점 이상"
         },
         {
-          "id": "110:train:13613_134223",
-          "achievement_code_2015": "9수03-16",
-          "topic_name_2015": "표준편차",
-          "difficulty": "easy",
+          "id": "real-110-train-10846_81619",
+          "achievement_code_2015": "9수05-03",
+          "topic_name_2015": "대푯값과 산포도",
+          "difficulty": "medium",
           "problem_type": "essay",
-          "question_text": "세 수 $9$, $a+3$, $2a+3$의 분산이 $8$일 때, $a$의 값을 구하여라. (단, $a>0$)",
-          "answer_text": "$a=6$"
+          "question_text": "우정이는 지난달, 이번 달 시험에서 각각 $90$ 점, $84$ 점을 받았다. 다음 달 시험에서 몇 점 이상을 받아야 $3$ 회의 시험 점수의 평균이 $85$ 점 이상이 되는지 구하여라.",
+          "answer_text": "$81$ 점 이상"
         },
         {
-          "id": "110:train:13562_134811",
-          "achievement_code_2015": "9수03-16",
-          "topic_name_2015": "평균과 분산 또는 표준편차를 알 때, 변량 구하기",
+          "id": "real-110-train-10847_14041",
+          "achievement_code_2015": "9수05-03",
+          "topic_name_2015": "대푯값과 산포도",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "진아는 세 번의 수학 시험에서 각각 $86$ 점, $88$ 점, $76$ 점을 받았다. 네 번에 걸친 수학 시험 점수의 평균이 $80$ 점 이상이 되려면 네 번째 수학 시험에서 몇 점 이상을 받아야 하는지 구하여라.",
+          "answer_text": "$70$ 점 이상"
+        }
+      ]
+    },
+    "10공수01-01": {
+      "ui_name": "다항식의 연산",
+      "school_level": "high",
+      "grade": null,
+      "course": "공통수학",
+      "candidate_pool": 42,
+      "examples": [
+        {
+          "id": "real-30-train-S3_고등_1_006418",
+          "achievement_code_2015": "10공수01-01",
+          "topic_name_2015": "다항식의 연산",
+          "difficulty": "easy",
+          "problem_type": "subjective",
+          "question_text": "두 다항식 $A=x+y, B=2 x-3 y$에 대하여 $2 A-B$를 간단히 하시오.",
+          "answer_text": "$5 y$"
+        },
+        {
+          "id": "real-30-train-S3_고등_1_006419",
+          "achievement_code_2015": "10공수01-01",
+          "topic_name_2015": "다항식의 연산",
+          "difficulty": "easy",
+          "problem_type": "subjective",
+          "question_text": "두 다항식 $A, B$에 대하여 \\[ 2 A+B=2 x^{2}+4 x+7, A-2 B=x^{2}-3 x+1 \\] 일 때, 다항식 $B$를 구하시오.",
+          "answer_text": "$2 x+1$"
+        },
+        {
+          "id": "real-30-train-S3_고등_1_006420",
+          "achievement_code_2015": "10공수01-01",
+          "topic_name_2015": "다항식의 연산",
+          "difficulty": "easy",
+          "problem_type": "subjective",
+          "question_text": "두 다항식 $A=2 x^{3}+x^{2}-4 x+1, B=x^{2}-4 x+3$에 대하여 $A-2 X=B$를 만족시키는 다항식 $X$를 구하시오.",
+          "answer_text": "$x^{3}-1$"
+        }
+      ]
+    },
+    "10공수01-02": {
+      "ui_name": "나머지정리",
+      "school_level": "high",
+      "grade": null,
+      "course": "공통수학",
+      "candidate_pool": 232,
+      "examples": [
+        {
+          "id": "real-110-train-26203_86252",
+          "achievement_code_2015": "10공수01-02",
+          "topic_name_2015": "나머지정리",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "두 다항식 $P(x)$, $Q(x)$에 대하여 $P(x)+Q(x)$를 $x-2$로 나누었을 때의 나머지가 $3$이고, $P(x)-Q(x)$를 $x-2$로 나누었을 때의 나머지가 $-5$일 때, 다항식 $P(x)Q(x)$를 $x-2$로 나누었을 때의 나머지를 구하시오.",
+          "answer_text": "$-4$"
+        },
+        {
+          "id": "real-110-train-26203_86254",
+          "achievement_code_2015": "10공수01-02",
+          "topic_name_2015": "나머지정리",
           "difficulty": "easy",
           "problem_type": "essay",
-          "question_text": "다음은 평균이 $47$인 변량 $a$, $b$, $c$, $d$에 대한 편차를 나타낸 표이다. $2c+x$의 값을 구하여라. <table border> <tbody> <tr> <td>변량</td> <td>$a$</td><td>$b$</td><td>$c$</td><td>$d$</td>  </tr> <tr> <td>편차</td> <td>$5$</td> <td>$-2$</td><td>$x$</td><td>$-9$</td> </tr>  </tbody> </table>",
-          "answer_text": "$112$"
+          "question_text": "두 다항식 $P(x)$, $Q(x)$에 대하여 $P(x)+Q(x)$를 $x+1$로 나누었을 때의 나머지가 $-3$이고, $P(x)-Q(x)$를 $x+1$로 나누었을 때의 나머지가 $4$일 때, 다항식 $P(x)Q(x)$를 $x+1$로 나누었을 때의 나머지를 구하시오.",
+          "answer_text": "$-\\frac{7}{4}$"
+        },
+        {
+          "id": "real-110-train-26203_86256",
+          "achievement_code_2015": "10공수01-02",
+          "topic_name_2015": "나머지정리",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "두 다항식 $P(x)$, $Q(x)$에 대하여 $P(x)+Q(x)$를 $x+3$으로 나누었을 때의 나머지가 $-2$이고, $P(x)-Q(x)$를 $x+3$으로 나누었을 때의 나머지가 $6$일 때, 다항식 $P(x)Q(x)$를 $x+3$으로 나누었을 때의 나머지를 구하시오.",
+          "answer_text": "$-8$"
+        }
+      ]
+    },
+    "10공수01-03": {
+      "ui_name": "인수분해",
+      "school_level": "high",
+      "grade": null,
+      "course": "공통수학",
+      "candidate_pool": 451,
+      "examples": [
+        {
+          "id": "real-110-train-26324_86911",
+          "achievement_code_2015": "10공수01-03",
+          "topic_name_2015": "인수분해",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "다항식 $a^2+b^2+c^2-2ab-2bc+2ca$를 인수분해하시오.",
+          "answer_text": "$(a-b+c)^2$"
+        },
+        {
+          "id": "real-110-train-26324_86912",
+          "achievement_code_2015": "10공수01-03",
+          "topic_name_2015": "인수분해",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "다항식 $a^2+b^2+c^2+2ab-2bc-2ca$를 인수분해하시오.",
+          "answer_text": "$(a+b-c)^2$"
+        },
+        {
+          "id": "real-110-train-26324_86914",
+          "achievement_code_2015": "10공수01-03",
+          "topic_name_2015": "인수분해",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "다항식 $a^2+b^2+4c^2+2ab+4bc+4ca$를 인수분해하시오.",
+          "answer_text": "$(a+b+2c)^2$"
+        }
+      ]
+    },
+    "10공수01-04": {
+      "ui_name": "복소수와 이차방정식",
+      "school_level": "high",
+      "grade": null,
+      "course": "공통수학",
+      "candidate_pool": 54,
+      "examples": [
+        {
+          "id": "real-30-train-S3_고등_1_006492",
+          "achievement_code_2015": "10공수01-04",
+          "topic_name_2015": "복소수와 이차방정식",
+          "difficulty": "easy",
+          "problem_type": "subjective",
+          "question_text": "다음 식을 인수분해하시오.\n① $a^{2} b^{3}+a^{3} b^{2}$",
+          "answer_text": "① $a^{2} b^{2}(a+b)$"
+        },
+        {
+          "id": "real-30-train-S3_고등_1_006493",
+          "achievement_code_2015": "10공수01-04",
+          "topic_name_2015": "복소수와 이차방정식",
+          "difficulty": "easy",
+          "problem_type": "subjective",
+          "question_text": "다음 식을 인수분해하시오.\n② $x y-x a+y b-a b$",
+          "answer_text": "② $(x+b)(y-a)$"
+        },
+        {
+          "id": "real-30-train-S3_고등_1_006494",
+          "achievement_code_2015": "10공수01-04",
+          "topic_name_2015": "복소수와 이차방정식",
+          "difficulty": "easy",
+          "problem_type": "subjective",
+          "question_text": "다음 식을 인수분해하시오.\n$x^{3}-27$",
+          "answer_text": "③ $(x-3)\\left(x^{2}+3 x+9\\right)$"
+        }
+      ]
+    },
+    "10공수01-05": {
+      "ui_name": "이차방정식과 이차함수",
+      "school_level": "high",
+      "grade": null,
+      "course": "공통수학",
+      "candidate_pool": 139,
+      "examples": [
+        {
+          "id": "real-30-train-S3_고등_1_006550",
+          "achievement_code_2015": "10공수01-05",
+          "topic_name_2015": "이차방정식과 이차함수",
+          "difficulty": "easy",
+          "problem_type": "subjective",
+          "question_text": "복소수 $z=(2+i)x^{2}-(1+5i)x-6(1-i)$가 순허 수가 되게 하는 실수 $x$의 값을 구하시오.",
+          "answer_text": "이어야 한다. ㉠을 만족시키는 해는 $x=-\\frac{3}{2}$ 또는 $x=2$ 그런데 $x=2$는 ㉡을 만족하지 않는다. 따라서 구하는 실수 $x$의 값은 $-\\frac{3}{2}$ 이다."
+        },
+        {
+          "id": "real-30-train-S3_고등_1_006551",
+          "achievement_code_2015": "10공수01-05",
+          "topic_name_2015": "이차방정식과 이차함수",
+          "difficulty": "easy",
+          "problem_type": "subjective",
+          "question_text": "$f(x)=x^{2}+a x+b$에 대하여 $f(1+i)=0$ 일 때, $a-b$의 값을 구하시오. (단, $a, b$는 실수이다.)",
+          "answer_text": "$-4$"
+        },
+        {
+          "id": "real-30-train-S3_고등_1_006552",
+          "achievement_code_2015": "10공수01-05",
+          "topic_name_2015": "이차방정식과 이차함수",
+          "difficulty": "easy",
+          "problem_type": "subjective",
+          "question_text": "다음을 계산하시오.\n① $(4+3 i)+(1-2 i)$",
+          "answer_text": "① $5+i$"
+        }
+      ]
+    },
+    "10공수02-01": {
+      "ui_name": "직선의 방정식",
+      "school_level": "high",
+      "grade": null,
+      "course": "공통수학",
+      "candidate_pool": 190,
+      "examples": [
+        {
+          "id": "real-110-train-27616_150567",
+          "achievement_code_2015": "10공수02-01",
+          "topic_name_2015": "직선의 방정식",
+          "difficulty": "easy",
+          "problem_type": "essay",
+          "question_text": "두 점 $(2, -3)$, $(-5, 1)$을 이은 선분을 $2 : 1$로 외분하는 점을 지나고 기울기가 $-1$인 직선의 방정식을 구하시오.",
+          "answer_text": "$y=-x-7$"
+        },
+        {
+          "id": "real-110-train-27616_92284",
+          "achievement_code_2015": "10공수02-01",
+          "topic_name_2015": "직선의 방정식",
+          "difficulty": "easy",
+          "problem_type": "essay",
+          "question_text": "두 점 $(-2, 4)$, $(6, 2)$를 이은 선분의 중점을 지나고 기울기가 $3$인 직선의 방정식을 구하시오.",
+          "answer_text": "$y=3x-3$"
+        },
+        {
+          "id": "real-110-train-27616_92286",
+          "achievement_code_2015": "10공수02-01",
+          "topic_name_2015": "직선의 방정식",
+          "difficulty": "easy",
+          "problem_type": "essay",
+          "question_text": "두 점 $(-3, 6)$, $(5, 6)$을 이은 선분의 중점을 지나고 기울기가 $-3$인 직선의 방정식을 구하시오.",
+          "answer_text": "$y=-3x+9$"
+        }
+      ]
+    },
+    "10공수02-02": {
+      "ui_name": "원의 방정식",
+      "school_level": "high",
+      "grade": null,
+      "course": "공통수학",
+      "candidate_pool": 246,
+      "examples": [
+        {
+          "id": "real-110-train-27721_92754",
+          "achievement_code_2015": "10공수02-02",
+          "topic_name_2015": "원의 방정식",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "중심이 $(2,-1)$이고 $x$축에 접하는 원의 방정식을 구하시오.",
+          "answer_text": "$(x-2)^2+(y+1)^2=1$"
+        },
+        {
+          "id": "real-110-train-27721_92755",
+          "achievement_code_2015": "10공수02-02",
+          "topic_name_2015": "원의 방정식",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "중심이 $(5,-3)$이고 $x$축에 접하는 원의 방정식을 구하시오.",
+          "answer_text": "$(x-5)^2+(y+3)^2=9$"
+        },
+        {
+          "id": "real-110-train-27721_92758",
+          "achievement_code_2015": "10공수02-02",
+          "topic_name_2015": "원의 방정식",
+          "difficulty": "easy",
+          "problem_type": "essay",
+          "question_text": "중심이 $(-3,7)$이고 $y$축에 접하는 원의 방정식을 구하시오.",
+          "answer_text": "$(x+3)^2+(y-7)^2=9$"
+        }
+      ]
+    },
+    "10공수03-01": {
+      "ui_name": "집합",
+      "school_level": "high",
+      "grade": null,
+      "course": "공통수학",
+      "candidate_pool": 1223,
+      "examples": [
+        {
+          "id": "real-110-train-29154_103940",
+          "achievement_code_2015": "10공수03-01",
+          "topic_name_2015": "집합",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "두 집합 $A=\\lbrace-1, 0, 1\\rbrace$, $B=\\lbrace1, 2, 3\\rbrace$에 대하여 집합 $X=\\lbrace x | x=a+b,\\ a ∈ A,\\ b ∈ B\\rbrace$를 원소나열법으로 나타내시오.",
+          "answer_text": "$X=\\lbrace0, 1, 2, 3, 4\\rbrace$"
+        },
+        {
+          "id": "real-110-train-29154_103941",
+          "achievement_code_2015": "10공수03-01",
+          "topic_name_2015": "집합",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "두 집합 $A=\\lbrace-1, 0, 1\\rbrace$, $B=\\lbrace1, 2, 3\\rbrace$에 대하여 집합 $X=\\lbrace x | x=ab,\\ a ∈ A,\\ b ∈ B\\rbrace$를 원소나열법으로 나타내시오.",
+          "answer_text": "$X=\\lbrace-3, -2, -1, 0, 1, 2, 3\\rbrace$"
+        },
+        {
+          "id": "real-110-train-29154_103942",
+          "achievement_code_2015": "10공수03-01",
+          "topic_name_2015": "집합",
+          "difficulty": "easy",
+          "problem_type": "essay",
+          "question_text": "두 집합 $A=\\lbrace0, 1, 2\\rbrace$, $B=\\lbrace-1, 1, 3\\rbrace$에 대하여 집합 $X=\\lbrace x | x=ab,\\ a ∈ A,\\ b ∈ B\\rbrace$를 원소나열법으로 나타내시오.",
+          "answer_text": "$X=\\lbrace-2, -1, 0, 1, 2, 3, 6\\rbrace$"
+        }
+      ]
+    },
+    "10공수03-02": {
+      "ui_name": "명제",
+      "school_level": "high",
+      "grade": null,
+      "course": "공통수학",
+      "candidate_pool": 280,
+      "examples": [
+        {
+          "id": "real-110-train-29972_109841",
+          "achievement_code_2015": "10공수03-02",
+          "topic_name_2015": "명제",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "$n$이 $15$보다 작은 자연수일 때, 명제 '$n$이 $2$의 배수이면 $n$은 $4$의 배수이다.'가 거짓임을 보이는 반례를 모두 구하시오.",
+          "answer_text": "$2$, $6$, $10$, $14$"
+        },
+        {
+          "id": "real-110-train-29972_109842",
+          "achievement_code_2015": "10공수03-02",
+          "topic_name_2015": "명제",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "$n$이 $20$보다 작은 자연수일 때, 명제 $'n$이 $4$의 배수이면 $n$은 $5$의 배수이다.'가 거짓임을 보이는 반례를 모두 구하시오.",
+          "answer_text": "$4$, $8$, $12$, $16$"
+        },
+        {
+          "id": "real-110-train-29972_109844",
+          "achievement_code_2015": "10공수03-02",
+          "topic_name_2015": "명제",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "$n$이 $20$보다 작은 자연수일 때, 명제 '$n$이 $6$의 배수이면 $n$은 $9$의 배수이다.'가 거짓임을 보이는 반례를 모두 구하시오.",
+          "answer_text": "$6$, $12$"
+        }
+      ]
+    },
+    "10공수04-01": {
+      "ui_name": "함수",
+      "school_level": "high",
+      "grade": null,
+      "course": "공통수학",
+      "candidate_pool": 1650,
+      "examples": [
+        {
+          "id": "real-110-train-27005_88474",
+          "achievement_code_2015": "10공수04-01",
+          "topic_name_2015": "함수",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "이차함수 $y=2x^2+3x-2$의 그래프와 $x$축의 교점의 $x$좌표를 모두 구하시오.",
+          "answer_text": "$-2$, $\\frac{1}{2}$"
+        },
+        {
+          "id": "real-110-train-27005_88475",
+          "achievement_code_2015": "10공수04-01",
+          "topic_name_2015": "함수",
+          "difficulty": "medium",
+          "problem_type": "essay",
+          "question_text": "이차함수 $y=x^2+x-6$의 그래프와 $x$축의 교점의 $x$좌표를 모두 구하시오.",
+          "answer_text": "$2$, $-3$"
+        },
+        {
+          "id": "real-110-train-27009_88499",
+          "achievement_code_2015": "10공수04-01",
+          "topic_name_2015": "함수",
+          "difficulty": "easy",
+          "problem_type": "essay",
+          "question_text": "이차함수 $y=x^2+ax+b$의 그래프가 $x$축과 두 점 $(-3, 0)$, $(1, 0)$에서 만날 때, 상수 $a$, $b$에 대하여 $a-b$의 값을 구하시오.",
+          "answer_text": "$5$"
+        }
+      ]
+    },
+    "10공수04-02": {
+      "ui_name": "유리함수와 무리함수",
+      "school_level": "high",
+      "grade": null,
+      "course": "공통수학",
+      "candidate_pool": 17,
+      "examples": [
+        {
+          "id": "real-30-train-S3_고등_1_007036",
+          "achievement_code_2015": "10공수04-02",
+          "topic_name_2015": "유리함수와 무리함수",
+          "difficulty": "easy",
+          "problem_type": "objective",
+          "question_text": "다음 그림은 두 함수 $f: X \\longrightarrow Y, g: Y \\longrightarrow Z$를 나타낸 그림이다. $(g \\circ f)(2)$의 값은?\nX집합에는 1, 2, 3이 있고, Y집합에는 2, 4, 6이 있다. X집합은 Y집합을 향해 $X \\xrightarrow{f} Y$로 적혀 있다. X의 1은 Y의 4에 화살표가가 있고 X의 2는 Y의 2에 화살표가가 있으며 X의 3은 Y의 6에 화살표가가 있다.\nY집합에는 2, 4, 6이 있고, Z집합에는 1, 3, 5이 있다. Y집합은 Z집합을 향해 $Y \\xrightarrow{g} Z$로 적혀 있다. Y의 2은 Z의 1에 화살표가가 있고 Y의 4는 Z의 3에 화살표가가 있으며 Y의 6은 Z의 5에 화살표가가 있다.",
+          "answer_text": "① 1"
+        },
+        {
+          "id": "real-30-train-S3_고등_1_007037",
+          "achievement_code_2015": "10공수04-02",
+          "topic_name_2015": "유리함수와 무리함수",
+          "difficulty": "easy",
+          "problem_type": "subjective",
+          "question_text": "세 함수\n에 대하여 $(f \\circ h)(x)=g(x)$를 만족시킬 때, 상수 $a, b$의 합 $a+b$의 값을 구하시오.\n$f(x)=2 x+3, g(x)=3 x+5, h(x)=a x+b$",
+          "answer_text": "$\\frac{5}{2}$"
+        },
+        {
+          "id": "real-30-train-S3_고등_1_007038",
+          "achievement_code_2015": "10공수04-02",
+          "topic_name_2015": "유리함수와 무리함수",
+          "difficulty": "medium",
+          "problem_type": "subjective",
+          "question_text": "두 함수 $f(x)=2 x+1, g(x)=-x+k$에 대하여 $g \\circ f=f \\circ g$가 성립하도록 하는 상수 $k$의 값을 구하시오.",
+          "answer_text": "$-2$"
+        }
+      ]
+    },
+    "10공수05-01": {
+      "ui_name": "경우의 수",
+      "school_level": "high",
+      "grade": null,
+      "course": "공통수학",
+      "candidate_pool": 153,
+      "examples": [
+        {
+          "id": "real-110-train-28634_101429",
+          "achievement_code_2015": "10공수05-01",
+          "topic_name_2015": "경우의 수",
+          "difficulty": "easy",
+          "problem_type": "essay",
+          "question_text": "$5$ 개의 문자 $A, B, C, D, E$를 모두 한 번씩 사용하여 사전식으로 배열할 때, $BECDA$는 몇 번째에 오는지 구하시오.",
+          "answer_text": "$46$ 번째"
+        },
+        {
+          "id": "real-110-train-28634_101430",
+          "achievement_code_2015": "10공수05-01",
+          "topic_name_2015": "경우의 수",
+          "difficulty": "easy",
+          "problem_type": "essay",
+          "question_text": "$5$ 개의 문자 A, B, C, D, E를 모두 한 번씩 사용하여 사전식으로 배열할 때, BDCEA는 몇 번째에 오는지 구하시오.",
+          "answer_text": "$40$ 번째"
+        },
+        {
+          "id": "real-110-train-28634_101432",
+          "achievement_code_2015": "10공수05-01",
+          "topic_name_2015": "경우의 수",
+          "difficulty": "easy",
+          "problem_type": "essay",
+          "question_text": "$5$ 개의 문자 $A, B, C, D, E$를 모두 한 번씩 사용하여 사전식으로 배열할 때, $CDBEA$는 몇 번째에 오는지 구하시오.",
+          "answer_text": "$64$ $번째$"
+        }
+      ]
+    },
+    "10공수05-02": {
+      "ui_name": "순열과 조합",
+      "school_level": "high",
+      "grade": null,
+      "course": "공통수학",
+      "candidate_pool": 10,
+      "examples": [
+        {
+          "id": "real-30-train-S3_고등_1_007208",
+          "achievement_code_2015": "10공수05-02",
+          "topic_name_2015": "순열과 조합",
+          "difficulty": "medium",
+          "problem_type": "objective",
+          "question_text": "부모를 포함하여 5 명의 가족이 가족 사진을 찍으려고 한다. 앞줄에는 2 명이 앉고 뒷줄에는 3 명이 선다고 할 때, 부모가 같은 줄에 있게 되는 방법의 수는?",
+          "answer_text": "④ 48"
+        },
+        {
+          "id": "real-30-train-S3_고등_1_007210",
+          "achievement_code_2015": "10공수05-02",
+          "topic_name_2015": "순열과 조합",
+          "difficulty": "medium",
+          "problem_type": "objective",
+          "question_text": "사진을 찍기 위해 남자 5 명과 여자 3 명이 한 줄로 설 때, 양 끝에는 남자가 오고 여자들끼리는 서로 이웃하 지 않게 서는 방법의 수는?",
+          "answer_text": "⑤ 2880"
+        },
+        {
+          "id": "real-30-train-S3_고등_1_007213",
+          "achievement_code_2015": "10공수05-02",
+          "topic_name_2015": "순열과 조합",
+          "difficulty": "hard",
+          "problem_type": "objective",
+          "question_text": "동아리 발표 대회의 심사 위 원석은 남자 3 명과 여자 3 명으로 구성되어 있는데, 심 사 위원석은 오른쪽 그림과 같이 배석되어 있다. 붙어\n있는 의자에는 반드시 남녀가 1 명씩 앉도록 할 때, 심 사위원 6명이 앉을 수 있는 모든 경우의 수는?\n심사위원이 앉을 수 있는 의자 6개와 직사각형 모양의 책상이 있다.",
+          "answer_text": "② 288"
         }
       ]
     }
