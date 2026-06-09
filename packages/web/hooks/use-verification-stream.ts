@@ -62,7 +62,8 @@ export type StreamState = {
 };
 
 export type StreamInput = {
-  grade: 1 | 2 | 3;
+  schoolLevel: "middle" | "high";
+  grade: 1 | 2 | 3 | null;
   topic: string;
   topicName: string;
   mode: "structural" | "conceptual";
@@ -248,6 +249,7 @@ function verificationStorageKey(input: StreamInput): string {
   return [
     "openmath:verification-result",
     input.grade,
+    input.schoolLevel,
     input.topic,
     input.topicName,
     input.mode,
@@ -275,7 +277,7 @@ export function useVerificationStream(
   const inputKey =
     input === null
       ? null
-      : `${input.grade}|${input.topic}|${input.topicName}|${input.mode}|${dimsKey}|${input.sourceProblemText ?? ""}|${input.endpoint ?? ""}`;
+      : `${input.schoolLevel}|${input.grade ?? "common"}|${input.topic}|${input.topicName}|${input.mode}|${dimsKey}|${input.sourceProblemText ?? ""}|${input.endpoint ?? ""}`;
 
   /* effect 본문이 input 의 *최신* 값을 읽어야 하지만 deps 로 넣으면 가드가
    * 무효화되어 부모 re-render 마다 SSE 재연결이 발생한다 (PR #7 리뷰).
@@ -313,6 +315,7 @@ export function useVerificationStream(
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
       body: JSON.stringify({
+        school_level: current.schoolLevel,
         grade: current.grade,
         topic: current.topic,
         topic_name: current.topicName,
