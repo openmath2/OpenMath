@@ -117,6 +117,37 @@ describe("createInMemoryRagClient", () => {
     expect(results[0]?.item_id).toBe("111:train:linear-equation");
   });
 
+  it("matches high-school common math records with nullable grade", async () => {
+    const jsonlPath = await writeFixture([
+      canonicalRecord({
+        problem_id: "30:train:high-polynomial",
+        school_level: "high",
+        grade: null,
+        topic_name: "다항식의 연산",
+        achievement_code: "10공수01-01",
+        achievement_standard: "다항식의 덧셈과 뺄셈을 계산할 수 있다.",
+        question_text: "두 다항식의 합을 구하여라.",
+        answer_text: "x^{2}+3x+1",
+        problem_type: "short_answer",
+        difficulty: "medium",
+        confidence: 1,
+      }),
+    ]);
+
+    const rag = createInMemoryRagClient({ jsonlPath });
+    const results = await rag.search({
+      school_level: "high",
+      grade: null,
+      topic_code: "10공수01-01",
+      topic_name: "다항식의 연산",
+      k: 3,
+    });
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.item_id).toBe("30:train:high-polynomial");
+    expect(results[0]?.problem.grade).toBeNull();
+  });
+
   it("rejects records whose mapped code matches but topic text contradicts the requested topic", async () => {
     const jsonlPath = await writeFixture([
       canonicalRecord({
