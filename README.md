@@ -73,7 +73,7 @@ pnpm build           # production build (agent + web)
 LLM_PROVIDER=cliproxy
 LLM_BASE_URL=http://localhost:8317/v1
 LLM_API_KEY=dummy-key
-LLM_MODEL=gpt-4o   # 또는 claude-3-5-sonnet, gemini-2.0-flash
+LLM_MODEL=gpt-5.5(xhigh)   # CLIProxyAPI thinking suffix: GPT-5.5 + xhigh reasoning
 ```
 
 **Trade-off**: 로컬 라우터 별도 실행 필요. 캐시·모델 비교에 유리.
