@@ -11,6 +11,7 @@ const candidate: GeneratedProblem = {
   generation_kind: "expression",
   question_text: "다음 중 옳은 것을 고르시오.",
   expected_answer: "3번",
+  techniques_used: ["choice_selection"],
   proposed_solution_trace: "선택지를 비교한다.",
   source_refs: ["ref-1"],
   inferred_intent: {

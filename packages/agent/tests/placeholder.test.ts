@@ -63,6 +63,51 @@ describe("schemas/verification invariants", () => {
     ).toThrow(/I-V[23]/);
   });
 
+  it("accepts unverified gates for warning but never for verified", () => {
+    const warningGates = [...baseGates];
+    warningGates[3] = { ...warningGates[3], status: "unverified" };
+
+    const parsed = VerificationSchema.safeParse({
+      candidate_id: "00000000-0000-0000-0000-000000000000",
+      overall: "warning",
+      gates: warningGates,
+      attempt_count: 1,
+    });
+    expect(parsed.success).toBe(true);
+    expect(() =>
+      assertVerificationInvariants({
+        candidate_id: "00000000-0000-0000-0000-000000000000",
+        overall: "warning",
+        gates: warningGates,
+        attempt_count: 1,
+      }),
+    ).not.toThrow();
+
+    expect(() =>
+      assertVerificationInvariants({
+        candidate_id: "00000000-0000-0000-0000-000000000000",
+        overall: "verified",
+        gates: warningGates,
+        attempt_count: 1,
+      }),
+    ).toThrow(/I-V2/);
+  });
+
+  it("rejects warning if a deterministic non-re_solve gate failed", () => {
+    const gates = [...baseGates];
+    gates[3] = { ...gates[3], status: "unverified" };
+    gates[5] = { ...gates[5], status: "failed" };
+
+    expect(() =>
+      assertVerificationInvariants({
+        candidate_id: "00000000-0000-0000-0000-000000000000",
+        overall: "warning",
+        gates,
+        attempt_count: 1,
+      }),
+    ).toThrow(/I-V4/);
+  });
+
   it("I-V5: attempt_count > 3 must be rejected", () => {
     expect(() =>
       assertVerificationInvariants({

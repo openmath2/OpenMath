@@ -3,10 +3,123 @@ import type { MathEngineClient } from "./math-engine-client.js";
 import { extractEquationText } from "./equation-extractor.js";
 import { fractionFromRepeatingDecimalQuestion, sameFractionText } from "./repeating-decimal.js";
 
+export type AnswerEquivalenceStatus = "equivalent" | "not_equivalent" | "undecidable";
+
+export interface AnswerEquivalenceDecision {
+  status: AnswerEquivalenceStatus;
+  reason?: string;
+  leftCanonical?: readonly string[];
+  rightCanonical?: readonly string[];
+}
+
+export interface AnswerEquivalenceDebug {
+  skippedReasons: string[];
+}
+
+export interface ChoiceOption {
+  readonly label: string;
+  readonly body: string;
+  readonly index: number;
+}
+
+export async function decideAnswerEquivalence(
+  mathEngine: MathEngineClient,
+  left: string,
+  right: string,
+): Promise<AnswerEquivalenceDecision> {
+  const debug: AnswerEquivalenceDebug = { skippedReasons: [] };
+  const leftAnswers = parseAnswers(left);
+  const rightAnswers = parseAnswers(right);
+  if (leftAnswers.length === 0 || rightAnswers.length === 0) {
+    if (normalizeAnswerText(left) === normalizeAnswerText(right)) {
+      return { status: "equivalent" };
+    }
+    return { status: "undecidable", reason: "answer contains no parseable symbolic parts" };
+  }
+  if (sameNormalizedSet(leftAnswers, rightAnswers)) return { status: "equivalent" };
+
+  const canonical = await tryCanonicalizeBoth(mathEngine, leftAnswers, rightAnswers, debug);
+  if (canonical !== null) {
+    if (sameOrderedCanonicalSet(canonical.left, canonical.right)) {
+      return { status: "equivalent", leftCanonical: canonical.left, rightCanonical: canonical.right };
+    }
+    if (leftAnswers.length === 1 && rightAnswers.length === 1) {
+      const verifyDecision = await tryVerifyPair(mathEngine, leftAnswers[0] ?? "", rightAnswers[0] ?? "", debug);
+      if (verifyDecision?.status === "equivalent") return verifyDecision;
+    }
+    return {
+      status: "not_equivalent",
+      leftCanonical: canonical.left,
+      rightCanonical: canonical.right,
+    };
+  }
+
+  if (leftAnswers.length === 1 && rightAnswers.length === 1) {
+    const verifyDecision = await tryVerifyPair(mathEngine, leftAnswers[0] ?? "", rightAnswers[0] ?? "", debug);
+    if (verifyDecision !== null) return verifyDecision;
+  }
+
+  return { status: "undecidable", reason: withSkippedReasons("math-engine could not compare the answers", debug) };
+}
+
+export async function decideAnswerMatchesSolutions(
+  mathEngine: MathEngineClient,
+  answer: string,
+  solutions: readonly string[],
+): Promise<AnswerEquivalenceDecision> {
+  const debug: AnswerEquivalenceDebug = { skippedReasons: [] };
+  if (solutions.length === 0) {
+    return { status: "undecidable", reason: "math-engine returned no symbolic solutions" };
+  }
+  const answerParts = parseAnswers(answer);
+  if (answerParts.length === 0) {
+    return { status: "undecidable", reason: "declared answer contains no parseable symbolic parts" };
+  }
+  if (sameNormalizedSet(answerParts, solutions)) return { status: "equivalent" };
+
+  const canonical = await tryCanonicalizeBoth(mathEngine, answerParts, solutions, debug);
+  if (canonical !== null) {
+    if (sameOrderedCanonicalSet(canonical.left, canonical.right)) {
+      return { status: "equivalent", leftCanonical: canonical.left, rightCanonical: canonical.right };
+    }
+    if (answerParts.length === 1 && solutions.length === 1) {
+      const verifyDecision = await tryVerifyPair(mathEngine, answerParts[0] ?? "", solutions[0] ?? "", debug);
+      if (verifyDecision?.status === "equivalent") return verifyDecision;
+    }
+    return {
+      status: "not_equivalent",
+      leftCanonical: canonical.left,
+      rightCanonical: canonical.right,
+    };
+  }
+
+  if (answerParts.length === 1 && solutions.length === 1) {
+    const verifyDecision = await tryVerifyPair(mathEngine, answerParts[0] ?? "", solutions[0] ?? "", debug);
+    if (verifyDecision !== null) return verifyDecision;
+  }
+
+  return { status: "undecidable", reason: withSkippedReasons("math-engine could not compare answer to solutions", debug) };
+}
+
+export function choiceOptionsFromExpectedChoices(
+  expectedChoices: readonly string[] | undefined,
+): ChoiceOption[] {
+  if (expectedChoices === undefined) return [];
+  return expectedChoices
+    .map((choice, index) => {
+      const label = choiceLabelFromAnswer(choice) ?? circledChoiceLabel(index);
+      const labelIndex = choiceIndex(label);
+      const body = stripChoicePrefix(choice);
+      return { label, body: body.length > 0 ? body : choice.trim(), index: labelIndex ?? index };
+    })
+    .filter((choice) => choice.body.length > 0);
+}
+
 export async function sameAnswer(
   mathEngine: MathEngineClient,
   candidate: GeneratedProblem,
   derivedAnswer: string,
+  debug?: AnswerEquivalenceDebug,
 ): Promise<boolean> {
   const expectedGraphAnswer = normalizeGraphAnswer(candidate.expected_answer);
   const derivedGraphAnswer = normalizeGraphAnswer(derivedAnswer);
@@ -35,15 +148,15 @@ export async function sameAnswer(
     expectedAlternatives.length > expected.length ||
     derivedAlternatives.length > derived.length
   ) {
-    if (await answerListsOverlap(mathEngine, expectedAlternatives, derivedAlternatives)) return true;
+    if (await answerListsOverlap(mathEngine, expectedAlternatives, derivedAlternatives, debug)) return true;
   }
 
   if (sameNormalizedSet(expected, derived)) return true;
-  if (await expectedMatchesEquationSolve(mathEngine, candidate, expected)) return true;
+  if (await expectedMatchesEquationSolve(mathEngine, candidate, expected, debug)) return true;
   if (expectedMatchesRepeatingDecimalQuestion(candidate, expected)) return true;
 
-  const expectedCanonical = await tryCanonicalizeAll(mathEngine, expected);
-  const derivedCanonical = await tryCanonicalizeAll(mathEngine, derived);
+  const expectedCanonical = await tryCanonicalizeAll(mathEngine, expected, debug);
+  const derivedCanonical = await tryCanonicalizeAll(mathEngine, derived, debug);
   if (expectedCanonical === null || derivedCanonical === null) return false;
   if (expectedCanonical.length !== derivedCanonical.length) return false;
   return expectedCanonical.every((value, index) => value === derivedCanonical[index]);
@@ -66,6 +179,33 @@ function parseAnswers(answer: string): string[] {
     .filter((part) => part.length > 0 && !/^(?:예|네)$/u.test(part) && !/^[abAB]\s*=\s*\d+$/u.test(part) && !/해가\s*아(?:님|니다)/u.test(part));
 }
 
+async function tryCanonicalizeBoth(
+  mathEngine: MathEngineClient,
+  left: readonly string[],
+  right: readonly string[],
+  debug?: AnswerEquivalenceDebug,
+): Promise<{ readonly left: string[]; readonly right: string[] } | null> {
+  const leftCanonical = await tryCanonicalizeAll(mathEngine, left, debug);
+  const rightCanonical = await tryCanonicalizeAll(mathEngine, right, debug);
+  if (leftCanonical === null || rightCanonical === null) return null;
+  return { left: leftCanonical, right: rightCanonical };
+}
+
+async function tryVerifyPair(
+  mathEngine: MathEngineClient,
+  left: string,
+  right: string,
+  debug?: AnswerEquivalenceDebug,
+): Promise<AnswerEquivalenceDecision | null> {
+  try {
+    const verified = await mathEngine.verify({ expr1: left, expr2: right });
+    return { status: verified.equivalent ? "equivalent" : "not_equivalent" };
+  } catch (err) {
+    recordSkippedReason(debug, `verify pair skipped: ${errorMessage(err)}`);
+    return null;
+  }
+}
+
 async function canonicalizeAll(mathEngine: MathEngineClient, answers: readonly string[]): Promise<string[]> {
   const canonical = await Promise.all(
     answers.map(async (answer) => {
@@ -76,12 +216,34 @@ async function canonicalizeAll(mathEngine: MathEngineClient, answers: readonly s
   return canonical.sort();
 }
 
-async function tryCanonicalizeAll(mathEngine: MathEngineClient, answers: readonly string[]): Promise<string[] | null> {
+async function tryCanonicalizeAll(
+  mathEngine: MathEngineClient,
+  answers: readonly string[],
+  debug?: AnswerEquivalenceDebug,
+): Promise<string[] | null> {
   try {
     return await canonicalizeAll(mathEngine, answers);
-  } catch {
+  } catch (err) {
+    recordSkippedReason(debug, `canonicalize skipped: ${errorMessage(err)}`);
     return null;
   }
+}
+
+function recordSkippedReason(debug: AnswerEquivalenceDebug | undefined, reason: string): void {
+  debug?.skippedReasons.push(reason);
+}
+
+function withSkippedReasons(reason: string, debug: AnswerEquivalenceDebug): string {
+  if (debug.skippedReasons.length === 0) return reason;
+  return `${reason}; skipped: ${uniqueMessages(debug.skippedReasons).join("; ")}`;
+}
+
+function uniqueMessages(messages: readonly string[]): string[] {
+  return [...new Set(messages)];
+}
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
 }
 
 function sameNormalizedSet(left: readonly string[], right: readonly string[]): boolean {
@@ -91,22 +253,28 @@ function sameNormalizedSet(left: readonly string[], right: readonly string[]): b
   return normalizedLeft.every((answer, index) => answer === normalizedRight[index]);
 }
 
+function sameOrderedCanonicalSet(left: readonly string[], right: readonly string[]): boolean {
+  if (left.length !== right.length) return false;
+  return left.every((answer, index) => answer === right[index]);
+}
+
 async function answerListsOverlap(
   mathEngine: MathEngineClient,
   expected: readonly string[],
   derived: readonly string[],
+  debug?: AnswerEquivalenceDebug,
 ): Promise<boolean> {
   for (const expectedAnswer of expected) {
     for (const derivedAnswer of derived) {
       if (normalizeAnswerText(expectedAnswer) === normalizeAnswerText(derivedAnswer)) {
         return true;
       }
-      if (await sameCanonicalAnswer(mathEngine, expectedAnswer, derivedAnswer)) {
+      if (await sameCanonicalAnswer(mathEngine, expectedAnswer, derivedAnswer, debug)) {
         return true;
       }
       if (
-        await sameLinearFactorRoot(mathEngine, expectedAnswer, derivedAnswer) ||
-        await sameLinearFactorRoot(mathEngine, derivedAnswer, expectedAnswer)
+        await sameLinearFactorRoot(mathEngine, expectedAnswer, derivedAnswer, debug) ||
+        await sameLinearFactorRoot(mathEngine, derivedAnswer, expectedAnswer, debug)
       ) {
         return true;
       }
@@ -115,17 +283,28 @@ async function answerListsOverlap(
   return false;
 }
 
-async function sameCanonicalAnswer(mathEngine: MathEngineClient, left: string, right: string): Promise<boolean> {
-  const canonical = await tryCanonicalizeAll(mathEngine, [left, right]);
+async function sameCanonicalAnswer(
+  mathEngine: MathEngineClient,
+  left: string,
+  right: string,
+  debug?: AnswerEquivalenceDebug,
+): Promise<boolean> {
+  const canonical = await tryCanonicalizeAll(mathEngine, [left, right], debug);
   if (canonical !== null && canonical[0] === canonical[1]) return true;
   try {
     return (await mathEngine.verify({ expr1: left, expr2: right })).equivalent;
-  } catch {
+  } catch (err) {
+    recordSkippedReason(debug, `canonical-answer verify skipped: ${errorMessage(err)}`);
     return false;
   }
 }
 
-async function sameLinearFactorRoot(mathEngine: MathEngineClient, factorAnswer: string, rootAnswer: string): Promise<boolean> {
+async function sameLinearFactorRoot(
+  mathEngine: MathEngineClient,
+  factorAnswer: string,
+  rootAnswer: string,
+  debug?: AnswerEquivalenceDebug,
+): Promise<boolean> {
   if (!/[a-zA-Z]/u.test(factorAnswer)) return false;
   try {
     const solved = await mathEngine.solve({ equation: `${factorAnswer}=0` });
@@ -133,7 +312,8 @@ async function sameLinearFactorRoot(mathEngine: MathEngineClient, factorAnswer: 
     const roots = await canonicalizeAll(mathEngine, solved.solutions);
     const answers = await canonicalizeAll(mathEngine, parseAnswers(rootAnswer));
     return roots.some((root) => answers.includes(root));
-  } catch {
+  } catch (err) {
+    recordSkippedReason(debug, `linear-factor comparison skipped: ${errorMessage(err)}`);
     return false;
   }
 }
@@ -142,6 +322,7 @@ async function expectedMatchesEquationSolve(
   mathEngine: MathEngineClient,
   candidate: GeneratedProblem,
   expected: readonly string[],
+  debug?: AnswerEquivalenceDebug,
 ): Promise<boolean> {
   if (candidate.generation_kind !== "equation") return false;
   const equation = extractEquationText(candidate.question_text);
@@ -149,8 +330,9 @@ async function expectedMatchesEquationSolve(
   try {
     const solved = await mathEngine.solve({ equation });
     if (solved.solutions.length === 0) return false;
-    return sameNormalizedSet(expected, solved.solutions) || await sameCanonicalSets(mathEngine, expected, solved.solutions);
-  } catch {
+    return sameNormalizedSet(expected, solved.solutions) || await sameCanonicalSets(mathEngine, expected, solved.solutions, debug);
+  } catch (err) {
+    recordSkippedReason(debug, `equation-solve comparison skipped: ${errorMessage(err)}`);
     return false;
   }
 }
@@ -159,9 +341,10 @@ async function sameCanonicalSets(
   mathEngine: MathEngineClient,
   left: readonly string[],
   right: readonly string[],
+  debug?: AnswerEquivalenceDebug,
 ): Promise<boolean> {
-  const leftCanonical = await tryCanonicalizeAll(mathEngine, left);
-  const rightCanonical = await tryCanonicalizeAll(mathEngine, right);
+  const leftCanonical = await tryCanonicalizeAll(mathEngine, left, debug);
+  const rightCanonical = await tryCanonicalizeAll(mathEngine, right, debug);
   if (leftCanonical === null || rightCanonical === null) return false;
   if (leftCanonical.length !== rightCanonical.length) return false;
   return leftCanonical.every((value, index) => value === rightCanonical[index]);
@@ -204,13 +387,24 @@ function uniqueAnswers(answers: readonly string[]): string[] {
   return [...new Set(answers)];
 }
 
-function extractChoices(question: string): Array<{ readonly label: string; readonly body: string }> {
+export function extractChoiceOptions(question: string): ChoiceOption[] {
   const labelPattern = "(?<!\\S)(?:[①②③④⑤⑥⑦⑧⑨]|\\([1-9]\\)|[1-9][).](?=\\s))";
   const pattern = new RegExp(`(${labelPattern})\\s*([\\s\\S]*?)(?=\\s*(?:${labelPattern})\\s*|$)`, "gu");
-  return Array.from(question.matchAll(pattern)).map((match) => ({
-    label: match[1] ?? "",
-    body: (match[2] ?? "").trim(),
-  })).filter((choice) => choiceIndex(choice.label) !== null && choice.body.length > 0);
+  return Array.from(question.matchAll(pattern))
+    .map((match) => {
+      const label = match[1] ?? "";
+      const index = choiceIndex(label);
+      return {
+        label,
+        body: (match[2] ?? "").trim(),
+        index: index ?? -1,
+      };
+    })
+    .filter((choice) => choice.index >= 0 && choice.body.length > 0);
+}
+
+function extractChoices(question: string): ChoiceOption[] {
+  return extractChoiceOptions(question);
 }
 
 function choiceLabelsMatch(label: string, answer: string): boolean {
@@ -225,9 +419,18 @@ function choiceLabelsMatch(label: string, answer: string): boolean {
   );
 }
 
-function stripChoicePrefix(answer: string): string {
+export function stripChoicePrefix(answer: string): string {
   const labelPattern = /^(?:[①②③④⑤⑥⑦⑧⑨]|\([1-9]\)|[1-9][).]|[1-9]번)\s*/u;
   return answer.replace(labelPattern, "").trim();
+}
+
+export function choiceLabelFromAnswer(answer: string): string | null {
+  return answer.trim().match(/^(?:[①②③④⑤⑥⑦⑧⑨]|\([1-9]\)|[1-9][).]|[1-9]번)/u)?.[0] ?? null;
+}
+
+export function choiceIndexFromAnswer(answer: string): number | null {
+  const label = choiceLabelFromAnswer(answer);
+  return label === null ? null : choiceIndex(label);
 }
 
 function choiceIndex(label: string): number | null {

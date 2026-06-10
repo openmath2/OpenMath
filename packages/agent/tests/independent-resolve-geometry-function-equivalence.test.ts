@@ -11,6 +11,7 @@ const candidate: GeneratedProblem = {
   generation_kind: "geometry",
   question_text: "값을 구하시오.",
   expected_answer: "13cm, 90도",
+  techniques_used: ["geometry"],
   proposed_solution_trace: "성질을 이용한다.",
   source_refs: ["ref-1"],
   inferred_intent: {

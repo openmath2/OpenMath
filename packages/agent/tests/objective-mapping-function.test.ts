@@ -60,6 +60,7 @@ const candidate: GeneratedProblem = {
   generation_kind: "function",
   question_text: "좌표평면에서 직선 l은 점 (0, -2)를 지나고 점 (3, 4)를 지난다. 다음 중 직선 l의 식으로 알맞은 것은?",
   expected_answer: "③",
+  techniques_used: ["linear_function"],
   proposed_solution_trace: "두 좌표에서 기울기와 y절편을 구해 함수식 y = 2x - 2를 찾는다.",
   source_refs: ["ref-1"],
   inferred_intent: intent,

@@ -21,7 +21,7 @@ export const StepNameSchema = z.enum([
 ]);
 export type StepName = z.infer<typeof StepNameSchema>;
 
-export const GateStatusSchema = z.enum(["passed", "failed", "skipped"]);
+export const GateStatusSchema = z.enum(["passed", "failed", "skipped", "unverified"]);
 export type GateStatus = z.infer<typeof GateStatusSchema>;
 
 export const GateResultSchema = z.object({
@@ -104,16 +104,23 @@ export function assertVerificationInvariants(v: Verification): void {
     );
   }
 
-  // I-V4: warning은 sympy passed이고 re_solve mismatch일 때만
+  // I-V4: warning은 re_solve mismatch 또는 non-decidable gate를 정직하게 노출할 때만
   if (v.overall === "warning") {
-    if (sympy?.status !== "passed") {
+    const hardFailed = v.gates.some(
+      (gate) => gate.status === "failed" && gate.step !== "re_solve",
+    );
+    if (hardFailed) {
       throw new Error(
-        `I-V4 violated: warning requires sympy_verify=passed (got ${sympy?.status})`,
+        "I-V4 violated: warning cannot mask failed deterministic gates other than re_solve",
       );
     }
-    if (reSolve?.status !== "failed") {
+    const reSolveMismatchWarning =
+      (sympy?.status === "passed" || sympy?.status === "unverified") &&
+      reSolve?.status === "failed";
+    const unverifiedGateWarning = v.gates.some((gate) => gate.status === "unverified");
+    if (!reSolveMismatchWarning && !unverifiedGateWarning) {
       throw new Error(
-        `I-V4 violated: warning requires re_solve=failed (got ${reSolve?.status})`,
+        `I-V4 violated: warning requires re_solve mismatch or an unverified gate (sympy=${sympy?.status}, re_solve=${reSolve?.status})`,
       );
     }
   }

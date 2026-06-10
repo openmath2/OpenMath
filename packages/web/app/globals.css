@@ -1451,6 +1451,21 @@
     background: var(--color-fail-100);
     color: var(--color-fail-deep);
   }
+  /* DESIGN.md {component.badge-fallback} — 결정론 템플릿 출처 시그널 (LLM 미관여). */
+  .badge-fallback {
+    background: var(--color-warn-100);
+    color: var(--color-warn-deep);
+    border: 1px dashed var(--color-warn-deep);
+  }
+  /* DESIGN.md {component.badge-unverified} — 기호 검증 불가 (3-state gate model).
+   * hollow / outlined 변형: warn-100 solid (badge-warn) 과 warn-100 dashed
+   * (badge-fallback) 사이에서 시각적으로 변별. 빈 안쪽 = "공식 기호 검증이
+   * 채워지지 못함" 의미. */
+  .badge-unverified {
+    background: var(--color-canvas-pure);
+    color: var(--color-warn-deep);
+    border: 1px solid var(--color-warn-deep);
+  }
 
   /* inline-notice — DESIGN.md {component.inline-notice-pass|fail|warn} */
   .inline-notice {

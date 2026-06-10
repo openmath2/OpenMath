@@ -17,12 +17,12 @@ export async function pipeProgressToSse(
         data: JSON.stringify(wire.data),
       });
     }
-  } catch {
+  } catch (err) {
     const wire = toWireSseEvent({
       type: "error",
       stage: "orchestrator",
       code: "workflow_exception",
-      message: "Verification workflow failed before streaming completed",
+      message: `Verification workflow failed before streaming completed: ${err instanceof Error ? err.message : String(err)}`,
       recoverable: false,
       timestamp: new Date().toISOString(),
     });

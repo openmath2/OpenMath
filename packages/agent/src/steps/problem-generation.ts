@@ -6,6 +6,7 @@ import type {
   GeneratorAgent,
   RefinerAgent,
 } from "../agents/index.js";
+import type { DeterministicFallbackMode } from "../config/env.js";
 import type {
   GateResult,
   GenerateRequest,
@@ -40,6 +41,8 @@ export interface ProblemGenerationInput {
   strategy: Strategy | null;
   attempt: number;
   refinementHint?: string;
+  counterexample?: string;
+  deterministicFallback?: DeterministicFallbackMode;
 }
 
 export interface ProblemGenerationOutput {
@@ -54,9 +57,13 @@ export async function generateProblem(
 ): Promise<ProblemGenerationOutput> {
   const started = Date.now();
   const refinedBy: string[] = [];
+  const normalizationSkippedReasons: string[] = [];
   try {
     const candidate = await withTimeout(async () => {
-      const initial = input.refs.length > 0 ? deterministicInitialCandidate(input) : null;
+      const fallbackMode: DeterministicFallbackMode = input.deterministicFallback ?? "first";
+      const useTemplateFirst = fallbackMode === "first";
+      const initial =
+        useTemplateFirst && input.refs.length > 0 ? deterministicInitialCandidate(input) : null;
       if (initial !== null) {
         refinedBy.push("deterministic-topic-generator");
         return initial;
@@ -68,8 +75,9 @@ export async function generateProblem(
         strategy: input.strategy,
         attempt: input.attempt,
         refinementHint: input.refinementHint,
+        counterexample: input.counterexample,
       });
-      current = await normalizeExpectedAnswer(deps.mathEngine, current);
+      current = await normalizeExpectedAnswer(deps.mathEngine, current, normalizationSkippedReasons);
 
       const rounds = deps.maxCriticRounds ?? 2;
       for (let round = 0; round < rounds; round += 1) {
@@ -90,7 +98,7 @@ export async function generateProblem(
             attempt: input.attempt,
             hints: guardHints,
           });
-          current = await normalizeExpectedAnswer(deps.mathEngine, current);
+          current = await normalizeExpectedAnswer(deps.mathEngine, current, normalizationSkippedReasons);
           refinedBy.push("refiner");
           continue;
         }
@@ -111,7 +119,7 @@ export async function generateProblem(
           attempt: input.attempt,
           hints: critique.hints,
         });
-        current = await normalizeExpectedAnswer(deps.mathEngine, current);
+        current = await normalizeExpectedAnswer(deps.mathEngine, current, normalizationSkippedReasons);
         refinedBy.push("refiner");
       }
       return current;
@@ -131,8 +139,13 @@ export async function generateProblem(
         duration_ms: Date.now() - started,
         evidence: {
           candidate_id: candidate.candidate_id,
+          question_text: candidate.question_text,
+          expected_answer: candidate.expected_answer,
           model: candidate.generation_metadata.model,
           refined_by: refinedBy,
+          ...(normalizationSkippedReasons.length === 0
+            ? {}
+            : { normalization_skipped_reasons: normalizationSkippedReasons }),
         },
       },
       refined_by: refinedBy,
@@ -165,12 +178,13 @@ function formatCandidateLatex(candidate: GeneratedProblem): GeneratedProblem {
 async function normalizeExpectedAnswer(
   mathEngine: MathEngineClient,
   candidate: GeneratedProblem,
+  skippedReasons: string[],
 ): Promise<GeneratedProblem> {
   if (candidate.generation_kind !== "equation") return candidate;
   if (hasChoiceMarkers(candidate.question_text)) return candidate;
   const equation = extractEquationText(candidate.question_text);
   if (equation === null) return candidate;
-  const solved = await solveForNormalization(mathEngine, equation);
+  const solved = await solveForNormalization(mathEngine, equation, skippedReasons);
   if (solved === null) return candidate;
   if (solved.solutions.length === 0) return candidate;
   return {
@@ -186,10 +200,16 @@ function hasChoiceMarkers(text: string): boolean {
 async function solveForNormalization(
   mathEngine: MathEngineClient,
   equation: string,
+  skippedReasons: string[],
 ): Promise<{ readonly solutions: readonly string[] } | null> {
   try {
     return await mathEngine.solve({ equation });
-  } catch {
+  } catch (err) {
+    skippedReasons.push(`answer normalization skipped: ${errorMessage(err)}`);
     return null;
   }
+}
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
 }

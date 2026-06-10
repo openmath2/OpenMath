@@ -39,15 +39,39 @@ export interface ObjectiveMappingOutput {
   gate: GateResult;
 }
 
+interface ObjectiveFailure {
+  readonly code: string;
+  readonly message: string;
+}
+
+interface TechniqueEvidence {
+  readonly required_techniques: string[];
+  readonly related_techniques: string[];
+  readonly techniques_used: string[];
+  readonly missing_required_techniques: string[];
+  readonly overlapping_techniques: string[];
+}
+
+interface DeterministicEvaluation {
+  readonly failures: ObjectiveFailure[];
+  readonly techniqueEvidence: TechniqueEvidence;
+}
+
+interface NuanceLoadResult {
+  readonly nuance: ObjectiveMappingNuance | null;
+  readonly skippedReason?: string;
+}
+
 export async function mapObjective(
   deps: ObjectiveMappingDeps,
   input: ObjectiveMappingInput,
 ): Promise<ObjectiveMappingOutput> {
   const started = Date.now();
-  const failures = evaluateDeterministically(input);
-  const nuance = await loadNuance(deps, input);
+  const deterministic = evaluateDeterministically(input);
+  const nuanceResult = await loadNuance(deps, input);
+  const failures = deterministic.failures;
   return {
-    data: nuance,
+    data: nuanceResult.nuance,
     gate: {
       step: "objective_map",
       status: failures.length === 0 ? "passed" : "failed",
@@ -59,7 +83,11 @@ export async function mapObjective(
         strategy_code: input.strategy?.code ?? null,
         difficulty: input.request.difficulty,
         problem_type: input.request.problem_type,
-        llm_nuance: nuance,
+        ...deterministic.techniqueEvidence,
+        llm_nuance: nuanceResult.nuance,
+        ...(nuanceResult.skippedReason === undefined
+          ? {}
+          : { nuance_skipped_reason: nuanceResult.skippedReason }),
       },
       failure_detail:
         failures.length === 0
@@ -72,11 +100,12 @@ export async function mapObjective(
   };
 }
 
-function evaluateDeterministically(input: ObjectiveMappingInput): Array<{ code: string; message: string }> {
-  const failures: Array<{ code: string; message: string }> = [];
+function evaluateDeterministically(input: ObjectiveMappingInput): DeterministicEvaluation {
+  const failures: ObjectiveFailure[] = [];
   const { request, strategy, refs, candidate } = input;
   const requestTopicCode = getGenerateRequestTopicCode(request);
   const expectedKind = generationKindForTopic(requestTopicCode);
+  const techniqueCheck = compareTechniqueSets(input);
 
   if (
     input.intent.objective_code !== requestTopicCode &&
@@ -140,7 +169,70 @@ function evaluateDeterministically(input: ObjectiveMappingInput): Array<{ code: 
     });
   }
 
-  return failures;
+  failures.push(...techniqueCheck.failures);
+
+  return {
+    failures,
+    techniqueEvidence: techniqueCheck.evidence,
+  };
+}
+
+function compareTechniqueSets(input: ObjectiveMappingInput): {
+  readonly failures: ObjectiveFailure[];
+  readonly evidence: TechniqueEvidence;
+} {
+  const required = normalizedTechniqueSet(input.intent.required_techniques);
+  const related = normalizedTechniqueSet([
+    ...input.intent.required_techniques,
+    ...(input.strategy?.techniques.required_at_least_one_of ?? []),
+  ]);
+  const used = normalizedTechniqueSet(input.candidate.techniques_used ?? []);
+  const usedSet = new Set(used);
+  const missingRequired = required.filter((technique) => !usedSet.has(technique));
+  const overlapping = related.filter((technique) => usedSet.has(technique));
+  const failures: ObjectiveFailure[] = [];
+
+  if (input.request.mode === "conceptual") {
+    if (related.length > 0 && overlapping.length === 0) {
+      failures.push({
+        code: "technique_mismatch",
+        message: `Candidate techniques ${formatTechniqueList(used)} do not overlap required or related techniques ${formatTechniqueList(related)}`,
+      });
+    }
+  } else if (missingRequired.length > 0) {
+    failures.push({
+      code: "technique_mismatch",
+      message: `Candidate techniques ${formatTechniqueList(used)} do not cover required techniques ${formatTechniqueList(missingRequired)}`,
+    });
+  }
+
+  return {
+    failures,
+    evidence: {
+      required_techniques: required,
+      related_techniques: related,
+      techniques_used: used,
+      missing_required_techniques: missingRequired,
+      overlapping_techniques: overlapping,
+    },
+  };
+}
+
+function normalizedTechniqueSet(values: readonly string[]): string[] {
+  const techniques = new Set<string>();
+  for (const value of values) {
+    const technique = normalizeTechnique(value);
+    if (technique.length > 0) techniques.add(technique);
+  }
+  return [...techniques].sort();
+}
+
+function normalizeTechnique(value: string): string {
+  return value.trim().toLowerCase().replace(/[\s-]+/g, "_");
+}
+
+function formatTechniqueList(techniques: readonly string[]): string {
+  return techniques.length === 0 ? "[]" : `[${techniques.join(", ")}]`;
 }
 
 function candidateSupportsRequestedTopic(input: ObjectiveMappingInput): boolean {
@@ -183,12 +275,12 @@ function topicAliasQueries(topicCode: string): string[] {
 async function loadNuance(
   deps: ObjectiveMappingDeps,
   input: ObjectiveMappingInput,
-): Promise<ObjectiveMappingNuance | null> {
+): Promise<NuanceLoadResult> {
   const llm = deps.llm;
   const prompts = deps.prompts;
-  if (llm === undefined || prompts === undefined) return null;
+  if (llm === undefined || prompts === undefined) return { nuance: null };
   try {
-    return await withTimeout(async () => {
+    const nuance = await withTimeout(async () => {
       const prompt = await prompts.load("objective-mapper");
       const rendered = prompt.render({
         candidate: input.candidate,
@@ -204,9 +296,14 @@ async function loadNuance(
       });
       return object;
     }, { ms: deps.perStepTimeoutMs ?? 30_000, label: "objective_map_llm" });
-  } catch {
-    return null;
+    return { nuance };
+  } catch (err) {
+    return { nuance: null, skippedReason: errorMessage(err) };
   }
+}
+
+function errorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
 }
 
 function sameMathText(left: string, right: string): boolean {

@@ -21,5 +21,5 @@ app.include_router(math.router)
 
 
 @app.get("/health")
-def health():
+async def health():
     return {"status": "ok", "engine": "sympy"}

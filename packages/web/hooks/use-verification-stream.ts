@@ -44,6 +44,21 @@ export type GeneratedProblem = {
   isomorphism: "structural" | "conceptual";
   preserved_dimensions: string[];
   verification_status: "pass" | "partial" | "fail";
+  /* 출처(provenance) 시그널 — agent 측 결정론 템플릿이 LLM 대신 본 후보를 만들면
+   * `"deterministic-topic-generator"` 가 들어온다 (i-1 remediation plan).
+   * UI 는 이 값을 보고 "템플릿 폴백" badge 를 노출해 검증된 LLM 결과와 시각적으로 구분.
+   * 기존 mock / stored data 호환을 위해 두 필드 모두 optional.
+   */
+  generation_model?: string;
+  refined_by?: string[];
+  /* 3-state 검증 게이트 모델 (task 2-6 remediation plan) — agent 는 각 step 의
+   * gate status 를 `"passed" | "failed" | "skipped" | "unverified"` 4값으로 emit.
+   * `unverified` 는 SymPy 기호 검증을 수행할 수 없었음을 뜻하며 ("기호 검증 불가"),
+   * 독립 재풀이로만 확인됐다는 의미. UI 는 이 값으로 "기호 검증 불가" badge 를 노출.
+   * 기존 mock / stored data 호환을 위해 모두 optional.
+   */
+  gates?: Array<{ step: string; status: string }>;
+  overall?: string;
 };
 
 export type StreamStatus =
@@ -188,6 +203,15 @@ function parsePreview(raw: unknown): string | null {
   return asString(o.latex);
 }
 
+function parseGate(raw: unknown): { step: string; status: string } | null {
+  const o = asObject(raw);
+  if (o === null) return null;
+  const step = asString(o.step);
+  const status = asString(o.status);
+  if (step === null || status === null) return null;
+  return { step, status };
+}
+
 function parseProblem(raw: unknown): GeneratedProblem | null {
   const o = asObject(raw);
   if (o === null) return null;
@@ -203,6 +227,18 @@ function parseProblem(raw: unknown): GeneratedProblem | null {
     ? o.preserved_dimensions.filter((d): d is string => typeof d === "string")
     : [];
   const explanation = asString(o.explanation_latex);
+  const generationModel = asString(o.generation_model);
+  const refinedBy = Array.isArray(o.refined_by)
+    ? o.refined_by.filter((r): r is string => typeof r === "string")
+    : null;
+  const gatesRaw = Array.isArray(o.gates) ? o.gates : null;
+  const gates =
+    gatesRaw === null
+      ? null
+      : gatesRaw
+          .map(parseGate)
+          .filter((g): g is { step: string; status: string } => g !== null);
+  const overall = asString(o.overall);
   return {
     id,
     question_latex: question,
@@ -211,6 +247,10 @@ function parseProblem(raw: unknown): GeneratedProblem | null {
     isomorphism: iso,
     preserved_dimensions: dims,
     verification_status: verif,
+    ...(generationModel !== null ? { generation_model: generationModel } : {}),
+    ...(refinedBy !== null ? { refined_by: refinedBy } : {}),
+    ...(gates !== null ? { gates } : {}),
+    ...(overall !== null ? { overall } : {}),
   };
 }
 

@@ -15,6 +15,7 @@ const candidate: GeneratedProblem = {
   generation_kind: "expression",
   question_text: "다음 식을 계산하시오.",
   expected_answer: "1",
+  techniques_used: ["calculation"],
   proposed_solution_trace: "식을 정리한다.",
   source_refs: ["ref-1"],
   inferred_intent: {

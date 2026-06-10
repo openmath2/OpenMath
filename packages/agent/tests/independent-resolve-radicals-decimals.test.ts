@@ -11,6 +11,7 @@ const candidate: GeneratedProblem = {
   generation_kind: "expression",
   question_text: "제곱근을 정리하시오.",
   expected_answer: "2 sqrt(7)",
+  techniques_used: ["radical_simplification"],
   proposed_solution_trace: "근호를 정리한다.",
   source_refs: ["ref-1"],
   inferred_intent: {

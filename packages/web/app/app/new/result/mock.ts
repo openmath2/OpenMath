@@ -22,6 +22,9 @@ export type ResultProblem = {
   answerLatex: string;
   solutionLatex: string;
   failReason: string | null;
+  generationModel?: string;
+  refinedBy?: string[];
+  gates?: Array<{ step: string; status: string }>;
 };
 
 type TopicTemplate = {

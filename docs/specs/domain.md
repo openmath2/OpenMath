@@ -147,7 +147,7 @@ type SurfaceConstraints = {
 ```ts
 type GateResult = {
   step: "rag" | "intent" | "generate" | "sympy_verify" | "re_solve" | "objective_map";
-  status: "passed" | "failed" | "skipped";
+  status: "passed" | "failed" | "skipped" | "unverified";
   duration_ms: number;
   evidence?: unknown;  // step별 다름
   failure_detail?: { code: string; message: string };
@@ -168,7 +168,7 @@ type HumanFailureReason = {
 - (I-V1) `gates`는 정확히 6개. 누락된 단계는 `status: "skipped"`로 명시.
 - (I-V2) `overall == "verified"`는 `gates[3] (sympy_verify).status == "passed"` **and** `gates[5] (objective_map).status == "passed"` 일 때만 가능 (결정론 게이트).
 - (I-V3) `gates[1] (intent)`와 `gates[2] (generate)`가 passed라도 `gates[3] (sympy_verify)`가 failed면 `overall != "verified"` (D-1: LLM은 정답 판단 X).
-- (I-V4) `overall == "warning"`은 SymPy는 통과했으나 `independent_resolve`(gates[4])가 불일치할 때만 사용 — 사용자에게 *주의* 라벨로 노출.
+- (I-V4) `overall == "warning"`은 SymPy가 `passed` 또는 `unverified`인 상태에서 `independent_resolve`(gates[4])가 불일치했거나, 비결정 가능(non-decidable) 게이트가 `unverified`일 때 사용 — 사용자에게 *주의* 라벨로 노출. 단, 재시도 상한의 최종 attempt에서도 `re_solve` 불일치가 지속되면 `warning`이 아니라 `rejected`다.
 - (I-V5) `attempt_count > 3`이면 강제 `overall == "rejected"` (Q-5 잠정 정책, D-9에서 확정 예정).
 
 ---

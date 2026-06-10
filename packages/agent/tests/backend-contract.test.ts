@@ -153,6 +153,7 @@ describe("SSE wire adapter", () => {
       generation_kind: "equation",
       question_text: "x**2 - 5*x + 6 = 0",
       expected_answer: "2, 3",
+      techniques_used: ["factorization"],
       proposed_solution_trace: "(x - 2)(x - 3) = 0",
       source_refs: ["seed-9수02-09-001"],
       inferred_intent: {
@@ -347,6 +348,7 @@ describe("SymPy verification fail-closed behavior", () => {
     generation_kind: "equation",
     question_text: "x**2 - 5*x + 6 = 0",
     expected_answer: "2, 3",
+    techniques_used: ["factorization"],
     proposed_solution_trace: "internal trace",
     source_refs: ["seed-9수02-09-001"],
     inferred_intent: {
@@ -400,7 +402,7 @@ describe("SymPy verification fail-closed behavior", () => {
     expect(result.gate.status).toBe("passed");
   });
 
-  it("routes expression candidates through expression verification", async () => {
+  it("marks expression candidates unverified instead of syntax-only passed", async () => {
     const expressionCandidate: GeneratedProblem = {
       ...candidate,
       candidate_id: "00000000-0000-0000-0000-000000000005",
@@ -414,13 +416,13 @@ describe("SymPy verification fail-closed behavior", () => {
       { candidate: expressionCandidate },
     );
 
-    expect(result.gate.status).toBe("passed");
+    expect(result.gate.status).toBe("unverified");
     expect(result.gate.evidence).toMatchObject({
       verification_kind: "expression",
     });
   });
 
-  it("routes choice-label equation candidates through non-solve verification", async () => {
+  it("marks choice-label equation candidates unverified when choices are not decidable", async () => {
     const choiceCandidate: GeneratedProblem = {
       ...candidate,
       question_text:
@@ -439,15 +441,15 @@ describe("SymPy verification fail-closed behavior", () => {
       { candidate: choiceCandidate },
     );
 
-    expect(result.gate.status).toBe("passed");
+    expect(result.gate.status).toBe("unverified");
   });
 
-  it("fails empty solution sets", async () => {
+  it("marks empty solution sets unverified because SymPy returned no decidable result", async () => {
     const result = await verifyWithSympy(
       { mathEngine: fakeMathEngine([]) },
       { candidate },
     );
-    expect(result.gate.status).toBe("failed");
+    expect(result.gate.status).toBe("unverified");
   });
 
   it("fails partial solution matches", async () => {
