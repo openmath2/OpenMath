@@ -779,9 +779,9 @@
     background: var(--color-canvas-pure);
     min-height: 100vh;
   }
-  .app-canvas .container-app {
-    max-width: 1600px;
-  }
+  /* container-app — productivity 표준 1280px (DESIGN.md §"Grid & Container").
+   * 워크스페이스 랜딩, S2~S6 (topic / intent / verify / result / export) 가 사용.
+   */
   .container-app {
     max-width: 1280px;
     margin: 0 auto;
@@ -813,7 +813,11 @@
     border-bottom: 1px solid var(--color-hairline-soft);
   }
 
-  /* hero-tile-productivity — DESIGN.md {component.hero-tile-productivity} */
+  /* hero-tile-productivity — DESIGN.md {component.hero-tile-productivity}.
+   * 발표/소개 페이지의 흑색 hero 전용 (예: 미래 v2 marketing-in-app).
+   * S0 워크스페이스 랜딩(/app)에는 사용 안 함 — 출제 도구는 brochure 가
+   * 아니라 tool 로 읽혀야 하므로 .workspace-header 로 대체됨.
+   */
   .hero-tile-productivity {
     background: var(--color-ink);
     color: var(--color-on-ink);
@@ -883,17 +887,71 @@
     }
   }
 
+  /* workspace-header — /app 워크스페이스 랜딩의 compact tool-like 헤더.
+   * 흑색 96px 풀-블리드 hero 대신 productivity canvas-pure 위에 작은
+   * sans 헤딩 + meta 만 둔다. DESIGN.md "display-section 은 hero-tile 한 자리"
+   * 정책을 지키기 위해 Inter heading-lg (24px) 사용.
+   */
+  .workspace-header {
+    padding-top: 40px;
+    padding-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .workspace-header .eyebrow-mono {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    color: var(--color-ink-3);
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .workspace-header h1 {
+    font-family: var(--font-sans);
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
+    margin: 0;
+    word-break: keep-all;
+  }
+  .workspace-header .lede {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--color-ink-3);
+    margin: 0;
+    max-width: 64ch;
+    word-break: keep-all;
+  }
+  @media (max-width: 768px) {
+    .workspace-header {
+      padding-top: 28px;
+      padding-bottom: 20px;
+    }
+    .workspace-header h1 {
+      font-size: 24px;
+    }
+  }
+
   /* job-entry-card — DESIGN.md {component.job-entry-card} */
   .entry-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px;
-    padding: var(--spacing-section) 0;
+    padding-top: 0;
+    padding-bottom: var(--spacing-section);
   }
   @media (max-width: 768px) {
     .entry-grid {
       grid-template-columns: 1fr;
-      padding: 32px 0;
+      padding-bottom: 32px;
     }
   }
   .job-entry-card {
@@ -1147,25 +1205,42 @@
     line-height: 1.5;
   }
 
-  /* grade-grid (S1 3-up) */
+  /* grade-grid (S1) — 1280px container-app 안의 4-up 단일 행 그리드.
+   * 4 개 학년 옵션(중1·중2·중3·고등 공통수학)이 한 줄에 정렬되어 nav 의
+   * 좌측 edge 와 동일한 좌측 edge 에서 시작한다. 각 카드 ~290px.
+   * ≤900px → 2-up, ≤560px → 1-up 으로 collapse.
+   */
   .grade-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
   }
-  @media (max-width: 600px) {
+  @media (max-width: 900px) {
+    .grade-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 560px) {
     .grade-grid {
       grid-template-columns: 1fr;
     }
   }
 
-  /* topic-grid (S2 2-up) */
+  /* topic-grid (S2) — 1280px container-app 안의 3-up dense 단원 그리드.
+   * 한 학년 10~13 단원이 3~5 행으로 떨어져 1 viewport 안에 스캔 가능.
+   * ≤1100px → 2-up, ≤620px → 1-up.
+   */
   .topic-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
   }
-  @media (max-width: 768px) {
+  @media (max-width: 1100px) {
+    .topic-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 620px) {
     .topic-grid {
       grid-template-columns: 1fr;
     }
@@ -2531,75 +2606,71 @@
     }
   }
 
-  /* topic-picker (S2) — 2-column: 좌 단원 카드 / 우 예시 패널. 좁은 폭에서도 2-col 유지하여 옆에 같이 보이도록. min-width:0 으로 컬럼 자유 축소. */
+  /* topic-picker (S2) — 단일 컬럼 vertical stack: 위 단원 그리드 / 아래 (선택 시)
+   * 예시 패널. 이전의 50/50 2-column 은 우측이 항상 비어 있어 공간 낭비 +
+   * 좌측 단원 리스트가 1-col 으로 좁아져 스크롤 양 1.31 화면이었음.
+   * Now: 단원 그리드가 1280 폭 전부를 사용해 3-up 으로 스캔되고, 예시는
+   * 선택 후 같은 폭에서 아래에 펼쳐진다.
+   */
   .topic-picker .topic-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
-    gap: clamp(16px, 2vw, 32px);
-    align-items: start;
-  }
-  .topic-picker .topic-grid-1col {
-    grid-template-columns: 1fr;
-  }
-  @media (max-width: 768px) {
-    .topic-picker .topic-layout {
-      grid-template-columns: 1fr;
-      gap: 20px;
-    }
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
   }
 
-  /* example-panel — sticky 우측 패널. max-height = 페이지헤더(breadcrumb+title+subtitle+filter ≈ 300px) + action-bar(80px) 차감하여 짧은 뷰포트(vh~650)에서도 잘리지 않음. 내부 .example-list 만 스크롤. min-height 는 빈 상태(empty)에만 적용. */
+  /* topic-cards — 단원 그리드 wrapper. min-width:0 으로 grid item 자유 축소. */
+  .topic-picker .topic-cards {
+    min-width: 0;
+  }
+
+  /* topic-picker scope 의 intent-radio-card — 단원 카드는 baseline 보다 compact
+   * 하게. label-desc 는 2-line clamp + 시각적 secondary.
+   */
+  .topic-picker .intent-radio-card {
+    padding: 12px 14px;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .topic-picker .intent-radio-card:has(input:checked) {
+    padding: 11px 13px;
+  }
+  .topic-picker .intent-radio-card .label {
+    gap: 4px;
+  }
+  .topic-picker .intent-radio-card .label-main {
+    font-size: 15px;
+    gap: 8px;
+  }
+  .topic-picker .intent-radio-card .label-desc {
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--color-ink-3);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
+
+  /* example-panel — 단원 선택 후 그리드 아래에 펼쳐지는 on-demand 미리보기.
+   * 이전의 sticky 우측 50% 패널 + 빈 placeholder 를 폐기. 선택 전에는 panel
+   * 자체가 mount 되지 않아 0px 공간 점유.
+   */
   .example-panel {
-    position: sticky;
-    top: 24px;
-    max-height: calc(100dvh - 400px);
     background: var(--color-canvas-pure);
     border: 1px solid var(--color-rule);
     border-radius: 12px;
-    padding: 16px 18px;
+    padding: 20px 22px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    overflow: hidden;
-  }
-  @media (max-width: 768px) {
-    .example-panel {
-      position: static;
-      max-height: none;
-      overflow: visible;
-    }
-  }
-  .example-panel:has(.example-panel-empty) {
-    min-height: 240px;
-  }
-
-  .example-panel-empty {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 32px 16px;
-    text-align: center;
-    color: var(--color-ink-3);
-  }
-  .example-panel-empty-title {
-    font-family: var(--font-serif);
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--color-ink-2);
-    margin: 0;
-  }
-  .example-panel-empty-desc {
-    font-family: var(--font-sans);
-    font-size: 13px;
-    line-height: 1.55;
-    margin: 0;
+    gap: 14px;
   }
 
   .example-panel-header {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding-bottom: 16px;
+    padding-bottom: 14px;
     border-bottom: 1px solid var(--color-rule-soft);
   }
   .example-panel-title-row {
@@ -2631,16 +2702,24 @@
     margin: 0;
   }
 
+  /* example-list — 예시 3 문항을 가로 3-up 그리드로. 좁아지면 2-up → 1-up. */
   .example-list {
     list-style: none;
-    padding: 0 4px 0 0;
+    padding: 0;
     margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    overflow-y: auto;
-    flex: 1 1 auto;
-    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+  @media (max-width: 1024px) {
+    .example-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 620px) {
+    .example-list {
+      grid-template-columns: 1fr;
+    }
   }
   .example-card {
     background: var(--color-canvas);
@@ -2722,11 +2801,10 @@
     .topic-picker .filter-row { margin-bottom: 16px; }
     .topic-picker .filter-chip { height: 30px; padding: 6px 14px; font-size: 12px; }
     .topic-picker .topic-layout { gap: 20px; }
-    .topic-picker .intent-radio-card { padding: 12px 14px; font-size: 14.5px; }
-    .topic-picker .intent-radio-card .label-main { font-size: 14.5px; }
-    .topic-picker .intent-radio-card .label-desc { font-size: 12.5px; margin-top: 2px; }
+    .topic-picker .intent-radio-card { padding: 10px 12px; }
+    .topic-picker .intent-radio-card:has(input:checked) { padding: 9px 11px; }
 
-    .example-panel { max-height: calc(100dvh - 300px); padding: 14px 16px; gap: 8px; }
+    .example-panel { padding: 16px 18px; gap: 10px; }
     .example-panel-header { padding-bottom: 10px; gap: 6px; }
     .example-panel-title { font-size: 18px; }
     .example-panel-desc { font-size: 12px; }
@@ -2746,9 +2824,10 @@
     .topic-picker .filter-row { margin-bottom: 12px; }
     .topic-picker .filter-chip { height: 28px; padding: 5px 12px; }
     .topic-picker .topic-layout { gap: 16px; }
-    .topic-picker .intent-radio-card { padding: 10px 12px; }
+    .topic-picker .intent-radio-card { padding: 9px 11px; }
+    .topic-picker .intent-radio-card:has(input:checked) { padding: 8px 10px; }
 
-    .example-panel { max-height: calc(100dvh - 220px); padding: 12px 14px; gap: 6px; }
+    .example-panel { padding: 14px 16px; gap: 8px; }
     .example-panel-title { font-size: 16px; }
     .example-card { padding: 8px 10px; gap: 5px; }
     .example-question { font-size: 12px; line-height: 1.5; }
