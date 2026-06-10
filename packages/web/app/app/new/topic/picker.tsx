@@ -161,7 +161,7 @@ export function TopicPicker({ schoolLevel, grade }: Props) {
               </p>
             ) : (
               <div
-                className="topic-grid topic-grid-1col"
+                className="topic-grid"
                 role="radiogroup"
                 aria-labelledby="page-title"
               >
@@ -194,73 +194,61 @@ export function TopicPicker({ schoolLevel, grade }: Props) {
             )}
           </section>
 
-          <aside
-            className="example-panel"
-            aria-live="polite"
-            aria-label="단원 예시 문제 미리보기"
-          >
-            {selectedTopic === null || selectedExamples === undefined ? (
-              <div className="example-panel-empty">
-                <p className="example-panel-empty-title">
-                  단원을 선택하면 예시 문제를 보여드려요
+          {selectedTopic !== null && selectedExamples !== undefined && (
+            <aside
+              className="example-panel"
+              aria-live="polite"
+              aria-label="단원 예시 문제 미리보기"
+            >
+              <header className="example-panel-header">
+                <div className="example-panel-title-row">
+                  <h2 className="example-panel-title">
+                    {selectedTopic.name}
+                  </h2>
+                  <span className="meta-pill">{selectedTopic.code}</span>
+                </div>
+                <p className="example-panel-desc">
+                  {topicScopeLabel(selectedTopic)} · {selectedTopic.achievement}
                 </p>
-                <p className="example-panel-empty-desc">
-                  실제 출제될 동형 문제가 어떤 모습인지 미리 가늠할 수 있도록
-                  해당 단원의 corpus 예시를 보여줍니다.
+                <p className="example-panel-meta">
+                  예시 {selectedExamples.examples.length} 문항 · corpus 후보
+                  {" "}
+                  {selectedExamples.candidate_pool.toLocaleString()} 건 중
+                  추출
                 </p>
-              </div>
-            ) : (
-              <>
-                <header className="example-panel-header">
-                  <div className="example-panel-title-row">
-                    <h2 className="example-panel-title">
-                      {selectedTopic.name}
-                    </h2>
-                    <span className="meta-pill">{selectedTopic.code}</span>
-                  </div>
-                  <p className="example-panel-desc">
-                    {topicScopeLabel(selectedTopic)} · {selectedTopic.achievement}
-                  </p>
-                  <p className="example-panel-meta">
-                    예시 {selectedExamples.examples.length} 문항 · corpus 후보
-                    {" "}
-                    {selectedExamples.candidate_pool.toLocaleString()} 건 중
-                    추출
-                  </p>
-                </header>
+              </header>
 
-                <ol className="example-list">
-                  {selectedExamples.examples.map((ex, idx) => (
-                    <li key={ex.id} className="example-card">
-                      <div className="example-card-meta">
-                        <span className="example-index">예시 {idx + 1}</span>
-                        <span className="example-badge example-badge-diff">
-                          {difficultyLabel(ex.difficulty)}
-                        </span>
-                        <span className="example-badge example-badge-type">
-                          {problemTypeLabel(ex.problem_type)}
-                        </span>
-                      </div>
-                      <div className="example-question">
-                        <LatexMixed source={ex.question_text} />
-                      </div>
-                      <div className="example-answer">
-                        <span className="example-answer-label">정답</span>
-                        <span className="example-answer-value">
-                          <LatexMixed source={ex.answer_text} />
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
+              <ol className="example-list">
+                {selectedExamples.examples.map((ex, idx) => (
+                  <li key={ex.id} className="example-card">
+                    <div className="example-card-meta">
+                      <span className="example-index">예시 {idx + 1}</span>
+                      <span className="example-badge example-badge-diff">
+                        {difficultyLabel(ex.difficulty)}
+                      </span>
+                      <span className="example-badge example-badge-type">
+                        {problemTypeLabel(ex.problem_type)}
+                      </span>
+                    </div>
+                    <div className="example-question">
+                      <LatexMixed source={ex.question_text} />
+                    </div>
+                    <div className="example-answer">
+                      <span className="example-answer-label">정답</span>
+                      <span className="example-answer-value">
+                        <LatexMixed source={ex.answer_text} />
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ol>
 
-                <footer className="example-panel-footer">
-                  예시는 corpus 의 기존 문제이며, 실제 출제 시 LLM 이 동형
-                  문제를 새로 생성하고 SymPy 가 검증합니다.
-                </footer>
-              </>
-            )}
-          </aside>
+              <footer className="example-panel-footer">
+                예시는 corpus 의 기존 문제이며, 실제 출제 시 LLM 이 동형
+                문제를 새로 생성하고 SymPy 가 검증합니다.
+              </footer>
+            </aside>
+          )}
         </div>
       </main>
 
