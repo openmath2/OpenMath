@@ -1372,107 +1372,53 @@
     }
   }
 
-  /* reference-list (S3-B) — 기준 문항 라디오 1-column. corpus 문제 길이가 가변이라 카드 높이 들쭉날쭉 + KaTeX inline 폭 보존 위해 stack 레이아웃. */
+  /* reference-list (S3-B) — 기준 문항 라디오. auto-fit minmax 으로 1280
+   * container 안에서 자동으로 다열 정렬 (≥2 cols @ 1440), 카드별 KaTeX 폭은
+   * label-desc 의 overflow-x:auto 가 흡수. 미리보기는 3줄 clamp+min-height 로
+   * 균일, 선택한 카드만 전문 펼침; 펼친 카드가 옆을 안 늘리게 align-items:start.
+   */
   .reference-list {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 12px;
+    align-items: start;
+  }
+  .reference-list .intent-radio-card {
+    padding: 12px 14px;
+  }
+  .reference-list .intent-radio-card:has(input:checked) {
+    padding: 11px 13px;
+  }
+  .reference-list .intent-radio-card .label {
+    gap: 8px;
+  }
+  .reference-list .intent-radio-card .label-main {
+    font-size: 13px;
+    gap: 6px;
+    color: var(--color-ink-3);
   }
   .reference-list .intent-radio-card .label-desc {
     overflow-wrap: anywhere;
+    color: var(--color-ink);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+    min-height: 5.5em;
+    max-height: 5.5em;
+  }
+  .reference-list .intent-radio-card:has(input:checked) .label-desc {
+    display: block;
+    -webkit-line-clamp: none;
+    line-clamp: none;
+    overflow: visible;
+    min-height: 0;
+    max-height: none;
   }
   .reference-list .intent-radio-card .label-desc .katex {
     max-width: 100%;
     overflow-x: auto;
-  }
-
-  /* dimension-list (S3-B vertical stack) */
-  .dimension-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  /* intent-checkbox — DESIGN.md {component.intent-checkbox} / {component.intent-checkbox-active} */
-  .intent-checkbox {
-    background: var(--color-canvas-pure);
-    color: var(--color-ink);
-    font-family: var(--font-sans);
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 1.55;
-    border: 1px solid var(--color-hairline);
-    border-radius: 8px;
-    padding: 14px 18px;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    cursor: pointer;
-    transition: border-color 150ms ease, background-color 150ms ease;
-    user-select: none;
-  }
-  .intent-checkbox:hover {
-    border-color: var(--color-ink-3);
-  }
-  .intent-checkbox:has(input:checked) {
-    background: var(--color-soft-cloud);
-    border: 2px solid var(--color-ink);
-    padding: 13px 17px;
-  }
-  .intent-checkbox:focus-within {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-  }
-  .intent-checkbox .check-icon {
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    border: 2px solid var(--color-hairline);
-    background: var(--color-canvas-pure);
-    flex-shrink: 0;
-    margin-top: 1px;
-    position: relative;
-    display: grid;
-    place-items: center;
-    transition: background-color 100ms ease, border-color 100ms ease;
-  }
-  .intent-checkbox:has(input:checked) .check-icon {
-    background: var(--color-ink);
-    border-color: var(--color-ink);
-  }
-  .intent-checkbox:has(input:checked) .check-icon::after {
-    content: "";
-    width: 10px;
-    height: 5px;
-    border-left: 2px solid var(--color-on-ink);
-    border-bottom: 2px solid var(--color-on-ink);
-    transform: rotate(-45deg) translate(1px, -1px);
-  }
-  .intent-checkbox .label {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .intent-checkbox .label-key {
-    font-family: var(--font-mono);
-    font-size: 11.5px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    color: var(--color-ink-3);
-    flex-shrink: 0;
-  }
-  .intent-checkbox:has(input:checked) .label-key {
-    color: var(--color-ink);
-  }
-  .intent-checkbox .label-text {
-    font-size: 15px;
-    line-height: 1.5;
-    color: var(--color-ink);
-    flex: 1;
-    min-width: 0;
   }
 
   /* badges — DESIGN.md {component.badge-pass|fail|concept|warn} */
@@ -2580,8 +2526,6 @@
     .job-entry-card,
     .btn-secondary,
     .intent-radio-card,
-    .intent-checkbox,
-    .intent-checkbox .check-icon,
     .filter-chip,
     .sub-nav .crumb,
     .spinner-dot,

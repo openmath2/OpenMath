@@ -84,6 +84,7 @@ export async function main(): Promise<void> {
 
   const app = createApp({
     mathEngine,
+    rag,
     workflow: {
       rag,
       mathEngine,

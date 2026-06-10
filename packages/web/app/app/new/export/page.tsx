@@ -14,9 +14,8 @@ type Props = {
     school?: string | string[];
     topic?: string | string[];
     mode?: string | string[];
-    dims?: string | string[];
+    srcRef?: string | string[];
     adopted?: string | string[];
-    source?: string | string[];
   };
 };
 
@@ -40,13 +39,12 @@ export default function ExportPage({ searchParams }: Props) {
   const grade = parseGrade(searchParams.grade);
   const topic = findTopic(pickFirst(searchParams.topic));
   const mode = parseMode(pickFirst(searchParams.mode));
-  const dims = parseList(pickFirst(searchParams.dims));
+  const srcRef = pickFirst(searchParams.srcRef) ?? "";
   const adoptedIds = parseList(pickFirst(searchParams.adopted));
-  const sourceProblemText = pickFirst(searchParams.source) ?? "";
 
   let problems: ResultProblem[] = [];
   if (topic !== null && mode !== null) {
-    const all = generateMockResults(topic, mode, dims);
+    const all = generateMockResults(topic, mode);
     problems = all.filter((p) => adoptedIds.includes(p.id));
   }
 
@@ -56,8 +54,7 @@ export default function ExportPage({ searchParams }: Props) {
       schoolLevel={schoolLevel}
       topic={topic}
       mode={mode}
-      dims={dims}
-      sourceProblemText={sourceProblemText}
+      sourceItemId={srcRef}
       adoptedIds={adoptedIds}
       problems={problems}
     />

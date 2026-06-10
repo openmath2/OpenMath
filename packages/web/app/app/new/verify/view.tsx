@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { LatexRenderer } from "@/components/math/latex-renderer";
 import {
   type Grade,
@@ -20,8 +20,13 @@ type Props = {
   grade: Grade | null;
   topic: Topic | null;
   mode: "structural" | "conceptual" | null;
-  dims: string[];
-  sourceProblemText: string;
+  srcRef: string;
+};
+
+type IntentSource = {
+  item_id: string;
+  question_text: string;
+  difficulty_norm: "easy" | "medium" | "hard";
 };
 
 const STATUS_ICON: Record<Step["status"], string> = {
@@ -91,41 +96,79 @@ function stateLabel(status: Step["status"]): string {
   }
 }
 
-function sourceQuery(sourceProblemText: string): string {
-  return sourceProblemText.length > 0
-    ? `&source=${encodeURIComponent(sourceProblemText)}`
-    : "";
+function parseIntentSource(raw: unknown): IntentSource | null {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
+  const o = raw as Record<string, unknown>;
+  if (typeof o.item_id !== "string" || o.item_id.length === 0) return null;
+  if (typeof o.question_text !== "string") return null;
+  if (
+    o.difficulty_norm !== "easy" &&
+    o.difficulty_norm !== "medium" &&
+    o.difficulty_norm !== "hard"
+  ) {
+    return null;
+  }
+  return {
+    item_id: o.item_id,
+    question_text: o.question_text,
+    difficulty_norm: o.difficulty_norm,
+  };
 }
 
-export function VerifyView({ schoolLevel, grade, topic, mode, dims, sourceProblemText }: Props) {
-  const valid =
-    (schoolLevel === "high" || grade !== null) && topic !== null && mode !== null && dims.length > 0;
+export function VerifyView({ schoolLevel, grade, topic, mode, srcRef }: Props) {
+  const [intentSource, setIntentSource] = useState<IntentSource | null>(null);
+  const [hydrated, setHydrated] = useState<boolean>(false);
+
+  useEffect(() => {
+    setHydrated(true);
+    if (srcRef.length === 0) return;
+    let raw: string | null = null;
+    try {
+      raw = window.sessionStorage.getItem("openmath:intent-source");
+    } catch (err) {
+      console.warn("[intent-source] sessionStorage read failed:", err);
+      return;
+    }
+    if (raw === null) return;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err) {
+      console.warn("[intent-source] JSON parse failed:", err);
+      return;
+    }
+    const validated = parseIntentSource(parsed);
+    if (validated === null) return;
+    if (validated.item_id !== srcRef) return;
+    setIntentSource(validated);
+  }, [srcRef]);
+
+  const sourceItemId = intentSource?.item_id ?? "";
+  const sourceProblemText = intentSource?.question_text ?? "";
+
+  const gateValid =
+    (schoolLevel === "high" || grade !== null) &&
+    topic !== null &&
+    mode !== null &&
+    sourceItemId !== "";
 
   const input: StreamInput | null = useMemo(() => {
-    if (!valid || topic === null || mode === null) {
-      return null;
-    }
+    if (!gateValid || topic === null || mode === null) return null;
     return {
       schoolLevel,
       grade,
       topic: topic.code,
       topicName: topic.name,
       mode,
-      dims,
+      sourceItemId,
       sourceProblemText,
     };
-  }, [valid, schoolLevel, grade, topic, mode, dims, sourceProblemText]);
+  }, [gateValid, schoolLevel, grade, topic, mode, sourceItemId, sourceProblemText]);
 
-  /* hook 은 input 이 null 이면 stream 을 시작하지 않는다. invalid 가드. */
   const stream = useVerificationStream(input);
-
-  /* 자동 라우팅: status === "done" 시 S5 로 이동.
-   * router.push 는 useEffect 없이 호출하면 SSR 단계 미스매치. 일단
-   * S5 미구현이므로 inline-notice + 수동 링크로 처리. (다음 PR 에서 router.push)
-   */
   const announceRef = useRef<HTMLDivElement | null>(null);
 
-  if (!valid) {
+  if ((schoolLevel === "middle" && grade === null) || topic === null || mode === null) {
     return (
       <>
         <nav className="container-app sub-nav" aria-label="단계 이동">
@@ -137,10 +180,38 @@ export function VerifyView({ schoolLevel, grade, topic, mode, dims, sourceProble
         <main className="container-app page-body">
           <h1 className="page-title">이전 단계 정보가 필요해요</h1>
           <p className="page-subtitle">
-            학년 · 단원 · 동형 모드 · 평가 차원 중 하나가 누락되었습니다.
+            학년 · 단원 · 동형 모드 중 하나가 누락되었습니다.
           </p>
           <Link href="/app/new/grade" className="btn btn-primary">
             <span>학년 선택으로</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        </main>
+      </>
+    );
+  }
+
+  const gradeParam = grade === null ? "common" : String(grade);
+  const intentHref = `/app/new/intent?school=${schoolLevel}&grade=${gradeParam}&topic=${encodeURIComponent(topic.code)}`;
+
+  if (hydrated && (srcRef.length === 0 || intentSource === null)) {
+    return (
+      <>
+        <nav className="container-app sub-nav" aria-label="단계 이동">
+          <Link href={intentHref} className="crumb">
+            <span aria-hidden="true">←</span>
+            <span>의도 확인</span>
+          </Link>
+        </nav>
+        <main className="container-app page-body">
+          <h1 className="page-title">기준 문항을 다시 선택해 주세요</h1>
+          <p className="page-subtitle">
+            검증을 시작하려면 의도 확인 화면에서 기준 문항을 1 개 골라야
+            합니다. 세션이 만료되었거나 직접 URL 로 접근한 경우 다시
+            선택해 주세요.
+          </p>
+          <Link href={intentHref} className="btn btn-primary">
+            <span>의도 확인으로</span>
             <span aria-hidden="true">→</span>
           </Link>
         </main>
@@ -154,11 +225,14 @@ export function VerifyView({ schoolLevel, grade, topic, mode, dims, sourceProble
   const isDone = stream.status === "done";
   const showPreview = stream.previewLatex !== null;
 
+  const verifyHref = `/app/new/verify?school=${schoolLevel}&grade=${gradeParam}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&srcRef=${encodeURIComponent(srcRef)}`;
+  const resultHref = `/app/new/result?school=${schoolLevel}&grade=${gradeParam}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&srcRef=${encodeURIComponent(srcRef)}`;
+
   return (
     <>
       <nav className="container-app sub-nav" aria-label="단계 이동">
         <div>
-          <Link href="/app/new/intent" className="crumb">
+          <Link href={intentHref} className="crumb">
             <span aria-hidden="true">←</span>
             <span>의도 확인</span>
           </Link>
@@ -240,7 +314,7 @@ export function VerifyView({ schoolLevel, grade, topic, mode, dims, sourceProble
         <div className="container-app action-bar-inner">
           <div className="left">
             {isError || isCancelled ? (
-              <Link href="/app/new/intent" className="btn btn-secondary">
+              <Link href={intentHref} className="btn btn-secondary">
                 <span aria-hidden="true">←</span>
                 <span>의도 확인으로</span>
               </Link>
@@ -258,7 +332,7 @@ export function VerifyView({ schoolLevel, grade, topic, mode, dims, sourceProble
           <div className="right">
             {isError || isCancelled ? (
               <Link
-                href={`/app/new/verify?school=${schoolLevel}&grade=${grade === null ? "common" : grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}${sourceQuery(sourceProblemText)}`}
+                href={verifyHref}
                 className="btn btn-primary"
                 prefetch={false}
                 replace
@@ -267,10 +341,7 @@ export function VerifyView({ schoolLevel, grade, topic, mode, dims, sourceProble
                 <span aria-hidden="true">→</span>
               </Link>
             ) : isDone ? (
-              <Link
-                href={`/app/new/result?school=${schoolLevel}&grade=${grade === null ? "common" : grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}${sourceQuery(sourceProblemText)}`}
-                className="btn btn-primary"
-              >
+              <Link href={resultHref} className="btn btn-primary">
                 <span>결과 보기</span>
                 <span aria-hidden="true">→</span>
               </Link>

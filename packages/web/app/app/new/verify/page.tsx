@@ -13,8 +13,7 @@ type Props = {
     school?: string | string[];
     topic?: string | string[];
     mode?: string | string[];
-    dims?: string | string[];
-    source?: string | string[];
+    srcRef?: string | string[];
   };
 };
 
@@ -23,21 +22,12 @@ function parseMode(raw: string | null): "structural" | "conceptual" | null {
   return null;
 }
 
-function parseDims(raw: string | null): string[] {
-  if (raw === null) return [];
-  return raw
-    .split(",")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-}
-
 export default function VerifyPage({ searchParams }: Props) {
   const schoolLevel = parseSchoolLevel(searchParams.school);
   const grade = parseGrade(searchParams.grade);
   const topic = findTopic(pickFirst(searchParams.topic));
   const mode = parseMode(pickFirst(searchParams.mode));
-  const dims = parseDims(pickFirst(searchParams.dims));
-  const sourceProblemText = pickFirst(searchParams.source) ?? "";
+  const srcRef = pickFirst(searchParams.srcRef) ?? "";
 
   return (
     <VerifyView
@@ -45,8 +35,7 @@ export default function VerifyPage({ searchParams }: Props) {
       schoolLevel={schoolLevel}
       topic={topic}
       mode={mode}
-      dims={dims}
-      sourceProblemText={sourceProblemText}
+      srcRef={srcRef}
     />
   );
 }

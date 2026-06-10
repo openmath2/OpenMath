@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LatexRenderer } from "@/components/math/latex-renderer";
 import { type Grade, type SchoolLevel, type Topic, gradeLabel } from "../topic/data";
+import { verificationStorageKey } from "@/lib/verification-storage-key";
 import type { ResultProblem } from "../result/mock";
 
 function buildDefaultTitle(
@@ -20,8 +21,7 @@ type Props = {
   grade: Grade | null;
   topic: Topic | null;
   mode: "structural" | "conceptual" | null;
-  dims: string[];
-  sourceProblemText: string;
+  sourceItemId: string;
   adoptedIds: string[];
   problems: ResultProblem[];
 };
@@ -57,33 +57,12 @@ function shuffleArray<T>(arr: readonly T[]): T[] {
   return out;
 }
 
-function storageKey(
-  schoolLevel: SchoolLevel,
-  grade: Grade | null,
-  topic: Topic,
-  mode: "structural" | "conceptual",
-  dims: string[],
-  sourceProblemText: string,
-): string {
-  return [
-    "openmath:verification-result",
-    grade,
-    schoolLevel,
-    topic.code,
-    topic.name,
-    mode,
-    [...dims].sort().join(","),
-    sourceProblemText,
-  ].join("|");
-}
-
 function resultHref(
   schoolLevel: SchoolLevel,
   grade: Grade | null,
   topic: Topic,
   mode: "structural" | "conceptual" | null,
-  dims: readonly string[],
-  sourceProblemText: string,
+  sourceItemId: string,
 ): string {
   const params = new URLSearchParams({
     grade: grade === null ? "common" : String(grade),
@@ -91,8 +70,7 @@ function resultHref(
     topic: topic.code,
   });
   if (mode !== null) params.set("mode", mode);
-  if (dims.length > 0) params.set("dims", [...dims].join(","));
-  if (sourceProblemText.length > 0) params.set("source", sourceProblemText);
+  if (sourceItemId.length > 0) params.set("srcRef", sourceItemId);
   return `/app/new/result?${params.toString()}`;
 }
 
@@ -117,9 +95,8 @@ function parseStoredProblem(raw: unknown): StoredProblem | null {
   };
 }
 
-function toResultProblem(problem: StoredProblem, index: number, dims: string[]): ResultProblem {
+function toResultProblem(problem: StoredProblem, index: number): ResultProblem {
   const status = problem.verification_status === "partial" ? "warn" : problem.verification_status;
-  const missingDims = dims.filter((dim) => !problem.preserved_dimensions.includes(dim));
   return {
     id: problem.id,
     number: index + 1,
@@ -128,8 +105,6 @@ function toResultProblem(problem: StoredProblem, index: number, dims: string[]):
     questionLatex: problem.question_latex,
     answerLatex: problem.answer_latex,
     solutionLatex: problem.explanation_latex ?? "검증 파이프라인에서 생성된 문항입니다.",
-    preservedDims: problem.preserved_dimensions,
-    missingDims: status === "warn" ? missingDims : [],
     failReason: status === "fail" ? "검증 실패 — 채택할 수 없습니다." : null,
   };
 }
@@ -188,8 +163,7 @@ export function ExportView({
   grade,
   topic,
   mode,
-  dims,
-  sourceProblemText,
+  sourceItemId,
   adoptedIds,
   problems,
 }: Props) {
@@ -212,21 +186,37 @@ export function ExportView({
   useEffect(() => {
     setDisplayProblems(problems);
     if ((schoolLevel === "middle" && grade === null) || topic === null || mode === null) return;
+    if (sourceItemId === "") return;
+    let raw: string | null = null;
     try {
-      const raw = window.sessionStorage.getItem(
-        storageKey(schoolLevel, grade, topic, mode, dims, sourceProblemText),
+      raw = window.sessionStorage.getItem(
+        verificationStorageKey({
+          grade,
+          schoolLevel,
+          topic: topic.code,
+          topicName: topic.name,
+          mode,
+          sourceItemId,
+        }),
       );
-      if (raw === null) return;
-      const parsed: unknown = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return;
-      const stored = parsed.map(parseStoredProblem);
-      if (stored.some((p) => p === null)) return;
-      const mapped = stored.map((p, index) => toResultProblem(p as StoredProblem, index, dims));
-      setDisplayProblems(mapped.filter((p) => adoptedIds.includes(p.id)));
-    } catch {
-      setDisplayProblems(problems);
+    } catch (err) {
+      console.warn("[export] sessionStorage read failed:", err);
+      return;
     }
-  }, [grade, topic, mode, dims, sourceProblemText, adoptedIds, problems]);
+    if (raw === null) return;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err) {
+      console.warn("[export] JSON parse failed:", err);
+      return;
+    }
+    if (!Array.isArray(parsed)) return;
+    const stored = parsed.map(parseStoredProblem);
+    if (stored.some((p) => p === null)) return;
+    const mapped = stored.map((p, index) => toResultProblem(p as StoredProblem, index));
+    setDisplayProblems(mapped.filter((p) => adoptedIds.includes(p.id)));
+  }, [grade, topic, mode, sourceItemId, adoptedIds, problems, schoolLevel]);
 
   /* afterprint — 사용자가 시스템 print dialog 를 닫은 시점.
    * 저장/취소 여부는 브라우저 API 가 노출하지 않으므로 일괄 "완료" 로 표기.
@@ -269,7 +259,7 @@ export function ExportView({
   }
 
   if (displayProblems.length === 0) {
-    const backHref = resultHref(schoolLevel, grade, topic, mode, dims, sourceProblemText);
+    const backHref = resultHref(schoolLevel, grade, topic, mode, sourceItemId);
     return (
       <>
         <nav className="container-app sub-nav" aria-label="단계 이동">
@@ -298,7 +288,7 @@ export function ExportView({
     /* 브라우저 print API — 시스템 dialog 에서 "PDF 로 저장" 선택. */
     window.print();
   };
-  const backHref = resultHref(schoolLevel, grade, topic, mode, dims, sourceProblemText);
+  const backHref = resultHref(schoolLevel, grade, topic, mode, sourceItemId);
 
   /* 옵션 변경 핸들러 */
   const setTitle = (v: string): void =>

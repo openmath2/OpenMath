@@ -5,6 +5,7 @@ import {
   type EventSourceMessage,
 } from "@microsoft/fetch-event-source";
 import { useEffect, useReducer, useRef } from "react";
+import { verificationStorageKey } from "@/lib/verification-storage-key";
 
 /* ─────────────────────────────────────────────────────────────
  * SSE 컨트랙트 (packages/web/README.md §"SSE Consumption" + D-6)
@@ -67,7 +68,7 @@ export type StreamInput = {
   topic: string;
   topicName: string;
   mode: "structural" | "conceptual";
-  dims: readonly string[];
+  sourceItemId: string;
   sourceProblemText?: string;
   /** override agent endpoint. defaults to NEXT_PUBLIC_AGENT_URL or localhost:31415 */
   endpoint?: string;
@@ -245,19 +246,6 @@ function defaultEndpoint(): string {
   return env ?? "http://localhost:31415";
 }
 
-function verificationStorageKey(input: StreamInput): string {
-  return [
-    "openmath:verification-result",
-    input.grade,
-    input.schoolLevel,
-    input.topic,
-    input.topicName,
-    input.mode,
-    [...input.dims].sort().join(","),
-    input.sourceProblemText ?? "",
-  ].join("|");
-}
-
 export type UseVerificationStreamResult = StreamState & {
   cancel: () => void;
 };
@@ -270,14 +258,13 @@ export function useVerificationStream(
   const dispatchRef = useRef(dispatch);
   dispatchRef.current = dispatch;
 
-  /* input 의 dims 배열 동일성 비교를 위해 안정 키 생성.
-   * inputKey 는 input 의 모든 의미상 식별자를 직렬화하므로 effect deps 로 충분.
+  /* inputKey 는 input 의 모든 의미상 식별자를 직렬화한 안정 키.
+   * effect deps 에 input 객체를 직접 넣으면 부모 re-render 마다 SSE 재연결.
    */
-  const dimsKey = input === null ? "" : [...input.dims].sort().join(",");
   const inputKey =
     input === null
       ? null
-      : `${input.schoolLevel}|${input.grade ?? "common"}|${input.topic}|${input.topicName}|${input.mode}|${dimsKey}|${input.sourceProblemText ?? ""}|${input.endpoint ?? ""}`;
+      : `${input.schoolLevel}|${input.grade ?? "common"}|${input.topic}|${input.topicName}|${input.mode}|${input.sourceItemId}|${input.sourceProblemText ?? ""}|${input.endpoint ?? ""}`;
 
   /* effect 본문이 input 의 *최신* 값을 읽어야 하지만 deps 로 넣으면 가드가
    * 무효화되어 부모 re-render 마다 SSE 재연결이 발생한다 (PR #7 리뷰).
@@ -320,7 +307,7 @@ export function useVerificationStream(
         topic: current.topic,
         topic_name: current.topicName,
         mode: current.mode,
-        dims: [...current.dims].sort(),
+        source_item_id: current.sourceItemId,
         source_problem_text: current.sourceProblemText,
       }),
       signal: controller.signal,
@@ -382,11 +369,21 @@ export function useVerificationStream(
             }
             try {
               window.sessionStorage.setItem(
-                verificationStorageKey(current),
+                verificationStorageKey({
+                  grade: current.grade,
+                  schoolLevel: current.schoolLevel,
+                  topic: current.topic,
+                  topicName: current.topicName,
+                  mode: current.mode,
+                  sourceItemId: current.sourceItemId,
+                }),
                 JSON.stringify(candidates),
               );
-            } catch {
-              /* sessionStorage is an optimization for S5/S6 handoff. */
+            } catch (err) {
+              console.warn(
+                "[verification-stream] sessionStorage write failed:",
+                err,
+              );
             }
             dispatchRef.current({ type: "RESULT", candidates });
             controller.abort();
