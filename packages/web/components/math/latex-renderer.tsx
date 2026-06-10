@@ -83,12 +83,12 @@ type LatexMixedProps = {
   source: string;
 };
 
-type Segment =
+export type Segment =
   | { kind: "text"; value: string }
   | { kind: "inline"; latex: string }
   | { kind: "block"; latex: string };
 
-function splitDelimited(source: string): Segment[] {
+export function splitDelimited(source: string): Segment[] {
   const out: Segment[] = [];
   let i = 0;
   let buf = "";
@@ -129,6 +129,30 @@ function splitDelimited(source: string): Segment[] {
       flushText();
       out.push({ kind: "inline", latex: source.slice(i + 1, end) });
       i = end + 1;
+      continue;
+    }
+    if (ch === "\\" && source[i + 1] === "[") {
+      const end = source.indexOf("\\]", i + 2);
+      if (end === -1) {
+        buf += source.slice(i);
+        i = source.length;
+        break;
+      }
+      flushText();
+      out.push({ kind: "block", latex: source.slice(i + 2, end) });
+      i = end + 2;
+      continue;
+    }
+    if (ch === "\\" && source[i + 1] === "(") {
+      const end = source.indexOf("\\)", i + 2);
+      if (end === -1) {
+        buf += source.slice(i);
+        i = source.length;
+        break;
+      }
+      flushText();
+      out.push({ kind: "inline", latex: source.slice(i + 2, end) });
+      i = end + 2;
       continue;
     }
     buf += ch;
