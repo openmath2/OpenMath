@@ -3,17 +3,15 @@ import Link from "next/link";
 export default function WorkspacePage() {
   return (
     <>
-      <section className="hero-tile-productivity">
-        <div className="container-app">
-          <span className="eyebrow-mono">
-            <span aria-hidden="true">◆</span>
-            워크스페이스
-          </span>
-          <h1>검증된 문제 한 세트.</h1>
-          <p className="lede">
-            학년 → 단원 → 의도 → 검증 → PDF · 5 ~ 30 초 동형 출제.
-          </p>
-        </div>
+      <section className="container-app workspace-header" aria-labelledby="workspace-title">
+        <span className="eyebrow-mono">
+          <span aria-hidden="true">◆</span>
+          워크스페이스
+        </span>
+        <h1 id="workspace-title">새 작업 시작</h1>
+        <p className="lede">
+          학년 → 단원 → 의도 → 검증 → PDF. 한 번에 3 ~ 10 문항, 5 ~ 30 초 출제.
+        </p>
       </section>
 
       <section className="container-app entry-grid" aria-label="새 작업 시작">
