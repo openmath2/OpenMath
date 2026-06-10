@@ -1374,8 +1374,8 @@
 
   /* reference-list (S3-B) — 기준 문항 라디오. auto-fit minmax 으로 1280
    * container 안에서 자동으로 다열 정렬 (≥2 cols @ 1440), 카드별 KaTeX 폭은
-   * label-desc 의 overflow-x:auto 가 흡수. 문제 전문을 보이도록 clamp 없이
-   * 자연 높이; tall 카드가 같은 행을 늘리지 않게 align-items:start.
+   * label-desc 의 overflow-x:auto 가 흡수. 미리보기는 3줄 clamp+min-height 로
+   * 균일, 선택한 카드만 전문 펼침; 펼친 카드가 옆을 안 늘리게 align-items:start.
    */
   .reference-list {
     display: grid;
@@ -1400,6 +1400,21 @@
   .reference-list .intent-radio-card .label-desc {
     overflow-wrap: anywhere;
     color: var(--color-ink);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+    min-height: 5.5em;
+    max-height: 5.5em;
+  }
+  .reference-list .intent-radio-card:has(input:checked) .label-desc {
+    display: block;
+    -webkit-line-clamp: none;
+    line-clamp: none;
+    overflow: visible;
+    min-height: 0;
+    max-height: none;
   }
   .reference-list .intent-radio-card .label-desc .katex {
     max-width: 100%;
