@@ -166,4 +166,36 @@ describe("timeout policy", () => {
       ),
     ).rejects.toThrow(/slow timed out/);
   });
+
+  it("aborts the signal passed to fn when it times out", async () => {
+    let aborted = false;
+    await expect(
+      withTimeout(
+        (signal) =>
+          new Promise<number>((resolve) => {
+            signal.addEventListener("abort", () => {
+              aborted = true;
+            });
+            setTimeout(() => resolve(42), 50);
+          }),
+        { ms: 1, label: "slow" },
+      ),
+    ).rejects.toThrow(/slow timed out/);
+    expect(aborted).toBe(true);
+  });
+
+  it("leaves the signal unaborted when fn resolves in time", async () => {
+    let aborted = false;
+    const result = await withTimeout(
+      (signal) => {
+        signal.addEventListener("abort", () => {
+          aborted = true;
+        });
+        return Promise.resolve(7);
+      },
+      { ms: 1000, label: "fast" },
+    );
+    expect(result).toBe(7);
+    expect(aborted).toBe(false);
+  });
 });

@@ -30,7 +30,7 @@ export async function independentResolve(
   const started = Date.now();
   try {
     const attempt = await withTimeout(
-      () => deps.solver.solve(input.candidate),
+      (signal) => deps.solver.solve(input.candidate, signal),
       { ms: deps.perStepTimeoutMs ?? 30_000, label: "re_solve" },
     );
     const answerDebug: AnswerEquivalenceDebug = { skippedReasons: [] };

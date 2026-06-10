@@ -17,6 +17,7 @@ export interface CritiqueInput {
   candidate: GeneratedProblem;
   intent: Intent;
   strategy: Strategy | null;
+  signal?: AbortSignal;
 }
 
 export type { Critique } from "../schemas/index.js";
@@ -50,6 +51,7 @@ export function createConstraintCriticAgent(
           mode: "json",
           temperature: prompt.metadata.temperature,
           prompt: rendered,
+          abortSignal: input.signal,
         });
         return object;
       } catch (error) {

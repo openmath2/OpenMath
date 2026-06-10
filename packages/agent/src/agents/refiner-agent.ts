@@ -13,6 +13,7 @@ export interface RefineInput {
   strategy: Strategy | null;
   attempt: number;
   hints: string[];
+  signal?: AbortSignal;
 }
 
 export interface RefinerAgent {
@@ -43,6 +44,7 @@ export function createRefinerAgent(deps: RefinerAgentDeps): RefinerAgent {
         strategy: input.strategy,
         attempt: input.attempt,
         refinementHint,
+        signal: input.signal,
       });
     },
   };

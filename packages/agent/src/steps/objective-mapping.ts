@@ -280,7 +280,7 @@ async function loadNuance(
   const prompts = deps.prompts;
   if (llm === undefined || prompts === undefined) return { nuance: null };
   try {
-    const nuance = await withTimeout(async () => {
+    const nuance = await withTimeout(async (signal) => {
       const prompt = await prompts.load("objective-mapper");
       const rendered = prompt.render({
         candidate: input.candidate,
@@ -293,6 +293,7 @@ async function loadNuance(
         mode: "json",
         temperature: prompt.metadata.temperature,
         prompt: rendered,
+        abortSignal: signal,
       });
       return object;
     }, { ms: deps.perStepTimeoutMs ?? 30_000, label: "objective_map_llm" });

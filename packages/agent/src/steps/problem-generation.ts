@@ -59,7 +59,7 @@ export async function generateProblem(
   const refinedBy: string[] = [];
   const normalizationSkippedReasons: string[] = [];
   try {
-    const candidate = await withTimeout(async () => {
+    const candidate = await withTimeout(async (signal) => {
       const fallbackMode: DeterministicFallbackMode = input.deterministicFallback ?? "first";
       const useTemplateFirst = fallbackMode === "first";
       const initial =
@@ -76,6 +76,7 @@ export async function generateProblem(
         attempt: input.attempt,
         refinementHint: input.refinementHint,
         counterexample: input.counterexample,
+        signal,
       });
       current = await normalizeExpectedAnswer(deps.mathEngine, current, normalizationSkippedReasons);
 
@@ -97,6 +98,7 @@ export async function generateProblem(
             strategy: input.strategy,
             attempt: input.attempt,
             hints: guardHints,
+            signal,
           });
           current = await normalizeExpectedAnswer(deps.mathEngine, current, normalizationSkippedReasons);
           refinedBy.push("refiner");
@@ -107,6 +109,7 @@ export async function generateProblem(
           candidate: current,
           intent: input.intent,
           strategy: input.strategy,
+          signal,
         });
         refinedBy.push("constraint-critic");
         if (critique.passes || critique.hints.length === 0) return current;
@@ -118,6 +121,7 @@ export async function generateProblem(
           strategy: input.strategy,
           attempt: input.attempt,
           hints: critique.hints,
+          signal,
         });
         current = await normalizeExpectedAnswer(deps.mathEngine, current, normalizationSkippedReasons);
         refinedBy.push("refiner");

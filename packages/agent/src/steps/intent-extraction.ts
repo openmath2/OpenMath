@@ -39,7 +39,7 @@ export async function extractIntent(
 ): Promise<IntentExtractionOutput> {
   const started = Date.now();
   try {
-    const intent = await withTimeout(async () => {
+    const intent = await withTimeout(async (signal) => {
       const prompt = await deps.prompts.load("intent-extraction");
       const rendered = prompt.render({
         request: input.request,
@@ -52,6 +52,7 @@ export async function extractIntent(
         mode: "json",
         temperature: prompt.metadata.temperature,
         prompt: rendered,
+        abortSignal: signal,
       });
       assertIntentInvariants(object);
       return object;

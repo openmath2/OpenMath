@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { LatexRenderer } from "@/components/math/latex-renderer";
 import { type Grade, type SchoolLevel, type Topic, gradeLabel } from "../topic/data";
 import { verificationStorageKey } from "@/lib/verification-storage-key";
-import type { ResultProblem } from "../result/mock";
+import type { ResultProblem } from "../result/types";
 
 function buildDefaultTitle(
   schoolLevel: SchoolLevel,

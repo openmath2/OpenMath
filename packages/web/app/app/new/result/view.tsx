@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { LatexRenderer } from "@/components/math/latex-renderer";
 import { type Grade, type SchoolLevel, type Topic, gradeLabel } from "../topic/data";
 import { verificationStorageKey } from "@/lib/verification-storage-key";
-import type { ResultProblem } from "./mock";
+import type { ResultProblem } from "./types";
 
 type Filter = "all" | "structural" | "conceptual" | "warn";
 
@@ -258,6 +258,30 @@ export function ResultView({
     adoptedCount > 0
       ? `/app/new/export?school=${schoolLevel}&grade=${gradeParam}&topic=${encodeURIComponent(topic.code)}&mode=${mode}${srcRefQuery}&adopted=${Array.from(adopted).join(",")}`
       : null;
+
+  if (displayProblems.length === 0) {
+    return (
+      <>
+        <nav className="container-app sub-nav" aria-label="단계 이동">
+          <Link href={verifyHref} className="crumb">
+            <span aria-hidden="true">←</span>
+            <span>검증 진행</span>
+          </Link>
+        </nav>
+        <main className="container-app page-body">
+          <h1 className="page-title">아직 검증된 문항이 없어요</h1>
+          <p className="page-subtitle">
+            검증을 실행하면 통과한 문항이 여기에 모입니다. 검증
+            단계를 먼저 진행해 주세요.
+          </p>
+          <Link href={verifyHref} className="btn btn-primary">
+            <span>검증 진행으로</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        </main>
+      </>
+    );
+  }
 
   return (
     <>

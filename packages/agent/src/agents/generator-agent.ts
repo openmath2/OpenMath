@@ -23,6 +23,7 @@ export interface GeneratorAgentInput {
   attempt: number;
   refinementHint?: string;
   counterexample?: string;
+  signal?: AbortSignal;
 }
 
 export interface GeneratorAgent {
@@ -88,6 +89,7 @@ export function createGeneratorAgent(deps: GeneratorAgentDeps): GeneratorAgent {
         model: deps.model,
         prompt: prompt.render(basePromptVars),
         temperature,
+        signal: input.signal,
         retryPromptForSchemaError(schemaError) {
           return prompt.render({ ...basePromptVars, schemaError });
         },
@@ -120,6 +122,7 @@ interface GenerateCandidateObjectInput {
   model: LanguageModel;
   prompt: string;
   temperature: number;
+  signal?: AbortSignal;
   retryPromptForSchemaError(schemaError: string): string;
 }
 
@@ -133,6 +136,7 @@ async function generateCandidateObject(
       mode: "json",
       temperature: input.temperature,
       prompt: input.prompt,
+      abortSignal: input.signal,
     });
     return object;
   } catch (error) {
@@ -143,6 +147,7 @@ async function generateCandidateObject(
       mode: "json",
       temperature: input.temperature,
       prompt: input.retryPromptForSchemaError(schemaFailureMessage(error)),
+      abortSignal: input.signal,
     });
     return object;
   }
