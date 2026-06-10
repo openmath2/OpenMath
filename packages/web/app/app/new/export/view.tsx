@@ -3,18 +3,20 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LatexRenderer } from "@/components/math/latex-renderer";
-import { type Grade, type Topic, gradeLabel } from "../topic/data";
+import { type Grade, type SchoolLevel, type Topic, gradeLabel } from "../topic/data";
 import type { ResultProblem } from "../result/mock";
 
 function buildDefaultTitle(
+  schoolLevel: SchoolLevel,
   grade: Grade | null,
   topic: Topic | null,
 ): string {
-  if (grade === null || topic === null) return "";
-  return `${gradeLabel(grade)} ${topic.name} 보강`;
+  if (topic === null) return "";
+  return `${gradeLabel(grade, schoolLevel)} ${topic.name} 보강`;
 }
 
 type Props = {
+  schoolLevel: SchoolLevel;
   grade: Grade | null;
   topic: Topic | null;
   mode: "structural" | "conceptual" | null;
@@ -56,7 +58,8 @@ function shuffleArray<T>(arr: readonly T[]): T[] {
 }
 
 function storageKey(
-  grade: Grade,
+  schoolLevel: SchoolLevel,
+  grade: Grade | null,
   topic: Topic,
   mode: "structural" | "conceptual",
   dims: string[],
@@ -65,6 +68,7 @@ function storageKey(
   return [
     "openmath:verification-result",
     grade,
+    schoolLevel,
     topic.code,
     topic.name,
     mode,
@@ -74,14 +78,16 @@ function storageKey(
 }
 
 function resultHref(
-  grade: Grade,
+  schoolLevel: SchoolLevel,
+  grade: Grade | null,
   topic: Topic,
   mode: "structural" | "conceptual" | null,
   dims: readonly string[],
   sourceProblemText: string,
 ): string {
   const params = new URLSearchParams({
-    grade: String(grade),
+    grade: grade === null ? "common" : String(grade),
+    school: schoolLevel,
     topic: topic.code,
   });
   if (mode !== null) params.set("mode", mode);
@@ -178,6 +184,7 @@ function ExamSheet({
 }
 
 export function ExportView({
+  schoolLevel,
   grade,
   topic,
   mode,
@@ -188,7 +195,7 @@ export function ExportView({
 }: Props) {
   const [displayProblems, setDisplayProblems] = useState<ResultProblem[]>(problems);
   const [options, setOptions] = useState<Options>(() => ({
-    title: buildDefaultTitle(grade, topic),
+    title: buildDefaultTitle(schoolLevel, grade, topic),
     showDate: true,
     includeAnswers: true,
     shuffle: false,
@@ -204,10 +211,10 @@ export function ExportView({
 
   useEffect(() => {
     setDisplayProblems(problems);
-    if (grade === null || topic === null || mode === null) return;
+    if ((schoolLevel === "middle" && grade === null) || topic === null || mode === null) return;
     try {
       const raw = window.sessionStorage.getItem(
-        storageKey(grade, topic, mode, dims, sourceProblemText),
+        storageKey(schoolLevel, grade, topic, mode, dims, sourceProblemText),
       );
       if (raw === null) return;
       const parsed: unknown = JSON.parse(raw);
@@ -238,7 +245,7 @@ export function ExportView({
     return shuffleArray(displayProblems);
   }, [displayProblems, options.shuffle]);
 
-  if (grade === null || topic === null) {
+  if ((schoolLevel === "middle" && grade === null) || topic === null) {
     return (
       <>
         <nav className="container-app sub-nav" aria-label="단계 이동">
@@ -262,7 +269,7 @@ export function ExportView({
   }
 
   if (displayProblems.length === 0) {
-    const backHref = resultHref(grade, topic, mode, dims, sourceProblemText);
+    const backHref = resultHref(schoolLevel, grade, topic, mode, dims, sourceProblemText);
     return (
       <>
         <nav className="container-app sub-nav" aria-label="단계 이동">
@@ -291,7 +298,7 @@ export function ExportView({
     /* 브라우저 print API — 시스템 dialog 에서 "PDF 로 저장" 선택. */
     window.print();
   };
-  const backHref = resultHref(grade, topic, mode, dims, sourceProblemText);
+  const backHref = resultHref(schoolLevel, grade, topic, mode, dims, sourceProblemText);
 
   /* 옵션 변경 핸들러 */
   const setTitle = (v: string): void =>
@@ -315,7 +322,7 @@ export function ExportView({
           <span className="crumb-current">PDF 출력</span>
         </div>
         <span className="progress" aria-hidden="true">
-          {gradeLabel(grade)} · {topic.name} · {displayProblems.length} 문항
+          {gradeLabel(grade, schoolLevel)} · {topic.name} · {displayProblems.length} 문항
         </span>
       </nav>
 

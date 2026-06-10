@@ -1,0 +1,39 @@
+code: 10공수01-05
+title: 이차방정식과 이차함수
+school_level: high
+grade: null
+techniques:
+  required_at_least_one_of:
+    - algebraic_transformation
+  forbidden: []
+evaluation_dimensions:
+  - id: A
+    description: 이차방정식과 이차함수의 핵심 개념과 정의를 정확히 적용한다.
+    must_preserve: true
+  - id: B
+    description: 이차방정식과 이차함수의 표준 풀이 절차를 단계별로 수행한다.
+    must_preserve: true
+  - id: C
+    description: 구한 결과가 원래 조건을 만족하는지 확인한다.
+    must_preserve: false
+difficulty_range:
+  - easy
+  - medium
+problem_types_supported:
+  - objective
+  - short_answer
+structural_transforms:
+  - kind: coefficient_swap
+    range: [-10, 10]
+    exclude_zero: true
+  - kind: variable_rename
+    allowed:
+      - x
+      - y
+      - a
+      - b
+conceptual_transforms:
+  - kind: rephrase_as_word_problem
+    context:
+      - 수량 관계
+      - 조건 해석

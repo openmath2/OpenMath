@@ -24,7 +24,7 @@ export const GenerateRequestSchema = z.object({
   mode: GenerateModeSchema.default("auto"),
 
   school_level: SchoolLevelSchema.default("middle"),
-  grade: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  grade: z.union([z.literal(1), z.literal(2), z.literal(3)]).nullable(),
 
   /** FE alias from `packages/web/hooks/use-verification-stream.ts`. */
   topic: z.string().optional(),
@@ -40,6 +40,13 @@ export const GenerateRequestSchema = z.object({
 
   source_problem_text: z.string().optional(),
 }).superRefine((request, ctx) => {
+  if (request.school_level === "middle" && request.grade === null) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Middle school requests require grade",
+      path: ["grade"],
+    });
+  }
   if (request.topic === undefined && request.topic_code === undefined) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,

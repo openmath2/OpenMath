@@ -1,0 +1,37 @@
+code: 10공수03-02
+title: 명제
+school_level: high
+grade: null
+techniques:
+  required_at_least_one_of:
+    - logical_reasoning
+  forbidden: []
+evaluation_dimensions:
+  - id: A
+    description: 명제의 핵심 개념과 정의를 정확히 적용한다.
+    must_preserve: true
+  - id: B
+    description: 명제의 표준 풀이 절차를 단계별로 수행한다.
+    must_preserve: true
+  - id: C
+    description: 구한 결과가 원래 조건을 만족하는지 확인한다.
+    must_preserve: false
+difficulty_range:
+  - easy
+  - medium
+problem_types_supported:
+  - objective
+  - short_answer
+structural_transforms:
+  - kind: coefficient_swap
+    range: [-10, 10]
+    exclude_zero: true
+  - kind: variable_rename
+    allowed:
+      - x
+      - y
+      - a
+      - b
+conceptual_transforms:
+  - kind: inverse_question
+    hint: 조건과 결론의 관계를 바꾸어 묻는다.

@@ -5,6 +5,7 @@ import { useMemo, useRef } from "react";
 import { LatexRenderer } from "@/components/math/latex-renderer";
 import {
   type Grade,
+  type SchoolLevel,
   type Topic,
   gradeLabel,
 } from "../topic/data";
@@ -15,6 +16,7 @@ import {
 } from "@/hooks/use-verification-stream";
 
 type Props = {
+  schoolLevel: SchoolLevel;
   grade: Grade | null;
   topic: Topic | null;
   mode: "structural" | "conceptual" | null;
@@ -95,15 +97,16 @@ function sourceQuery(sourceProblemText: string): string {
     : "";
 }
 
-export function VerifyView({ grade, topic, mode, dims, sourceProblemText }: Props) {
+export function VerifyView({ schoolLevel, grade, topic, mode, dims, sourceProblemText }: Props) {
   const valid =
-    grade !== null && topic !== null && mode !== null && dims.length > 0;
+    (schoolLevel === "high" || grade !== null) && topic !== null && mode !== null && dims.length > 0;
 
   const input: StreamInput | null = useMemo(() => {
-    if (!valid || grade === null || topic === null || mode === null) {
+    if (!valid || topic === null || mode === null) {
       return null;
     }
     return {
+      schoolLevel,
       grade,
       topic: topic.code,
       topicName: topic.name,
@@ -111,7 +114,7 @@ export function VerifyView({ grade, topic, mode, dims, sourceProblemText }: Prop
       dims,
       sourceProblemText,
     };
-  }, [valid, grade, topic, mode, dims, sourceProblemText]);
+  }, [valid, schoolLevel, grade, topic, mode, dims, sourceProblemText]);
 
   /* hook 은 input 이 null 이면 stream 을 시작하지 않는다. invalid 가드. */
   const stream = useVerificationStream(input);
@@ -145,7 +148,7 @@ export function VerifyView({ grade, topic, mode, dims, sourceProblemText }: Prop
     );
   }
 
-  const subnavLabel = `${gradeLabel(grade)} · ${topic.name}`;
+  const subnavLabel = `${gradeLabel(grade, schoolLevel)} · ${topic.name}`;
   const isError = stream.status === "error";
   const isCancelled = stream.status === "cancelled";
   const isDone = stream.status === "done";
@@ -255,7 +258,7 @@ export function VerifyView({ grade, topic, mode, dims, sourceProblemText }: Prop
           <div className="right">
             {isError || isCancelled ? (
               <Link
-                href={`/app/new/verify?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}${sourceQuery(sourceProblemText)}`}
+                href={`/app/new/verify?school=${schoolLevel}&grade=${grade === null ? "common" : grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}${sourceQuery(sourceProblemText)}`}
                 className="btn btn-primary"
                 prefetch={false}
                 replace
@@ -265,7 +268,7 @@ export function VerifyView({ grade, topic, mode, dims, sourceProblemText }: Prop
               </Link>
             ) : isDone ? (
               <Link
-                href={`/app/new/result?grade=${grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}${sourceQuery(sourceProblemText)}`}
+                href={`/app/new/result?school=${schoolLevel}&grade=${grade === null ? "common" : grade}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}${sourceQuery(sourceProblemText)}`}
                 className="btn btn-primary"
               >
                 <span>결과 보기</span>

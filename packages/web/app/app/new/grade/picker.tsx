@@ -2,23 +2,34 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import type { Grade, SchoolLevel } from "../topic/data";
 
-type Grade = 1 | 2 | 3;
+type GradeSelection = {
+  schoolLevel: SchoolLevel;
+  grade: Grade | null;
+};
 
 type GradeOption = {
-  value: Grade;
+  value: string;
+  selection: GradeSelection;
   label: string;
   desc: string;
 };
 
 const grades: GradeOption[] = [
-  { value: 1, label: "중1", desc: "수와 연산 · 일차방정식 · 기본 도형" },
-  { value: 2, label: "중2", desc: "식의 계산 · 일차함수 · 도형의 성질" },
-  { value: 3, label: "중3", desc: "제곱근 · 이차방정식 · 이차함수" },
+  { value: "middle-1", selection: { schoolLevel: "middle", grade: 1 }, label: "중1", desc: "수와 연산 · 일차방정식 · 기본 도형" },
+  { value: "middle-2", selection: { schoolLevel: "middle", grade: 2 }, label: "중2", desc: "식의 계산 · 일차함수 · 도형의 성질" },
+  { value: "middle-3", selection: { schoolLevel: "middle", grade: 3 }, label: "중3", desc: "제곱근 · 이차방정식 · 이차함수" },
+  { value: "high-common", selection: { schoolLevel: "high", grade: null }, label: "고등 공통수학", desc: "다항식 · 방정식 · 함수 · 경우의 수" },
 ];
 
+function topicHref(selection: GradeSelection): string {
+  const grade = selection.grade === null ? "common" : String(selection.grade);
+  return `/app/new/topic?school=${selection.schoolLevel}&grade=${grade}`;
+}
+
 export function GradePicker() {
-  const [selected, setSelected] = useState<Grade | null>(null);
+  const [selected, setSelected] = useState<GradeOption | null>(null);
 
   return (
     <>
@@ -53,8 +64,8 @@ export function GradePicker() {
                 type="radio"
                 name="grade"
                 value={g.value}
-                checked={selected === g.value}
-                onChange={() => setSelected(g.value)}
+                checked={selected?.value === g.value}
+                onChange={() => setSelected(g)}
                 className="sr-only"
               />
               <span className="dot" aria-hidden="true" />
@@ -77,7 +88,7 @@ export function GradePicker() {
           <div className="right">
             {selected !== null ? (
               <Link
-                href={`/app/new/topic?grade=${selected}`}
+                href={topicHref(selected.selection)}
                 className="btn btn-primary"
               >
                 <span>다음</span>

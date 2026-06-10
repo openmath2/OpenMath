@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { parseGrade } from "./data";
+import { parseGrade, parseSchoolLevel } from "./data";
 import { TopicPicker } from "./picker";
 
 export const metadata: Metadata = {
@@ -9,10 +9,11 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams: { grade?: string | string[] };
+  searchParams: { school?: string | string[]; grade?: string | string[] };
 };
 
 export default function TopicPage({ searchParams }: Props) {
+  const schoolLevel = parseSchoolLevel(searchParams.school);
   const grade = parseGrade(searchParams.grade);
-  return <TopicPicker grade={grade} />;
+  return <TopicPicker schoolLevel={schoolLevel} grade={grade} />;
 }

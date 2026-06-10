@@ -40,3 +40,7 @@ __pycache__/
 # Large local RAG corpus
 packages/agent/data/corpus/*.jsonl
 !packages/agent/data/corpus/*fixture*.jsonl
+packages/agent/data/corpus/*.summary.json
+
+# Local browser QA artifacts
+.playwright-mcp/

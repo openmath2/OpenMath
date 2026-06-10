@@ -44,6 +44,19 @@ const TOPIC_KIND_BY_CODE: Readonly<Record<string, GenerationKind>> = {
   "9수05-01": "statistics",
   "9수05-02": "probability",
   "9수05-03": "statistics",
+  "10공수01-01": "expression",
+  "10공수01-02": "expression",
+  "10공수01-03": "expression",
+  "10공수01-04": "equation",
+  "10공수01-05": "function",
+  "10공수02-01": "geometry",
+  "10공수02-02": "geometry",
+  "10공수03-01": "probability",
+  "10공수03-02": "expression",
+  "10공수04-01": "function",
+  "10공수04-02": "function",
+  "10공수05-01": "probability",
+  "10공수05-02": "probability",
 };
 
 export function generationKindForTopic(topicCode: string): GenerationKind {

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { findTopic, parseGrade, pickFirst } from "../topic/data";
+import { findTopic, parseGrade, parseSchoolLevel, pickFirst } from "../topic/data";
 import { generateMockResults, type ResultProblem } from "../result/mock";
 import { ExportView } from "./view";
 
@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 type Props = {
   searchParams: {
     grade?: string | string[];
+    school?: string | string[];
     topic?: string | string[];
     mode?: string | string[];
     dims?: string | string[];
@@ -35,6 +36,7 @@ function parseList(raw: string | null): string[] {
 }
 
 export default function ExportPage({ searchParams }: Props) {
+  const schoolLevel = parseSchoolLevel(searchParams.school);
   const grade = parseGrade(searchParams.grade);
   const topic = findTopic(pickFirst(searchParams.topic));
   const mode = parseMode(pickFirst(searchParams.mode));
@@ -51,6 +53,7 @@ export default function ExportPage({ searchParams }: Props) {
   return (
     <ExportView
       grade={grade}
+      schoolLevel={schoolLevel}
       topic={topic}
       mode={mode}
       dims={dims}

@@ -6,16 +6,19 @@ import { LatexMixed } from "@/components/math/latex-renderer";
 import {
   type Category,
   type Grade,
+  type SchoolLevel,
   type Topic,
   categories,
   gradeLabel,
-  topics,
+  topicScopeLabel,
+  topicsForScope,
 } from "./data";
 import examplesData from "./examples.json";
 
 type Filter = "전체" | Category;
 
 type Props = {
+  schoolLevel: SchoolLevel;
   grade: Grade | null;
 };
 
@@ -31,7 +34,7 @@ type ExampleEntry = {
 
 type ExamplesUnit = {
   ui_name: string;
-  grade: number;
+  grade: number | null;
   candidate_pool: number;
   examples: ExampleEntry[];
 };
@@ -56,20 +59,17 @@ function problemTypeLabel(t: ExampleEntry["problem_type"]): string {
   }
 }
 
-export function TopicPicker({ grade }: Props) {
+export function TopicPicker({ schoolLevel, grade }: Props) {
   const [filter, setFilter] = useState<Filter>("전체");
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
 
   const visible = useMemo<Topic[]>(() => {
-    if (grade === null) return [];
-    return topics.filter(
-      (t) =>
-        t.grade === grade &&
-        (filter === "전체" || t.category === filter),
+    return topicsForScope(schoolLevel, grade).filter(
+      (t) => filter === "전체" || t.category === filter,
     );
-  }, [grade, filter]);
+  }, [schoolLevel, grade, filter]);
 
-  if (grade === null) {
+  if (schoolLevel === "middle" && grade === null) {
     return (
       <>
         <nav className="container-app sub-nav" aria-label="단계 이동">
@@ -96,7 +96,7 @@ export function TopicPicker({ grade }: Props) {
 
   const nextHref =
     selectedCode !== null
-      ? `/app/new/intent?grade=${grade}&topic=${encodeURIComponent(selectedCode)}`
+      ? `/app/new/intent?school=${schoolLevel}&grade=${grade === null ? "common" : grade}&topic=${encodeURIComponent(selectedCode)}`
       : null;
   const selectedTopic = visible.find((t) => t.code === selectedCode) ?? null;
   const selectedExamples = selectedCode ? examples[selectedCode] : undefined;
@@ -110,7 +110,7 @@ export function TopicPicker({ grade }: Props) {
             <span>학년 선택</span>
           </Link>
           <span className="crumb-sep" aria-hidden="true">·</span>
-          <span className="crumb-current">{gradeLabel(grade)}</span>
+          <span className="crumb-current">{gradeLabel(grade, schoolLevel)}</span>
         </div>
         <span className="progress" aria-label="4 단계 중 2 단계">
           (2/4)
@@ -156,7 +156,7 @@ export function TopicPicker({ grade }: Props) {
           >
             {visible.length === 0 ? (
               <p className="empty-state">
-                해당 학년 · 영역에 v1 데모 단원이 없습니다. 필터를 다시
+                해당 학제 · 영역에 선택 가능한 단원이 없습니다. 필터를 다시
                 선택해 보세요.
               </p>
             ) : (
@@ -219,7 +219,7 @@ export function TopicPicker({ grade }: Props) {
                     <span className="meta-pill">{selectedTopic.code}</span>
                   </div>
                   <p className="example-panel-desc">
-                    {selectedTopic.achievement}
+                    {topicScopeLabel(selectedTopic)} · {selectedTopic.achievement}
                   </p>
                   <p className="example-panel-meta">
                     예시 {selectedExamples.examples.length} 문항 · corpus 후보

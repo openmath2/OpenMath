@@ -3,6 +3,7 @@ import {
   findTopic,
   getEvaluationCandidates,
   parseGrade,
+  parseSchoolLevel,
   pickFirst,
 } from "../topic/data";
 import { IntentPicker } from "./picker";
@@ -14,15 +15,16 @@ export const metadata: Metadata = {
 };
 
 type Props = {
-  searchParams: { grade?: string | string[]; topic?: string | string[] };
+  searchParams: { school?: string | string[]; grade?: string | string[]; topic?: string | string[] };
 };
 
 export default function IntentPage({ searchParams }: Props) {
+  const schoolLevel = parseSchoolLevel(searchParams.school);
   const grade = parseGrade(searchParams.grade);
   const topic = findTopic(pickFirst(searchParams.topic));
   const candidates = topic === null ? [] : getEvaluationCandidates(topic);
 
   return (
-    <IntentPicker grade={grade} topic={topic} candidates={candidates} />
+    <IntentPicker schoolLevel={schoolLevel} grade={grade} topic={topic} candidates={candidates} />
   );
 }
