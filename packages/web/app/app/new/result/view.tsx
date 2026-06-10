@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { LatexRenderer } from "@/components/math/latex-renderer";
 import { type Grade, type SchoolLevel, type Topic, gradeLabel } from "../topic/data";
+import { verificationStorageKey } from "@/lib/verification-storage-key";
 import type { ResultProblem } from "./mock";
 
 type Filter = "all" | "structural" | "conceptual" | "warn";
@@ -13,8 +14,7 @@ type Props = {
   grade: Grade | null;
   topic: Topic | null;
   mode: "structural" | "conceptual" | null;
-  dims: string[];
-  sourceProblemText: string;
+  sourceItemId: string;
   problems: ResultProblem[];
 };
 
@@ -54,7 +54,7 @@ function badgeFor(p: ResultProblem): {
       className: "badge-warn",
       icon: "⚠",
       text: "주의",
-      srLabel: "부분 통과 — 평가 차원 일부 미보존",
+      srLabel: "부분 통과 — 검토 권장",
     };
   }
   if (p.isomorphism === "structural") {
@@ -86,32 +86,6 @@ function matchesFilter(p: ResultProblem, filter: Filter): boolean {
   }
 }
 
-function storageKey(
-  schoolLevel: SchoolLevel,
-  grade: Grade | null,
-  topic: Topic,
-  mode: "structural" | "conceptual",
-  dims: string[],
-  sourceProblemText: string,
-): string {
-  return [
-    "openmath:verification-result",
-    grade,
-    schoolLevel,
-    topic.code,
-    topic.name,
-    mode,
-    [...dims].sort().join(","),
-    sourceProblemText,
-  ].join("|");
-}
-
-function sourceQuery(sourceProblemText: string): string {
-  return sourceProblemText.length > 0
-    ? `&source=${encodeURIComponent(sourceProblemText)}`
-    : "";
-}
-
 function parseStoredProblem(raw: unknown): StoredProblem | null {
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
   const o = raw as Record<string, unknown>;
@@ -133,9 +107,8 @@ function parseStoredProblem(raw: unknown): StoredProblem | null {
   };
 }
 
-function toResultProblem(problem: StoredProblem, index: number, dims: string[]): ResultProblem {
+function toResultProblem(problem: StoredProblem, index: number): ResultProblem {
   const status = problem.verification_status === "partial" ? "warn" : problem.verification_status;
-  const missingDims = dims.filter((dim) => !problem.preserved_dimensions.includes(dim));
   return {
     id: problem.id,
     number: index + 1,
@@ -144,8 +117,6 @@ function toResultProblem(problem: StoredProblem, index: number, dims: string[]):
     questionLatex: problem.question_latex,
     answerLatex: problem.answer_latex,
     solutionLatex: problem.explanation_latex ?? "검증 파이프라인에서 생성된 문항입니다.",
-    preservedDims: problem.preserved_dimensions,
-    missingDims: status === "warn" ? missingDims : [],
     failReason: status === "fail" ? "검증 실패 — 채택할 수 없습니다." : null,
   };
 }
@@ -155,8 +126,7 @@ export function ResultView({
   schoolLevel,
   topic,
   mode,
-  dims,
-  sourceProblemText,
+  sourceItemId,
   problems,
 }: Props) {
   const [filter, setFilter] = useState<Filter>("all");
@@ -166,22 +136,38 @@ export function ResultView({
   useEffect(() => {
     setDisplayProblems(problems);
     if ((schoolLevel === "middle" && grade === null) || topic === null || mode === null) return;
+    if (sourceItemId === "") return;
+    let raw: string | null = null;
     try {
-      const raw = window.sessionStorage.getItem(
-        storageKey(schoolLevel, grade, topic, mode, dims, sourceProblemText),
+      raw = window.sessionStorage.getItem(
+        verificationStorageKey({
+          grade,
+          schoolLevel,
+          topic: topic.code,
+          topicName: topic.name,
+          mode,
+          sourceItemId,
+        }),
       );
-      if (raw === null) return;
-      const parsed: unknown = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return;
-      const stored = parsed.map(parseStoredProblem);
-      if (stored.some((p) => p === null)) return;
-      setDisplayProblems(
-        stored.map((p, index) => toResultProblem(p as StoredProblem, index, dims)),
-      );
-    } catch {
-      setDisplayProblems(problems);
+    } catch (err) {
+      console.warn("[result] sessionStorage read failed:", err);
+      return;
     }
-  }, [schoolLevel, grade, topic, mode, dims, sourceProblemText, problems]);
+    if (raw === null) return;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (err) {
+      console.warn("[result] JSON parse failed:", err);
+      return;
+    }
+    if (!Array.isArray(parsed)) return;
+    const stored = parsed.map(parseStoredProblem);
+    if (stored.some((p) => p === null)) return;
+    setDisplayProblems(
+      stored.map((p, index) => toResultProblem(p as StoredProblem, index)),
+    );
+  }, [schoolLevel, grade, topic, mode, sourceItemId, problems]);
 
   const visible = useMemo(
     () => displayProblems.filter((p) => matchesFilter(p, filter)),
@@ -227,10 +213,11 @@ export function ResultView({
   const adoptedCount = adopted.size;
   const passedCount = displayProblems.filter((p) => p.status !== "fail").length;
   const gradeParam = grade === null ? "common" : grade;
-  const verifyHref = `/app/new/verify?school=${schoolLevel}&grade=${gradeParam}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}${sourceQuery(sourceProblemText)}`;
+  const srcRefQuery = sourceItemId.length > 0 ? `&srcRef=${encodeURIComponent(sourceItemId)}` : "";
+  const verifyHref = `/app/new/verify?school=${schoolLevel}&grade=${gradeParam}&topic=${encodeURIComponent(topic.code)}&mode=${mode}${srcRefQuery}`;
   const exportHref =
     adoptedCount > 0
-      ? `/app/new/export?school=${schoolLevel}&grade=${gradeParam}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&dims=${dims.join(",")}${sourceQuery(sourceProblemText)}&adopted=${Array.from(adopted).join(",")}`
+      ? `/app/new/export?school=${schoolLevel}&grade=${gradeParam}&topic=${encodeURIComponent(topic.code)}&mode=${mode}${srcRefQuery}&adopted=${Array.from(adopted).join(",")}`
       : null;
 
   return (
@@ -285,7 +272,6 @@ export function ResultView({
               const badge = badgeFor(p);
               const isAdopted = adopted.has(p.id);
               const failed = p.status === "fail";
-              const partial = p.status === "warn";
               return (
                 <article
                   key={p.id}
@@ -365,21 +351,6 @@ export function ResultView({
                         ✗
                       </span>
                       <span className="body">{p.failReason}</span>
-                    </div>
-                  ) : null}
-
-                  {partial && p.missingDims.length > 0 ? (
-                    <div
-                      className="inline-notice inline-notice-warn"
-                      role="status"
-                    >
-                      <span className="icon" aria-hidden="true">
-                        ⚠
-                      </span>
-                      <span className="body">
-                        평가 차원 [{p.missingDims.join(", ")}] 미보존 —
-                        채택 시 학습 목표가 어긋날 수 있습니다.
-                      </span>
                     </div>
                   ) : null}
 

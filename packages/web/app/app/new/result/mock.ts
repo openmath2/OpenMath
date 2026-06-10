@@ -21,8 +21,6 @@ export type ResultProblem = {
   questionLatex: string;
   answerLatex: string;
   solutionLatex: string;
-  preservedDims: string[];
-  missingDims: string[];
   failReason: string | null;
 };
 
@@ -126,7 +124,6 @@ function genericTemplate(topic: Topic): TopicTemplate {
 export function generateMockResults(
   topic: Topic,
   mode: "structural" | "conceptual",
-  dims: string[],
 ): ResultProblem[] {
   const t = templates[topic.code] ?? genericTemplate(topic);
   /* 4 문항: pass / pass / warn / fail — UI 상태 demo 용. */
@@ -134,38 +131,22 @@ export function generateMockResults(
     status: ResultStatus;
     iso: "structural" | "conceptual";
     failReason: string | null;
-    missingDimIndex: number | null;
   }> = [
-    { status: "pass", iso: mode, failReason: null, missingDimIndex: null },
+    { status: "pass", iso: mode, failReason: null },
     {
       status: "pass",
       iso: mode === "structural" ? "conceptual" : "structural",
       failReason: null,
-      missingDimIndex: null,
     },
-    {
-      status: "warn",
-      iso: mode,
-      failReason: null,
-      missingDimIndex: dims.length >= 2 ? dims.length - 1 : null,
-    },
+    { status: "warn", iso: mode, failReason: null },
     {
       status: "fail",
       iso: mode,
       failReason: "독립 재풀이에서 답 불일치 — 검토 필요",
-      missingDimIndex: null,
     },
   ];
 
   return layouts.map((layout, i) => {
-    const dimsKept =
-      layout.missingDimIndex === null
-        ? [...dims]
-        : dims.filter((_, idx) => idx !== layout.missingDimIndex);
-    const dimsMissing =
-      layout.missingDimIndex === null
-        ? []
-        : [dims[layout.missingDimIndex] ?? ""];
     return {
       id: `${topic.code}-${i + 1}`,
       number: i + 1,
@@ -174,8 +155,6 @@ export function generateMockResults(
       questionLatex: t.questions[i] ?? t.questions[0] ?? "",
       answerLatex: t.answers[i] ?? t.answers[0] ?? "",
       solutionLatex: t.solutions[i] ?? t.solutions[0] ?? "",
-      preservedDims: dimsKept,
-      missingDims: dimsMissing,
       failReason: layout.failReason,
     };
   });
