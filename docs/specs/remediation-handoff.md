@@ -4,7 +4,7 @@
 |---|---|
 | Status | Active handoff |
 | Date | 2026-06-10 |
-| Branch (done so far) | `feat/agent-real-generation-remediation` (commit `4b7d1c6c8`) |
+| Branch (done so far) | `feat/agent-real-generation-remediation` (PR #19, head `0a000ae0f`) |
 | Plan | [`remediation-plan.md`](./remediation-plan.md) |
 | Baseline | [`../eval/baseline-2026-06-10.md`](../eval/baseline-2026-06-10.md) |
 
@@ -22,16 +22,16 @@ Verified green: agent typecheck clean · 236 unit + 5 integration tests · web t
 - **Phase 3-1** — `techniques_used` flows generator→schema→objective gate; deterministic set compare vs `required_techniques` (structural must cover; `technique_mismatch` failure).
 - **Phase 4-2** — silent catches record `skipped_reason`/`nuance_skipped_reason`/`normalization_skipped_reasons` in gate evidence.
 - **Phase 4-4** — `LLM_E2E=1`-gated real integration test (`tests/integration/real-llm-e2e.test.ts`), skipped by default.
+- **Phase 4-1** (commit `0a000ae0f`) — `withTimeout` builds an `AbortController`, aborts it on timeout, and threads the signal into every `generateObject` call (generator/refiner/critic/solver/intent/objective nuance), so slow LLM calls are cancelled at the wall clock — **fixes the baseline 160s-timeout root cause**. math-engine calls were intentionally NOT threaded (the client already self-aborts each request at 10s, so a step can't exceed its budget on math-engine). +2 `withTimeout` cancellation unit tests.
+- **Phase 4-5** (commit `0a000ae0f`) — S5/S6 drop the page-level `generateMockResults` seed; result/export views source verified problems only from the SSE→`sessionStorage` rehydrate. `ResultProblem` type moved to `result/types.ts`, `mock.ts` deleted, S5 empty state added. **Browser-verified**: empty state (no mock leak), rehydrate with template-fallback/unverified badges, export adopted-filter, 0 console errors.
 
 ---
 
 ## 2. Remaining work (cut for time, in priority order)
 
-### High value
-- **4-1 — `withTimeout` + AbortController propagation.** `policies/timeout-policy.ts` `withTimeout` currently only rejects after a timer; it does NOT cancel `fn()`. Add an `AbortController`, pass `signal` into the `generateObject` calls (`agents/generator-agent.ts`, `steps/intent-extraction.ts`, `steps/objective-mapping.ts` nuance, `agents/*`) and into `tools/math-engine-client.ts` fetch (combine with its internal controller). This is the **root cause of the baseline's 160s timeouts** — without real cancellation, slow LLM calls run to the wall-clock limit. NOTE: `generator-agent.ts` was heavily modified in Phase 1; read current state first.
-- **4-5 — Wire S5/S6 to the real stream, remove mock.** `packages/web/app/app/new/result/page.tsx` (~L35-46) and `export/page.tsx` (~L45-60) call `generateMockResults(...)`. The `useVerificationStream` hook already persists real results to `sessionStorage` (`lib/verification-storage-key.ts`), and `result/view.tsx` + `export/view.tsx` already rehydrate from it. Removing the page-level mock seed + relying on the existing rehydrate path is the bulk of the work. category: visual-engineering + frontend-ui-ux.
+> **4-1 and 4-5 (the high-value items) are DONE** — PR #19 commit `0a000ae0f`, see §1. Below is what's left.
 
-### Medium value
+### Medium value (now highest remaining)
 - **3-2 — Mode-specific surface check** (`steps/objective-mapping.ts` ~L135-141, the `not_transformed` guard / `sameMathText`). structural = number-masked skeleton must MATCH source; conceptual = skeleton must DIFFER. Extend the existing guard.
 - **3-3 — Deterministic `must_preserve` enforcement** at the objective gate (answer-type, technique, difficulty markers) independent of the LLM constraint-critic. Build on the 3-1 `techniqueEvidence` machinery already in `objective-mapping.ts`.
 - **4-3 — Cost visibility.** Aggregate AI SDK `usage` per workflow into the SSE result event; cap calls per workflow. AI SDK v4: `result.usage = { promptTokens, completionTokens, totalTokens }`. Thread through `verification-workflow.ts` → result event → `wire-format.schema.ts`.
@@ -61,6 +61,7 @@ Verified green: agent typecheck clean · 236 unit + 5 integration tests · web t
 6. **`parse_latex` uses `backend="lark"`** (pure-Python, `lark` dep) — not the antlr default (needs `antlr4-python3-runtime`).
 7. **Integration tests are a separate vitest config** (`pnpm -F @openmath/agent test:integration`, `vitest.integration.config.ts`) — they are NOT run by `pnpm test`. After changing verification behavior, run BOTH.
 8. **Tests that encoded the old "non-empty⇒passed" behavior were updated, not deleted**, to assert the new honest semantics. Keep this discipline.
+9. **`withTimeout(fn, opts)` calls `fn(signal)`** and aborts that signal on timeout (4-1). Pass `abortSignal: signal` to any new `generateObject`/fetch added inside a `withTimeout` closure. Zero-arg `() => ...` closures still typecheck (param contravariance), so signal-less sites (e.g. `rag-search.ts`) stay untouched. math-engine calls are deliberately not signal-threaded — the client self-aborts at 10s/request.
 
 ---
 
@@ -75,4 +76,4 @@ Pre-existing untracked files that are NOT part of this work and were intentional
 
 ## 5. Suggested resume order
 
-`4-1 (timeout/abort) → re-run eval to confirm timeouts drop → 4-5 (web real wiring) → 3-2/3-3 (isomorphism depth) → 4-3 (cost) → 4-6 → full 120-run eval → final comparison table`.
+4-1 + 4-5 done (PR #19). Remaining: `3-2/3-3 (isomorphism depth) → 4-3 (cost) → 4-6 (injection defense) → run the eval (re-baseline now that LLM timeouts are cancellable + mock is gone) → final comparison table`.
