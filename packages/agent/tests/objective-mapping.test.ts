@@ -1,3 +1,4 @@
+import type { LanguageModel } from "ai";
 import { describe, expect, it } from "vitest";
 
 import type {
@@ -67,6 +68,7 @@ const candidate: GeneratedProblem = {
   generation_kind: "geometry",
   question_text: "직각삼각형 ABC에서 cos A = 4/5일 때 sin A의 값을 구하시오.",
   expected_answer: "3/5",
+  techniques_used: ["trigonometric_ratio"],
   proposed_solution_trace: "sin**2 A + cos**2 A = 1을 이용한다.",
   source_refs: ["ref-1"],
   inferred_intent: intent,
@@ -88,6 +90,52 @@ describe("mapObjective", () => {
     );
 
     expect(result.gate.status).toBe("passed");
+  });
+
+  it("fails structural candidates missing a required technique", async () => {
+    const result = await mapObjective(
+      {},
+      { request, refs, candidate: { ...candidate, techniques_used: [] }, intent, strategy: null },
+    );
+
+    expect(result.gate.status).toBe("failed");
+    expect(result.gate.failure_detail?.code).toBe("technique_mismatch");
+  });
+
+  it("passes structural candidates covering required techniques after normalization", async () => {
+    const result = await mapObjective(
+      {},
+      {
+        request,
+        refs,
+        candidate: { ...candidate, techniques_used: [" Trigonometric Ratio "] },
+        intent,
+        strategy: null,
+      },
+    );
+
+    expect(result.gate.status).toBe("passed");
+    expect(result.gate.evidence).toMatchObject({
+      techniques_used: ["trigonometric_ratio"],
+      missing_required_techniques: [],
+    });
+  });
+
+  it("records why LLM nuance was skipped", async () => {
+    const result = await mapObjective(
+      {
+        llm: {} as LanguageModel,
+        prompts: {
+          load: async () => {
+            throw new Error("prompt unavailable");
+          },
+        },
+      },
+      { request, refs, candidate, intent, strategy: null },
+    );
+
+    expect(result.gate.status).toBe("passed");
+    expect(result.gate.evidence).toMatchObject({ nuance_skipped_reason: "prompt unavailable" });
   });
 
   it("fails when candidate generation kind does not match the requested topic", async () => {

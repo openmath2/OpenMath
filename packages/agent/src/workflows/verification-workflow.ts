@@ -9,11 +9,14 @@ import type {
   RefinerAgent,
   SolverAgent,
 } from "../agents/index.js";
+import type { DeterministicFallbackMode } from "../config/env.js";
 import { createAcceptancePolicy } from "../policies/acceptance-policy.js";
 import { createBoundedRetryPolicy } from "../policies/retry-policy.js";
 import type {
   GateResult,
   GenerateRequest,
+  GeneratedProblem,
+  Intent,
   ProgressEvent,
   RagResult,
   StepName,
@@ -26,6 +29,7 @@ import { extractIntent } from "../steps/intent-extraction.js";
 import { independentResolve } from "../steps/independent-resolve.js";
 import { mapObjective } from "../steps/objective-mapping.js";
 import { generateProblem } from "../steps/problem-generation.js";
+import { deterministicInitialCandidate } from "../steps/problem-generation-deterministic.js";
 import { ragSearch } from "../steps/rag-search.js";
 import { verifyWithSympy } from "../steps/sympy-verification.js";
 import type { MathEngineClient } from "../tools/math-engine-client.js";
@@ -50,6 +54,7 @@ export interface VerificationWorkflowDeps {
 export interface RunOptions {
   maxRetries?: number;
   perStepTimeoutMs?: number;
+  deterministicFallback?: DeterministicFallbackMode;
 }
 
 export type WorkflowYield = ProgressEvent;
@@ -66,9 +71,14 @@ export async function* runVerificationWorkflow(
   assertRequiredDeps(deps);
 
   const timestamp = () => new Date().toISOString();
-  const perStepTimeoutMs = options?.perStepTimeoutMs ?? 30_000;
-  const retryPolicy = createBoundedRetryPolicy({ maxAttempts: options?.maxRetries ?? 3 });
-  const acceptance = createAcceptancePolicy();
+  const perStepTimeoutMs = options?.perStepTimeoutMs ?? 60_000;
+  const maxCriticRounds = 2;
+  const generateStepTimeoutMs = perStepTimeoutMs * (1 + 2 * maxCriticRounds);
+  const deterministicFallback: DeterministicFallbackMode =
+    options?.deterministicFallback ?? "first";
+  const maxAttempts = options?.maxRetries ?? 3;
+  const retryPolicy = createBoundedRetryPolicy({ maxAttempts });
+  const acceptance = createAcceptancePolicy({ maxAttempts });
   const verifications: Verification[] = [];
 
   yield step("rag", "start", timestamp());
@@ -108,6 +118,7 @@ export async function* runVerificationWorkflow(
 
   let attempt = 1;
   let refinementHint: string | undefined;
+  let counterexample: string | undefined;
   while (true) {
     yield step("generate", "start", timestamp());
     const generation = await generateProblem(
@@ -116,10 +127,19 @@ export async function* runVerificationWorkflow(
         critic: deps.critic,
         refiner: deps.refiner,
         mathEngine: deps.mathEngine,
-        perStepTimeoutMs,
-        maxCriticRounds: 2,
+        perStepTimeoutMs: generateStepTimeoutMs,
+        maxCriticRounds,
       },
-      { request, intent: intentStep.data, refs, strategy, attempt, refinementHint },
+      {
+        request,
+        intent: intentStep.data,
+        refs,
+        strategy,
+        attempt,
+        refinementHint,
+        counterexample,
+        deterministicFallback,
+      },
     );
     const candidate = generation.data;
     yield step("generate", "done", timestamp(), generation.gate);
@@ -164,15 +184,28 @@ export async function* runVerificationWorkflow(
 
     const retry = retryPolicy.decide(verification);
     if (!retry.shouldRetry) {
+      const finalResult = selectFinalResult({
+        deterministicFallback,
+        request,
+        intent: intentStep.data,
+        refs,
+        attempt,
+        candidate,
+        verification,
+      });
+      if (finalResult.verification !== verification) {
+        verifications[verifications.length - 1] = finalResult.verification;
+      }
       yield {
         type: "result",
-        candidates: [{ problem: candidate, verification }],
+        candidates: [{ problem: finalResult.problem, verification: finalResult.verification }],
         timestamp: timestamp(),
       };
       return { verifications };
     }
 
     refinementHint = retry.refinementHint;
+    counterexample = retry.counterexample;
     attempt = retry.nextAttempt;
     yield {
       type: "retry",
@@ -181,6 +214,55 @@ export async function* runVerificationWorkflow(
       timestamp: timestamp(),
     };
   }
+}
+
+function selectFinalResult(input: {
+  readonly deterministicFallback: DeterministicFallbackMode;
+  readonly request: GenerateRequest;
+  readonly intent: Intent;
+  readonly refs: readonly RagResult[];
+  readonly attempt: number;
+  readonly candidate: GeneratedProblem;
+  readonly verification: Verification;
+}): { problem: GeneratedProblem; verification: Verification } {
+  if (input.deterministicFallback !== "last-resort") {
+    return { problem: input.candidate, verification: input.verification };
+  }
+  if (input.verification.overall !== "rejected") {
+    return { problem: input.candidate, verification: input.verification };
+  }
+
+  const fallback = deterministicInitialCandidate({
+    request: input.request,
+    intent: input.intent,
+    refs: input.refs,
+    attempt: input.attempt,
+  });
+  if (fallback === null) {
+    return { problem: input.candidate, verification: input.verification };
+  }
+
+  const problem = withDeterministicGeneratorMarker(fallback);
+  const verification = { ...input.verification, candidate_id: problem.candidate_id };
+  assertVerificationInvariants(verification);
+  return { problem, verification };
+}
+
+function withDeterministicGeneratorMarker(candidate: GeneratedProblem): GeneratedProblem {
+  return {
+    ...candidate,
+    generation_metadata: {
+      ...candidate.generation_metadata,
+      refined_by: uniqueRefiners([
+        ...(candidate.generation_metadata.refined_by ?? []),
+        "deterministic-topic-generator",
+      ]),
+    },
+  };
+}
+
+function uniqueRefiners(refiners: readonly string[]): string[] {
+  return [...new Set(refiners)];
 }
 
 function step(

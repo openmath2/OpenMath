@@ -1,6 +1,6 @@
 ---
 id: problem-generator
-version: 0.1.0
+version: 0.1.2
 model: gpt-4o
 temperature: 0.35
 max_tokens: 2000
@@ -11,8 +11,10 @@ variables:
   - refs
   - strategy
   - refinementHint
+  - counterexample
+  - schemaError
 owner: 비할당
-updated: 2026-05-18
+updated: 2026-06-10
 ---
 
 # Role
@@ -74,6 +76,25 @@ updated: 2026-05-18
 {{refinementHint}}
 {{/if}}
 
+{{#if counterexample}}
+# Counterexample (반복 금지)
+
+이전 검증에서 실패한 후보를 그대로 반복하지 말 것. 아래 문제·정답 조합과 다른 계수, 조건, 정답을 설계하라.
+
+{{counterexample}}
+{{/if}}
+
+{{#if schemaError}}
+# Schema repair hint (즉시 재시도)
+
+직전 응답이 JSON schema 검증에 실패했다. 오류: {{schemaError}}
+
+- 반드시 JSON object 하나만 출력하라.
+- `question_text`, `expected_answer`, `techniques_used`, `proposed_solution_trace` 네 필드를 모두 채워라.
+- `techniques_used`는 문자열 배열이며 Strategy의 `techniques.required_at_least_one_of`와 Intent의 필수 기법 어휘에서 실제 풀이에 사용한 기법 id만 고른다. 예: `factoring`, `quadratic_formula`, `completing_the_square`.
+- JSON 문자열 안의 수식은 raw backslash 없이 plain text로 써라.
+{{/if}}
+
 # Output
 
 JSON으로만 응답.
@@ -82,7 +103,9 @@ JSON으로만 응답.
 - 수식은 JSON 안전한 plain text로 쓴다. 지수는 `x**2`, 곱셈은 `5*x`, 제곱근은 `sqrt(7)`처럼 쓴다.
 - 방정식 단원이 아닌데 해를 구하는 `x` 방정식으로 바꾸면 안 된다.
 - `expected_answer`는 정답만 간결하게 쓴다. 방정식 해는 `2, 5`, 통계값은 `평균 12`, 확률은 `3/8`, 기하는 `60도`처럼 쓴다.
-- 예시 출력: `{ "question_text": "다항식 (x + 3)(x - 5)를 전개하시오.", "expected_answer": "x**2 - 2*x - 15", "proposed_solution_trace": "분배법칙으로 각 항을 곱해 동류항을 정리한다." }`
+- `techniques_used`는 실제 사용한 풀이 기법 id 배열이다. Strategy 어휘에 있는 `factoring`, `quadratic_formula`, `completing_the_square` 같은 snake_case id를 우선 사용하고, 공백·한글 설명 문장은 넣지 않는다.
+- structural 모드에서는 필수 기법을 모두 포함해야 한다. conceptual 모드에서는 필수·관련 기법 중 실제 사용한 것을 최소 1개 이상 포함한다.
+- 예시 출력: `{ "question_text": "다항식 (x + 3)(x - 5)를 전개하시오.", "expected_answer": "x**2 - 2*x - 15", "techniques_used": ["polynomial_expansion"], "proposed_solution_trace": "분배법칙으로 각 항을 곱해 동류항을 정리한다." }`
 - `proposed_solution_trace`에 풀이 단계와 출제 의도를 한국어로 명시하되, 수식도 JSON 안전한 plain text 표기만 사용한다.
 - 결과 문제는 source problem과 달라야 하며, structural/conceptual 모드 차이가 풀이 설명에 드러나야 한다.
 

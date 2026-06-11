@@ -4,7 +4,7 @@
 import type { SolverAgent } from "../agents/index.js";
 import type { GateResult, GeneratedProblem, SolveAttempt } from "../schemas/index.js";
 import type { MathEngineClient } from "../tools/math-engine-client.js";
-import { sameAnswer } from "../tools/answer-equivalence.js";
+import { sameAnswer, type AnswerEquivalenceDebug } from "../tools/answer-equivalence.js";
 import { withTimeout } from "../policies/timeout-policy.js";
 
 export interface IndependentResolveDeps {
@@ -30,10 +30,16 @@ export async function independentResolve(
   const started = Date.now();
   try {
     const attempt = await withTimeout(
-      () => deps.solver.solve(input.candidate),
+      (signal) => deps.solver.solve(input.candidate, signal),
       { ms: deps.perStepTimeoutMs ?? 30_000, label: "re_solve" },
     );
-    const matches = await sameAnswer(deps.mathEngine, input.candidate, attempt.derived_answer);
+    const answerDebug: AnswerEquivalenceDebug = { skippedReasons: [] };
+    const matches = await sameAnswer(
+      deps.mathEngine,
+      input.candidate,
+      attempt.derived_answer,
+      answerDebug,
+    );
     return {
       data: attempt,
       gate: {
@@ -45,6 +51,9 @@ export async function independentResolve(
           derived_answer: attempt.derived_answer,
           expected_answer: input.candidate.expected_answer,
           sympy_status: input.sympyGate.status,
+          ...(answerDebug.skippedReasons.length === 0
+            ? {}
+            : { answer_equivalence_skipped_reasons: answerDebug.skippedReasons }),
         },
         failure_detail: matches
           ? undefined

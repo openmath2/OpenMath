@@ -17,6 +17,11 @@ export const EnvSchema = z.object({
   LLM_BASE_URL: z.string().url().optional(),
   LLM_API_KEY: z.string().min(1).optional(),
   LLM_MODEL: z.string().min(1).optional(),
+  /** Optional override for the independent re-solve agent (D-5 ReSolveSpecialist).
+   *  When set to a model id different from `LLM_MODEL`, the solver agent is built
+   *  with a separate LanguageModel instance to decorrelate errors with generation.
+   *  When unset, the solver shares the generator's resolved model. */
+  SOLVER_MODEL: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),
   OPENAI_MODEL: z.string().min(1).optional(),
   CLIPROXY_BASE_URL: z.string().url().optional(),
@@ -28,10 +33,22 @@ export const EnvSchema = z.object({
   CORPUS_JSONL: z.string().optional(),
 
   MAX_RETRIES: z.coerce.number().int().min(1).max(10).default(3),
-  PER_STEP_TIMEOUT_MS: z.coerce.number().int().min(1000).default(30000),
+  /** 60s, not 30s: one LLM step (intent) can take ~36s on a reasoning model;
+   *  the generate step runs several LLM calls and gets a larger budget in the
+   *  workflow. Below ~45s, last-resort/off generation times out and fails. */
+  PER_STEP_TIMEOUT_MS: z.coerce.number().int().min(1000).default(60000),
+
+  /** `first` = template short-circuits LLM when refs exist (current behavior).
+   *  `off` = always go through LLM generator path; never substitute template.
+   *  `last-resort` = placeholder, currently behaves like `first` (see TODO 1-1a). */
+  DETERMINISTIC_FALLBACK: z
+    .enum(["off", "last-resort", "first"])
+    .default("first"),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
+
+export type DeterministicFallbackMode = Env["DETERMINISTIC_FALLBACK"];
 
 export function loadEnv(): Env {
   const parsed = EnvSchema.safeParse({ ...readDotenvFiles(), ...process.env });

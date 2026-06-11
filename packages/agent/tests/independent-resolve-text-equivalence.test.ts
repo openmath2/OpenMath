@@ -11,6 +11,7 @@ const candidate: GeneratedProblem = {
   generation_kind: "geometry",
   question_text: "대응하는 선분을 쓰시오.",
   expected_answer: "선분 ST",
+  techniques_used: ["similarity"],
   proposed_solution_trace: "대응 관계를 확인한다.",
   source_refs: ["ref-1"],
   inferred_intent: {

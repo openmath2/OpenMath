@@ -12,6 +12,7 @@ const candidate: GeneratedProblem = {
   question_text:
     "다음 중 두 다항식 4 x^{2} - 4 x - 15, 6 x^{2} - 11 x - 10의 공통 인수는? ① 2 x+3 ② 2 x-5 ③ 3 x+2 ④ x-5 ⑤ x+3",
   expected_answer: "②",
+  techniques_used: ["factorization"],
   proposed_solution_trace: "두 다항식을 인수분해하면 공통 인수는 2x-5이다.",
   source_refs: ["ref-1"],
   inferred_intent: {

@@ -18,6 +18,7 @@ export function deterministicInitialCandidate(input: {
     mode: input.request.mode === "conceptual" ? "conceptual" : "structural",
     generation_kind: generationKindForTopic(topicCode),
     ...template,
+    techniques_used: input.intent.required_techniques,
     source_refs: input.refs.map((ref) => ref.item_id),
     inferred_intent: input.intent,
     generation_metadata: {

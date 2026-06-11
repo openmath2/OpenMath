@@ -13,8 +13,9 @@ const candidate: GeneratedProblem = {
   candidate_id: "00000000-0000-0000-0000-000000000010",
   mode: "structural",
   generation_kind: "equation",
-  question_text: "다음 방정식을 풀어라. (x - 5)(x + 2) = 0",
+  question_text: "다음 방정식을 풀어라. x**2 - 3*x - 10 = 0",
   expected_answer: "5, -2",
+  techniques_used: ["quadratic_equation"],
   proposed_solution_trace: "인수분해된 식에서 해를 구한다.",
   source_refs: ["ref-1"],
   inferred_intent: {
@@ -83,6 +84,9 @@ describe("generateProblem", () => {
 
     expect(result.gate.status).toBe("passed");
     expect(result.data.expected_answer).toBe("5, -2");
+    expect(result.gate.evidence).toMatchObject({
+      normalization_skipped_reasons: ["answer normalization skipped: math-engine rejected extracted equation"],
+    });
   });
 
   it("does not normalize answers for choice-style equation candidates", async () => {

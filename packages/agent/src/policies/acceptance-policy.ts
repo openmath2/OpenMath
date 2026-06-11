@@ -6,20 +6,33 @@ export interface AcceptancePolicy {
   decide(gates: GateResult[], attemptCount: number): OverallVerdict;
 }
 
-export function createAcceptancePolicy(): AcceptancePolicy {
+export interface AcceptancePolicyOptions {
+  maxAttempts?: number;
+}
+
+export function createAcceptancePolicy(opts?: AcceptancePolicyOptions): AcceptancePolicy {
+  const maxAttempts = opts?.maxAttempts ?? 3;
   return {
     decide(gates, attemptCount) {
-      if (attemptCount > 3) return "rejected";
+      if (attemptCount > maxAttempts) return "rejected";
 
       const byStep = new Map(gates.map((gate) => [gate.step, gate]));
       const sympy = byStep.get("sympy_verify");
       const objective = byStep.get("objective_map");
       const reSolve = byStep.get("re_solve");
 
+      if (sympy?.status === "failed") return "rejected";
+      if (objective?.status === "failed") return "rejected";
+      if (gates.some((gate) => gate.status === "failed" && gate.step !== "re_solve")) {
+        return "rejected";
+      }
+      if (reSolve?.status === "failed") {
+        return attemptCount >= maxAttempts ? "rejected" : "warning";
+      }
+      if (sympy?.status === "unverified") return "warning";
+      if (gates.some((gate) => gate.status === "unverified")) return "warning";
       if (sympy?.status !== "passed") return "rejected";
       if (objective?.status !== "passed") return "rejected";
-      if (reSolve?.status === "failed") return "warning";
-      if (gates.some((gate) => gate.status === "failed")) return "rejected";
 
       return "verified";
     },

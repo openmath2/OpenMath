@@ -42,6 +42,35 @@ export type WireVerificationStatus = z.infer<
   typeof WireVerificationStatusSchema
 >;
 
+export const WireOverallVerdictSchema = z.enum([
+  "verified",
+  "rejected",
+  "warning",
+]);
+export type WireOverallVerdict = z.infer<typeof WireOverallVerdictSchema>;
+
+export const WireGateStepSchema = z.enum([
+  "rag",
+  "intent",
+  "generate",
+  "sympy_verify",
+  "re_solve",
+  "objective_map",
+]);
+export type WireGateStep = z.infer<typeof WireGateStepSchema>;
+
+export const WireGateStatusSchema = z.enum(["passed", "failed", "skipped", "unverified"]);
+export type WireGateStatus = z.infer<typeof WireGateStatusSchema>;
+
+export const WireGateSchema = z.object({
+  step: WireGateStepSchema,
+  status: WireGateStatusSchema,
+  duration_ms: z.number().int().min(0),
+  failure_code: z.string().optional(),
+  failure_message: z.string().optional(),
+});
+export type WireGate = z.infer<typeof WireGateSchema>;
+
 export const WireResultProblemSchema = z.object({
   id: z.string().min(1),
   question_latex: z.string().min(1),
@@ -51,6 +80,11 @@ export const WireResultProblemSchema = z.object({
   preserved_dimensions: z.array(z.string()),
   source_refs: z.array(z.string()),
   verification_status: WireVerificationStatusSchema,
+  overall: WireOverallVerdictSchema,
+  gates: z.array(WireGateSchema),
+  attempt_count: z.number().int().min(1),
+  generation_model: z.string().min(1),
+  refined_by: z.array(z.string()),
 });
 export type WireResultProblem = z.infer<typeof WireResultProblemSchema>;
 

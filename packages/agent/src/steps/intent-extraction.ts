@@ -39,7 +39,7 @@ export async function extractIntent(
 ): Promise<IntentExtractionOutput> {
   const started = Date.now();
   try {
-    const intent = await withTimeout(async () => {
+    const intent = await withTimeout(async (signal) => {
       const prompt = await deps.prompts.load("intent-extraction");
       const rendered = prompt.render({
         request: input.request,
@@ -52,6 +52,7 @@ export async function extractIntent(
         mode: "json",
         temperature: prompt.metadata.temperature,
         prompt: rendered,
+        abortSignal: signal,
       });
       assertIntentInvariants(object);
       return object;
@@ -69,6 +70,7 @@ export async function extractIntent(
   } catch (err) {
     const fallback = buildSeedIntent(input.request, input.strategy, input.refs);
     assertIntentInvariants(fallback);
+    const dimensionsSource = input.strategy === null ? "guessed" : "strategy";
     return {
       data: fallback,
       gate: {
@@ -78,6 +80,7 @@ export async function extractIntent(
         evidence: {
           objective_code: fallback.objective_code,
           fallback: true,
+          dimensions_source: dimensionsSource,
           llm_error: err instanceof Error ? err.message : String(err),
         },
       },
@@ -101,13 +104,7 @@ function buildSeedIntent(
     objective_description: strategy?.title ?? first.problem.topic_name,
     evaluation_dimensions:
       strategy?.evaluation_dimensions ??
-      (request.dims.length > 0
-        ? request.dims.map((description, index) => ({
-            id: String.fromCharCode(65 + index),
-            description,
-            must_preserve: true,
-          }))
-        : [{ id: "A", description: first.problem.topic_name, must_preserve: true }]),
+      buildGuessedEvaluationDimensions(request, first.problem.topic_name),
     required_techniques: strategy?.techniques.required_at_least_one_of ?? [],
     forbidden_techniques: strategy?.techniques.forbidden ?? [],
     surface_constraints: {
@@ -115,4 +112,16 @@ function buildSeedIntent(
       problem_type: request.problem_type,
     },
   };
+}
+
+function buildGuessedEvaluationDimensions(
+  request: GenerateRequest,
+  fallbackDescription: string,
+): Intent["evaluation_dimensions"] {
+  const descriptions = request.dims.length > 0 ? request.dims : [fallbackDescription];
+  return descriptions.map((description, index) => ({
+    id: String.fromCharCode(65 + index),
+    description,
+    must_preserve: index === 0,
+  }));
 }

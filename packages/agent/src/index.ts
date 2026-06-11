@@ -49,6 +49,18 @@ export async function main(): Promise<void> {
         allowedHosts: ["localhost", "127.0.0.1"],
       })
     : undefined;
+  const solverModel = env.SOLVER_MODEL ?? llmModel;
+  const solverLlm = llm === undefined
+    ? undefined
+    : solverModel === llmModel
+      ? llm
+      : resolveLanguageModel({
+          kind: llmKind,
+          modelId: solverModel,
+          baseUrl: llmBaseUrl,
+          apiKey: llmApiKey ?? "openmath-local",
+          allowedHosts: ["localhost", "127.0.0.1"],
+        });
   const generator = llm === undefined
     ? undefined
     : createGeneratorAgent({
@@ -73,11 +85,11 @@ export async function main(): Promise<void> {
         promptId: "refiner",
         generator,
       });
-  const solver = llm === undefined
+  const solver = solverLlm === undefined
     ? undefined
     : createSolverAgent({
-        model: llm,
-        modelId: llmModel,
+        model: solverLlm,
+        modelId: solverModel,
         promptId: "independent-solver",
         prompts,
       });
@@ -100,6 +112,7 @@ export async function main(): Promise<void> {
     workflowOptions: {
       maxRetries: env.MAX_RETRIES,
       perStepTimeoutMs: env.PER_STEP_TIMEOUT_MS,
+      deterministicFallback: env.DETERMINISTIC_FALLBACK,
     },
   });
 

@@ -54,3 +54,21 @@ export const SourceProblemSchema = z.object({
 });
 
 export type SourceProblem = z.infer<typeof SourceProblemSchema>;
+
+export function assertSourceProblemInvariants(problem: SourceProblem): void {
+  if (problem.question_text.trim().length === 0) {
+    throw new Error(`I-S1 violated: source problem ${problem.item_id} needs non-empty question_text`);
+  }
+  if (problem.achievement_standard === null || problem.achievement_standard.trim().length === 0) {
+    throw new Error(`I-S2 violated: source problem ${problem.item_id} needs achievement_standard`);
+  }
+  if (/\\(?:d?frac|sqrt|cdot|left|right|pi|pm)/u.test(problem.question_text)) {
+    throw new Error(`I-S3 violated: source problem ${problem.item_id} question_text must be normalized plain text`);
+  }
+  if (problem.explanation_text === null || problem.explanation_text.trim().length === 0) {
+    throw new Error(`I-S4 violated: source problem ${problem.item_id} needs explanation_text`);
+  }
+  if (problem.grade === null) {
+    throw new Error(`I-S5 violated: source problem ${problem.item_id} needs grade`);
+  }
+}

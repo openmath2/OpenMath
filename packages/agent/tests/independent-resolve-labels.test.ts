@@ -11,6 +11,7 @@ const candidate: GeneratedProblem = {
   generation_kind: "expression",
   question_text: "계산 과정 ㈎, ㈏에 쓰인 법칙을 쓰시오.",
   expected_answer: "덧셈의 교환법칙, 덧셈의 결합법칙",
+  techniques_used: ["addition_laws"],
   proposed_solution_trace: "순서대로 교환법칙과 결합법칙이다.",
   source_refs: ["ref-1"],
   inferred_intent: {

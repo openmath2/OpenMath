@@ -11,6 +11,7 @@ const candidate: GeneratedProblem = {
   generation_kind: "geometry",
   question_text: "삼각형이 닮음일 때 값을 구하시오.",
   expected_answer: "1",
+  techniques_used: ["similarity"],
   proposed_solution_trace: "대응 관계를 확인한다.",
   source_refs: ["ref-1"],
   inferred_intent: {

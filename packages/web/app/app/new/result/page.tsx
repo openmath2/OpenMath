@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { findTopic, parseGrade, parseSchoolLevel, pickFirst } from "../topic/data";
-import { generateMockResults } from "./mock";
 import { ResultView } from "./view";
 
 export const metadata: Metadata = {
@@ -32,9 +31,6 @@ export default function ResultPage({ searchParams }: Props) {
   const mode = parseMode(pickFirst(searchParams.mode));
   const srcRef = pickFirst(searchParams.srcRef) ?? "";
 
-  const problems =
-    topic !== null && mode !== null ? generateMockResults(topic, mode) : [];
-
   return (
     <ResultView
       grade={grade}
@@ -42,7 +38,7 @@ export default function ResultPage({ searchParams }: Props) {
       topic={topic}
       mode={mode}
       sourceItemId={srcRef}
-      problems={problems}
+      problems={[]}
     />
   );
 }

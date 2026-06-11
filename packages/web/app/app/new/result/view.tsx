@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { LatexRenderer } from "@/components/math/latex-renderer";
 import { type Grade, type SchoolLevel, type Topic, gradeLabel } from "../topic/data";
 import { verificationStorageKey } from "@/lib/verification-storage-key";
-import type { ResultProblem } from "./mock";
+import type { ResultProblem } from "./types";
 
 type Filter = "all" | "structural" | "conceptual" | "warn";
 
@@ -26,7 +26,14 @@ type StoredProblem = {
   isomorphism: "structural" | "conceptual";
   preserved_dimensions: string[];
   verification_status: "pass" | "partial" | "fail";
+  generation_model?: string;
+  refined_by?: string[];
+  gates?: Array<{ step: string; status: string }>;
+  overall?: string;
 };
+
+const TEMPLATE_GENERATOR_ID = "deterministic-topic-generator";
+const UNVERIFIED_GATE_STATUS = "unverified";
 
 const filters: { value: Filter; label: string }[] = [
   { value: "all", label: "전체" },
@@ -86,6 +93,13 @@ function matchesFilter(p: ResultProblem, filter: Filter): boolean {
   }
 }
 
+function parseStoredGate(raw: unknown): { step: string; status: string } | null {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
+  const g = raw as Record<string, unknown>;
+  if (typeof g.step !== "string" || typeof g.status !== "string") return null;
+  return { step: g.step, status: g.status };
+}
+
 function parseStoredProblem(raw: unknown): StoredProblem | null {
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
   const o = raw as Record<string, unknown>;
@@ -94,6 +108,14 @@ function parseStoredProblem(raw: unknown): StoredProblem | null {
   if (typeof o.answer_latex !== "string") return null;
   if (o.isomorphism !== "structural" && o.isomorphism !== "conceptual") return null;
   if (o.verification_status !== "pass" && o.verification_status !== "partial" && o.verification_status !== "fail") return null;
+  const refinedBy = Array.isArray(o.refined_by)
+    ? o.refined_by.filter((r): r is string => typeof r === "string")
+    : undefined;
+  const gates = Array.isArray(o.gates)
+    ? o.gates
+        .map(parseStoredGate)
+        .filter((g): g is { step: string; status: string } => g !== null)
+    : undefined;
   return {
     id: o.id,
     question_latex: o.question_latex,
@@ -104,6 +126,10 @@ function parseStoredProblem(raw: unknown): StoredProblem | null {
       ? o.preserved_dimensions.filter((d): d is string => typeof d === "string")
       : [],
     verification_status: o.verification_status,
+    generation_model: typeof o.generation_model === "string" ? o.generation_model : undefined,
+    refined_by: refinedBy,
+    gates,
+    overall: typeof o.overall === "string" ? o.overall : undefined,
   };
 }
 
@@ -118,7 +144,20 @@ function toResultProblem(problem: StoredProblem, index: number): ResultProblem {
     answerLatex: problem.answer_latex,
     solutionLatex: problem.explanation_latex ?? "검증 파이프라인에서 생성된 문항입니다.",
     failReason: status === "fail" ? "검증 실패 — 채택할 수 없습니다." : null,
+    generationModel: problem.generation_model,
+    refinedBy: problem.refined_by,
+    gates: problem.gates,
   };
+}
+
+function isTemplateFallback(p: ResultProblem): boolean {
+  if (p.generationModel === TEMPLATE_GENERATOR_ID) return true;
+  if (p.refinedBy?.includes(TEMPLATE_GENERATOR_ID) === true) return true;
+  return false;
+}
+
+function hasUnverifiedGate(p: ResultProblem): boolean {
+  return p.gates?.some((g) => g.status === UNVERIFIED_GATE_STATUS) === true;
 }
 
 export function ResultView({
@@ -220,6 +259,30 @@ export function ResultView({
       ? `/app/new/export?school=${schoolLevel}&grade=${gradeParam}&topic=${encodeURIComponent(topic.code)}&mode=${mode}${srcRefQuery}&adopted=${Array.from(adopted).join(",")}`
       : null;
 
+  if (displayProblems.length === 0) {
+    return (
+      <>
+        <nav className="container-app sub-nav" aria-label="단계 이동">
+          <Link href={verifyHref} className="crumb">
+            <span aria-hidden="true">←</span>
+            <span>검증 진행</span>
+          </Link>
+        </nav>
+        <main className="container-app page-body">
+          <h1 className="page-title">아직 검증된 문항이 없어요</h1>
+          <p className="page-subtitle">
+            검증을 실행하면 통과한 문항이 여기에 모입니다. 검증
+            단계를 먼저 진행해 주세요.
+          </p>
+          <Link href={verifyHref} className="btn btn-primary">
+            <span>검증 진행으로</span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        </main>
+      </>
+    );
+  }
+
   return (
     <>
       <nav className="container-app sub-nav" aria-label="단계 이동">
@@ -272,6 +335,8 @@ export function ResultView({
               const badge = badgeFor(p);
               const isAdopted = adopted.has(p.id);
               const failed = p.status === "fail";
+              const fallback = isTemplateFallback(p);
+              const unverified = hasUnverifiedGate(p);
               return (
                 <article
                   key={p.id}
@@ -291,6 +356,25 @@ export function ResultView({
                       <span aria-hidden="true">{badge.icon}</span>
                       <span>{badge.text}</span>
                     </span>
+                    {fallback ? (
+                      <span
+                        className="badge badge-fallback"
+                        aria-label="템플릿 폴백 — LLM 이 아닌 결정론 템플릿이 생성한 문항"
+                      >
+                        <span aria-hidden="true">⚙</span>
+                        <span>템플릿 폴백</span>
+                      </span>
+                    ) : null}
+                    {unverified ? (
+                      <span
+                        className="badge badge-unverified"
+                        title="재풀이로만 확인됨 — SymPy 기호 검증을 수행할 수 없었습니다"
+                        aria-label="기호 검증 불가 — 재풀이로만 확인됨"
+                      >
+                        <span aria-hidden="true">⊘</span>
+                        <span>기호 검증 불가</span>
+                      </span>
+                    ) : null}
                     <div className="icon-cluster">
                       <button
                         type="button"

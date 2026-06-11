@@ -6,6 +6,7 @@
  */
 
 import type {
+  GateResult,
   GeneratedProblem,
   ProgressEvent,
   ResultEvent,
@@ -13,6 +14,7 @@ import type {
   StepName,
   Verification,
   WireErrorEvent,
+  WireGate,
   WireResultEvent,
   WireResultProblem,
   WireSseEvent,
@@ -93,6 +95,19 @@ function preservedDimensions(problem: GeneratedProblem): string[] {
     .map((dimension) => dimension.description);
 }
 
+function toWireGate(gate: GateResult): WireGate {
+  const wire: WireGate = {
+    step: gate.step,
+    status: gate.status,
+    duration_ms: gate.duration_ms,
+  };
+  if (gate.failure_detail !== undefined) {
+    wire.failure_code = gate.failure_detail.code;
+    wire.failure_message = gate.failure_detail.message;
+  }
+  return wire;
+}
+
 export function toWireResultProblem(
   problem: GeneratedProblem,
   verification: Verification,
@@ -105,6 +120,11 @@ export function toWireResultProblem(
     preserved_dimensions: preservedDimensions(problem),
     source_refs: problem.source_refs,
     verification_status: mapVerificationStatus(verification.overall),
+    overall: verification.overall,
+    gates: verification.gates.map(toWireGate),
+    attempt_count: verification.attempt_count,
+    generation_model: problem.generation_metadata.model,
+    refined_by: problem.generation_metadata.refined_by ?? [],
   };
 }
 

@@ -38,6 +38,7 @@ export const GeneratedProblemSchema = z.object({
   question_text: z.string().min(1), // LaTeX
   expected_answer: z.string().min(1), // LaTeX
   expected_choices: z.array(z.string()).optional(), // objective일 때
+  techniques_used: z.array(z.string()).default([]),
   proposed_solution_trace: z.string(),
 
   source_refs: z.array(z.string()), // SourceProblem.item_id[]
@@ -47,3 +48,53 @@ export const GeneratedProblemSchema = z.object({
 });
 
 export type GeneratedProblem = z.infer<typeof GeneratedProblemSchema>;
+
+export function assertGeneratedProblemInvariants(
+  problem: GeneratedProblem,
+  intent: z.infer<typeof IntentSchema>,
+): void {
+  if (problem.inferred_intent.objective_code !== intent.objective_code) {
+    throw new Error(
+      `I-G1 violated: generated problem ${problem.candidate_id} inferred objective ${problem.inferred_intent.objective_code} does not match intent ${intent.objective_code}`,
+    );
+  }
+  if (!sameNormalizedSet(problem.inferred_intent.required_techniques, intent.required_techniques)) {
+    throw new Error(`I-G2 violated: generated problem ${problem.candidate_id} changed required_techniques`);
+  }
+  if (problem.mode === "conceptual" && !preservesMustPreserveDimensions(problem, intent)) {
+    throw new Error(`I-G3 violated: conceptual generated problem ${problem.candidate_id} changed must_preserve dimensions`);
+  }
+}
+
+function preservesMustPreserveDimensions(
+  problem: GeneratedProblem,
+  intent: z.infer<typeof IntentSchema>,
+): boolean {
+  const candidateDimensions = new Set(
+    problem.inferred_intent.evaluation_dimensions
+      .filter((dimension) => dimension.must_preserve)
+      .map((dimension) => normalizedDimensionKey(dimension.id, dimension.description)),
+  );
+  return intent.evaluation_dimensions
+    .filter((dimension) => dimension.must_preserve)
+    .every((dimension) => candidateDimensions.has(normalizedDimensionKey(dimension.id, dimension.description)));
+}
+
+function sameNormalizedSet(left: readonly string[], right: readonly string[]): boolean {
+  const normalizedLeft = normalizedSet(left);
+  const normalizedRight = normalizedSet(right);
+  if (normalizedLeft.length !== normalizedRight.length) return false;
+  return normalizedLeft.every((value, index) => value === normalizedRight[index]);
+}
+
+function normalizedSet(values: readonly string[]): string[] {
+  return [...new Set(values.map(normalizeToken).filter((value) => value.length > 0))].sort();
+}
+
+function normalizedDimensionKey(id: string, description: string): string {
+  return `${normalizeToken(id)}:${normalizeToken(description)}`;
+}
+
+function normalizeToken(value: string): string {
+  return value.trim().toLowerCase().replace(/[\s-]+/g, "_");
+}

@@ -10,7 +10,7 @@ import type { PromptLoader } from "../tools/prompt-loader.js";
 export type { SolveAttempt } from "../schemas/index.js";
 
 export interface SolverAgent {
-  solve(candidate: GeneratedProblem): Promise<SolveAttempt>;
+  solve(candidate: GeneratedProblem, signal?: AbortSignal): Promise<SolveAttempt>;
 }
 
 export interface SolverAgentDeps {
@@ -22,7 +22,7 @@ export interface SolverAgentDeps {
 
 export function createSolverAgent(deps: SolverAgentDeps): SolverAgent {
   return {
-    async solve(candidate) {
+    async solve(candidate, signal) {
       const prompt = await deps.prompts.load(deps.promptId);
       const rendered = prompt.render({ candidate });
       const { object } = await generateObject({
@@ -31,6 +31,7 @@ export function createSolverAgent(deps: SolverAgentDeps): SolverAgent {
         mode: "json",
         temperature: prompt.metadata.temperature,
         prompt: rendered,
+        abortSignal: signal,
       });
       return object;
     },

@@ -2,7 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 
-import { generateObject, type LanguageModel } from "ai";
+import { generateObject, NoObjectGeneratedError, type LanguageModel } from "ai";
 import { z } from "zod";
 
 import type {
@@ -22,6 +22,8 @@ export interface GeneratorAgentInput {
   strategy: Strategy | null;
   attempt: number;
   refinementHint?: string;
+  counterexample?: string;
+  signal?: AbortSignal;
 }
 
 export interface GeneratorAgent {
@@ -44,31 +46,53 @@ const LlmGeneratedCandidateSchema = z.object({
     .string()
     .min(1)
     .describe("Exact answer in a compact plain-text math format"),
+  techniques_used: z
+    .array(z.string())
+    .default([])
+    .describe("Technique ids used in the solution, selected from the strategy vocabulary"),
   proposed_solution_trace: z
     .string()
     .min(1)
     .describe("Korean solution trace explaining the structural/conceptual transform"),
 });
 
+type LlmGeneratedCandidate = z.infer<typeof LlmGeneratedCandidateSchema>;
+
+export function temperatureForGeneratorAttempt(
+  attempt: number,
+  firstAttemptTemperature = 0.35,
+): number {
+  if (attempt <= 1) return firstAttemptTemperature;
+  if (attempt === 2) return 0.6;
+  return 0.85;
+}
+
 export function createGeneratorAgent(deps: GeneratorAgentDeps): GeneratorAgent {
   return {
     async generate(input) {
       const prompt = await deps.prompts.load(deps.promptId);
       const generationKind = generationKindForTopic(getGenerateRequestTopicCode(input.request));
-      const rendered = prompt.render({
+      const temperature = temperatureForGeneratorAttempt(
+        input.attempt,
+        prompt.metadata.temperature,
+      );
+      const basePromptVars = {
         request: input.request,
         generationKind,
         intent: input.intent,
         refs: input.refs,
         strategy: input.strategy === null ? "" : JSON.stringify(input.strategy, null, 2),
         refinementHint: input.refinementHint,
-      });
-      const { object } = await generateObject({
+        counterexample: input.counterexample,
+      };
+      const object = await generateCandidateObject({
         model: deps.model,
-        schema: LlmGeneratedCandidateSchema,
-        mode: "json",
-        temperature: prompt.metadata.temperature,
-        prompt: rendered,
+        prompt: prompt.render(basePromptVars),
+        temperature,
+        signal: input.signal,
+        retryPromptForSchemaError(schemaError) {
+          return prompt.render({ ...basePromptVars, schemaError });
+        },
       });
 
       return {
@@ -77,12 +101,13 @@ export function createGeneratorAgent(deps: GeneratorAgentDeps): GeneratorAgent {
         generation_kind: generationKind,
         question_text: object.question_text,
         expected_answer: object.expected_answer,
+        techniques_used: object.techniques_used ?? [],
         proposed_solution_trace: object.proposed_solution_trace,
         source_refs: input.refs.map((ref) => ref.item_id),
         inferred_intent: input.intent,
         generation_metadata: {
           model: deps.modelId,
-          temperature: prompt.metadata.temperature,
+          temperature,
           prompt_id: prompt.metadata.id,
           prompt_version: prompt.metadata.version,
           attempt: input.attempt,
@@ -91,4 +116,73 @@ export function createGeneratorAgent(deps: GeneratorAgentDeps): GeneratorAgent {
       };
     },
   };
+}
+
+interface GenerateCandidateObjectInput {
+  model: LanguageModel;
+  prompt: string;
+  temperature: number;
+  signal?: AbortSignal;
+  retryPromptForSchemaError(schemaError: string): string;
+}
+
+async function generateCandidateObject(
+  input: GenerateCandidateObjectInput,
+): Promise<LlmGeneratedCandidate> {
+  try {
+    const { object } = await generateObject({
+      model: input.model,
+      schema: LlmGeneratedCandidateSchema,
+      mode: "json",
+      temperature: input.temperature,
+      prompt: input.prompt,
+      abortSignal: input.signal,
+    });
+    return object;
+  } catch (error) {
+    if (!isSchemaGenerationFailure(error)) throw error;
+    const { object } = await generateObject({
+      model: input.model,
+      schema: LlmGeneratedCandidateSchema,
+      mode: "json",
+      temperature: input.temperature,
+      prompt: input.retryPromptForSchemaError(schemaFailureMessage(error)),
+      abortSignal: input.signal,
+    });
+    return object;
+  }
+}
+
+function isSchemaGenerationFailure(error: unknown): boolean {
+  if (NoObjectGeneratedError.isInstance(error)) return true;
+  if (error instanceof z.ZodError) return true;
+  if (isTypeValidationError(error)) return true;
+  const cause = causeOf(error);
+  return cause === undefined ? false : isSchemaGenerationFailure(cause);
+}
+
+function schemaFailureMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (hasMessage(error) && typeof error.message === "string") return error.message;
+  return String(error);
+}
+
+function isTypeValidationError(error: unknown): boolean {
+  return hasName(error) && error.name === "TypeValidationError";
+}
+
+function causeOf(error: unknown): unknown | undefined {
+  return hasCause(error) ? error.cause : undefined;
+}
+
+function hasCause(value: unknown): value is { readonly cause?: unknown } {
+  return typeof value === "object" && value !== null && "cause" in value;
+}
+
+function hasName(value: unknown): value is { readonly name?: unknown } {
+  return typeof value === "object" && value !== null && "name" in value;
+}
+
+function hasMessage(value: unknown): value is { readonly message?: unknown } {
+  return typeof value === "object" && value !== null && "message" in value;
 }

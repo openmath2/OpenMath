@@ -13,6 +13,7 @@ const ENV_KEYS = [
   "LLM_BASE_URL",
   "LLM_API_KEY",
   "LLM_MODEL",
+  "SOLVER_MODEL",
 ] as const;
 
 const savedEnv = new Map<string, string | undefined>();
@@ -62,5 +63,25 @@ describe("loadEnv", () => {
     expect(env.CLIPROXY_BASE_URL).toBe("http://localhost:8317/v1");
     expect(env.CLIPROXY_API_KEY).toBe("test-key");
     expect(env.CLIPROXY_MODEL).toBe("test-model");
+  });
+
+  it("leaves SOLVER_MODEL undefined when unset", () => {
+    process.chdir(tempRoot);
+    const env = loadEnv();
+    expect(env.SOLVER_MODEL).toBeUndefined();
+  });
+
+  it("parses SOLVER_MODEL when set via dotenv", () => {
+    const agentDir = join(tempRoot, "packages", "agent");
+    mkdirSync(agentDir, { recursive: true });
+    writeFileSync(
+      join(agentDir, ".env"),
+      ["SOLVER_MODEL=claude-sonnet-4.5"].join("\n"),
+    );
+    process.chdir(tempRoot);
+
+    const env = loadEnv();
+
+    expect(env.SOLVER_MODEL).toBe("claude-sonnet-4.5");
   });
 });
