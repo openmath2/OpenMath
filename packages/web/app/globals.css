@@ -45,6 +45,8 @@
   --font-sans: "Inter", "Noto Sans KR", system-ui, -apple-system, sans-serif;
   --font-serif: "Fraunces", "Noto Serif KR", serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+  /* 시험지 본문 — 한국 시험지 표준 명조 계열 (인쇄물과 동일 인상) */
+  --font-exam: "Noto Serif KR", "Batang", "AppleMyungjo", "Nanum Myeongjo", serif;
 
   --spacing-section: 48px;
   --spacing-hero: 96px;
@@ -1844,8 +1846,8 @@
   /* S6 — export layout */
   .export-layout {
     display: grid;
-    grid-template-columns: 60% 40%;
-    gap: 32px;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 48px;
     align-items: start;
   }
   @media (max-width: 900px) {
@@ -1856,88 +1858,201 @@
   }
 
   /* pdf-preview-thumbnail — DESIGN.md {component.pdf-preview-thumbnail}
-   * A4 1:1.41 비율, soft-cloud bg, 시험지 첫 페이지 mini-render.
+   * 시험지 미리보기 배경판. 실제 A4 시트(.exam-sheet)를 ScaledSheet 가
+   * 컨테이너 폭에 맞춰 축소해 보여준다 — 인쇄와 동일한 마크업/스타일.
    */
   .pdf-preview-thumbnail {
     background: var(--color-soft-cloud);
-    color: var(--color-ink);
-    aspect-ratio: 1 / 1.41;
-    width: 100%;
-    max-width: 420px;
-    padding: 32px 28px;
-    font-family: var(--font-sans);
-    overflow: hidden;
     border: 1px solid var(--color-hairline-soft);
+    padding: 28px;
   }
-  .pdf-preview-thumbnail .exam-header h2 {
-    font-family: var(--font-serif);
-    font-weight: 500;
-    font-size: 15px;
-    line-height: 1.25;
-    color: var(--color-ink);
-    margin: 0 0 6px;
+  .sheet-scaler {
+    width: 100%;
+    overflow: hidden;
   }
-  .pdf-preview-thumbnail .exam-header .meta {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--color-ink-3);
-    letter-spacing: 0.04em;
-    margin: 0 0 4px;
+  .sheet-scaler-inner {
+    width: 794px;
+    transform-origin: top left;
   }
-  .pdf-preview-thumbnail .exam-header .name-fields {
-    font-size: 10px;
-    color: var(--color-ink-3);
-    border-top: 1px solid var(--color-hairline);
-    border-bottom: 1px solid var(--color-hairline);
-    padding: 6px 0;
-    margin: 8px 0 14px;
-    display: flex;
-    gap: 12px;
+  .pdf-preview-thumbnail .exam-page {
+    box-shadow:
+      0 1px 2px rgba(15, 15, 15, 0.12),
+      0 10px 32px rgba(15, 15, 15, 0.1);
   }
-  .pdf-preview-thumbnail .exam-problems {
-    list-style: none;
-    padding: 0;
+  .pdf-preview-thumbnail .exam-page + .exam-page {
+    margin-top: 28px;
+  }
+
+  /* ─── exam-sheet — 한국 시험지 조판 (preview/print 공용) ───
+   * px 고정 — 미리보기는 transform 축소, 인쇄는 1:1 (96dpi 기준
+   * 794px = 210mm). 종이는 테마와 무관하게 흰 바탕 + 검정 잉크.
+   * 셀 음영은 브라우저 기본 인쇄 설정(배경 미인쇄)에서 사라져도
+   * 구조가 유지되도록 괘선만으로 성립해야 한다.
+   */
+  .exam-sheet {
+    font-family: var(--font-exam);
+    color: #161616;
+  }
+  .exam-page {
+    width: 794px; /* 210mm */
+    min-height: 1123px; /* 297mm */
+    padding: 60px 53px; /* ≈ 16mm 14mm — @page 마진과 일치 */
+    background: #ffffff;
+  }
+
+  /* 머리 — 제목 박스: 상단 굵은 괘선, 하단 가는 괘선 */
+  .exam-head {
+    margin-bottom: 30px;
+  }
+  .exam-head-box {
+    border-top: 3px solid #161616;
+    border-bottom: 1px solid #161616;
+    padding: 20px 10px 16px;
+    text-align: center;
+  }
+  .exam-subject {
+    margin: 0 0 10px;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    color: #3a3a3a;
+  }
+  .exam-title {
     margin: 0;
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+    word-break: keep-all;
+  }
+  .exam-issue {
+    margin: 10px 0 0;
+    font-size: 11.5px;
+    color: #4a4a4a;
+    white-space: pre-wrap;
+  }
+
+  /* 인적사항 — 제목 박스 아래 붙는 한 줄 기입란 */
+  .exam-id-row {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    align-items: stretch;
+    border: 1px solid #161616;
+    border-top: 0;
+    font-size: 11.5px;
   }
-  .pdf-preview-thumbnail .exam-problem {
-    font-size: 11px;
-    line-height: 1.4;
-    display: grid;
-    grid-template-columns: 16px 1fr;
-    gap: 4px;
-    color: var(--color-ink);
+  .exam-id-row .label {
+    padding: 8px 14px;
+    background: #f4f4f2;
+    border-right: 1px solid #161616;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
   }
-  .pdf-preview-thumbnail .exam-problem .num {
-    font-weight: 500;
+  .exam-id-row .blank {
+    flex: 1;
+    min-width: 48px;
+    border-right: 1px solid #161616;
   }
-  .pdf-preview-thumbnail .katex {
-    font-size: 0.9em;
+  .exam-id-row .blank.wide {
+    flex: 1.9;
   }
-  .pdf-preview-thumbnail .exam-answers {
-    margin-top: 14px;
-    padding-top: 8px;
-    border-top: 1px solid var(--color-hairline-soft);
-    font-size: 10px;
-    color: var(--color-ink-3);
+  .exam-id-row > :last-child {
+    border-right: 0;
   }
-  .pdf-preview-thumbnail .exam-answers h3 {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    color: var(--color-ink-2);
-    margin: 0 0 4px;
-  }
-  .pdf-preview-thumbnail .exam-answers ol {
+
+  /* 본문 — 2단 컬럼, 가운데 세로 괘선 */
+  .exam-cols {
     list-style: none;
-    padding: 0;
     margin: 0;
+    padding: 0;
+    column-count: 2;
+    column-gap: 44px;
+    column-rule: 1px solid #9a9a9a;
+    column-fill: balance;
+  }
+  .exam-q {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin-bottom: 38px;
+    font-size: 13.5px;
+    line-height: 1.92;
+  }
+  .exam-q-text {
+    margin: 0;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  .exam-q-num {
+    font-weight: 700;
+    font-size: 14.5px;
+    margin-right: 2px;
+  }
+  .exam-q .katex {
+    font-size: 1.04em;
+  }
+
+  /* 보기 ①~⑤ — 짧으면 가로 분산, 길면 세로 스택(.stacked) */
+  .exam-choices {
+    list-style: none;
+    margin: 13px 0 0;
+    padding: 0 0 0 6px;
     display: flex;
+    flex-wrap: wrap;
+    column-gap: 28px;
+    row-gap: 8px;
+  }
+  .exam-choices li {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 7px;
+  }
+  .exam-choices.stacked {
     flex-direction: column;
-    gap: 3px;
+    row-gap: 9px;
+  }
+  .exam-choice-marker {
+    flex-shrink: 0;
+  }
+
+  /* 별지 — 빠른 정답 */
+  .exam-answers-title {
+    margin: 0;
+    border-top: 3px solid #161616;
+    border-bottom: 1px solid #161616;
+    padding: 16px 0;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: 0.35em;
+    text-indent: 0.35em; /* letter-spacing 끝글자 보정 */
+  }
+  .exam-answers-sub {
+    margin: 10px 0 26px;
+    text-align: center;
+    font-size: 11.5px;
+    color: #4a4a4a;
+  }
+  .exam-answers-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  .exam-answers-table th,
+  .exam-answers-table td {
+    border: 1px solid #161616;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .exam-answers-table .num-row th {
+    background: #f4f4f2;
+    padding: 8px 6px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .exam-answers-table .ans-row td {
+    padding: 12px 8px;
+    font-size: 13.5px;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
   }
 
   /* options pane (S6 우 40%) */
@@ -2019,88 +2134,34 @@
     line-height: 1.5;
   }
 
-  /* print-root — 화면에선 숨김, 인쇄에서만 노출되는 A4 풀-페이지 */
+  /* print-root — 화면에선 숨김, 인쇄에서만 노출되는 A4 풀-페이지.
+   * 시트 스타일은 .exam-sheet 공용 규칙을 그대로 쓰고, 여기서는
+   * 종이 흉내(고정폭/여백/그림자)만 끄고 @page 마진에 맡긴다.
+   */
   .print-root {
     display: none;
-  }
-  .print-root .exam-sheet {
-    color: var(--color-ink);
-    font-family: var(--font-sans);
-  }
-  .print-root .exam-header h2 {
-    font-family: var(--font-serif);
-    font-size: 22pt;
-    font-weight: 500;
-    line-height: 1.15;
-    margin: 0 0 6mm;
-  }
-  .print-root .exam-header .meta {
-    font-family: var(--font-mono);
-    font-size: 10pt;
-    margin: 0 0 4mm;
-    color: var(--color-ink-3);
-  }
-  .print-root .exam-header .name-fields {
-    font-size: 11pt;
-    border-top: 0.5pt solid var(--color-ink);
-    border-bottom: 0.5pt solid var(--color-ink);
-    padding: 3mm 0;
-    margin: 6mm 0 10mm;
-    display: flex;
-    gap: 12mm;
-  }
-  .print-root .exam-problems {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10mm;
-  }
-  .print-root .exam-problem {
-    font-size: 12pt;
-    line-height: 1.55;
-    display: grid;
-    grid-template-columns: 8mm 1fr;
-    gap: 2mm;
-    page-break-inside: avoid;
-    break-inside: avoid;
-  }
-  .print-root .exam-problem .num {
-    font-weight: 500;
-  }
-  .print-root .exam-answers {
-    margin-top: 14mm;
-    padding-top: 4mm;
-    border-top: 0.5pt solid var(--color-ink);
-    page-break-before: auto;
-  }
-  .print-root .exam-answers h3 {
-    font-family: var(--font-serif);
-    font-size: 14pt;
-    font-weight: 500;
-    margin: 0 0 4mm;
-  }
-  .print-root .exam-answers ol {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 3mm;
   }
 
   @media print {
     @page {
       size: A4;
-      margin: 18mm;
+      margin: 16mm 14mm;
     }
     html,
     body {
-      background: var(--color-canvas-pure);
+      background: #ffffff;
     }
     body * {
       visibility: hidden !important;
+    }
+    /* 화면 UI 는 visibility 만으로는 박스 높이가 남아 끝에 빈 페이지를
+     * 만든다 — 자리 자체를 제거한다. (print-root 는 이들의 형제 노드)
+     */
+    .sub-nav,
+    .page-body,
+    .action-bar-sticky,
+    .inline-notice {
+      display: none !important;
     }
     .print-root,
     .print-root * {
@@ -2113,6 +2174,20 @@
       left: 0;
       width: 100%;
     }
+    .print-root .exam-page {
+      width: auto;
+      min-height: 0;
+      padding: 0;
+    }
+    .print-root .exam-page + .exam-page {
+      margin-top: 0;
+      break-before: page;
+      page-break-before: always;
+    }
+    /* column-fill 은 공용 balance 를 그대로 쓴다 — 인쇄에서 가득 찬
+     * 페이지는 순차로 채워지고 마지막 페이지만 좌우 균형이 맞는다.
+     * (auto 로 두면 한 페이지 미만 분량이 왼단에만 몰린다)
+     */
   }
 
   /* empty state (S2 filter 결과 0건) */

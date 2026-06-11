@@ -192,8 +192,13 @@ export function LatexMixed({ source }: LatexMixedProps) {
  */
 
 const MATH_WORD = /^[A-Za-z0-9\\^_{}+\-*/=<>().,:%|']+$/;
-const MATH_SIGNAL = /\\[a-zA-Z]+|[\^_]\{|=|[0-9A-Za-z)] ?[+\-*/] ?[0-9A-Za-z(]/;
+const MATH_SIGNAL = /\\[a-zA-Z]+|[\^_]\{|=|[0-9A-Za-z)] ?[+\-*/<>] ?[0-9A-Za-z(]/;
 const TRAILING_PUNCT = /[.,]+$/;
+/* 조사가 수식에 바로 붙은 토큰 ("x+2인", "b^{2}-c^{2}의") — ASCII 수식
+ * 머리(2자 이상)와 나머지 꼬리로 쪼갠다. 머리에 수식 신호가 있을 때만
+ * 수식으로 취급해 "10명의" 같은 일반 단어는 건드리지 않는다.
+ */
+const GLUED_MATH = /^([A-Za-z0-9\\^_{}+\-*/=<>().,:%|']{2,})(.+)$/;
 
 export function segmentAuto(source: string): Segment[] {
   if (/\$|\\\(|\\\[/.test(source)) return splitDelimited(source);
@@ -210,7 +215,15 @@ export function segmentAuto(source: string): Segment[] {
   while (i < tokens.length) {
     const token = tokens[i] ?? "";
     if (token.length === 0 || !MATH_WORD.test(token)) {
-      text += token;
+      const glued = token.match(GLUED_MATH);
+      const head = glued?.[1] ?? "";
+      if (glued !== null && MATH_SIGNAL.test(head)) {
+        flushText();
+        out.push({ kind: "inline", latex: head });
+        text += glued[2] ?? "";
+      } else {
+        text += token;
+      }
       i += 1;
       continue;
     }
