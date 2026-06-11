@@ -1,6 +1,6 @@
 ---
 id: refiner
-version: 0.2.0
+version: 0.3.0
 model: gpt-4o
 temperature: 0.5
 max_tokens: 2000
@@ -31,6 +31,8 @@ updated: 2026-06-11
 문제: {{prior.question_text}}
 정답: {{prior.expected_answer}}
 풀이: {{prior.proposed_solution_trace}}
+{{#if prior.verification_expression}}검증식: {{prior.verification_expression}}
+{{/if}}
 
 # Critique hints (이 지적들을 반드시 해소하라)
 
@@ -63,9 +65,10 @@ updated: 2026-06-11
 
 # Output
 
-JSON으로만 응답. 필드: `question_text`, `expected_answer`, `techniques_used`, `proposed_solution_trace`.
+JSON으로만 응답. 필드: `question_text`, `expected_answer`, `techniques_used`, `proposed_solution_trace`, `verification_expression`.
 
 - JSON 문자열 안에서 raw backslash를 쓰지 말 것. `\(`, `\sqrt` 같은 LaTeX 명령 금지.
 - 수식은 JSON 안전한 plain text로: 지수는 `x**2`, 곱셈은 `5*x`, 제곱근은 `sqrt(7)`.
 - `expected_answer`는 정답만 간결하게. 수정 후에도 문제와 정답이 일치하는지 반드시 재검산하라.
 - `techniques_used`는 실제 사용한 snake_case 기법 id 배열.
+- `verification_expression`은 *수정된 문제의* 정답에 도달하는 SymPy 평가식 하나다. `factorial(4)`, `binomial(10, 3)`, `factorial(5)/factorial(5-2)`, `*`, `/`, `+`, `-`, `**` 표기만 사용. 이 식의 값이 수정된 `expected_answer`와 일치해야 한다. 문제를 고치면 검증식도 반드시 같이 갱신하라. 정답이 단일 수치/수식 값이 아닐 때만 생략. `4!` 표기, 한글, 단위 금지.
