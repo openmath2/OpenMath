@@ -86,18 +86,26 @@ export async function* runVerificationWorkflow(
   yield step("rag", "start", timestamp());
   const ragStarted = Date.now();
   const { refs } = await ragSearch({ rag: deps.rag, perStepTimeoutMs }, { request });
+  // 첨부 문제(source_origin=attached)는 첨부한 문제 자체가 변형 기준이므로,
+  // 코퍼스에 비슷한 예시가 없어도(refs=0) 중단하지 않고 source-only 로 진행한다.
+  // refs=[] 는 하위 스텝이 견딘다: strategy 는 topic_code 로 로드, intent 는 seed
+  // 폴백, generate 는 refs.length>0 일 때만 템플릿이라 refs=0 이면 LLM 생성기로 간다.
+  const attachedSourceOnly =
+    request.source_origin === "attached" &&
+    (request.source_problem_text ?? "").trim().length > 0;
+  const ragSourceOnly = refs.length === 0 && attachedSourceOnly;
   const ragGate: GateResult = {
     step: "rag",
-    status: refs.length > 0 ? "passed" : "failed",
+    status: refs.length > 0 || attachedSourceOnly ? "passed" : "failed",
     duration_ms: Date.now() - ragStarted,
-    evidence: { refs: refs.length },
+    evidence: ragSourceOnly ? { refs: 0, source_only: true } : { refs: refs.length },
     failure_detail:
-      refs.length > 0
+      refs.length > 0 || attachedSourceOnly
         ? undefined
         : { code: "no_refs", message: "No reference problems found" },
   };
   yield step("rag", "done", timestamp(), ragGate);
-  if (refs.length === 0) {
+  if (refs.length === 0 && !attachedSourceOnly) {
     yield {
       type: "error",
       stage: "rag",

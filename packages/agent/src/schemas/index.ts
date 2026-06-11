@@ -4,6 +4,8 @@
  * 사용: `import { IntentSchema, type Intent } from "@/schemas";`
  */
 
+export * from "./curriculum-topics.js";
+export * from "./extract.schema.js";
 export * from "./generate-request.schema.js";
 export * from "./generation-kind.schema.js";
 export * from "./generated-problem.schema.js";

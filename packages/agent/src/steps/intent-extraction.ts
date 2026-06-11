@@ -97,18 +97,19 @@ function buildSeedIntent(
   strategy: Strategy | null,
   refs: RagResult[],
 ): Intent {
+  // refs 가 없어도(첨부 source-only) 동작한다 — strategy·request 의 토픽 정보로 시드 의도를 만든다.
+  // corpus 플로우는 refs 가 항상 있으므로 first 기반 동작이 그대로 유지된다.
   const first = refs[0];
-  if (first === undefined) {
-    throw new Error("Cannot extract intent without RAG refs");
-  }
+  const topicName =
+    first?.problem.topic_name ?? request.topic_name ?? getGenerateRequestTopicCode(request);
   const objectiveCode =
-    strategy?.code ?? first.problem.achievement_standard ?? getGenerateRequestTopicCode(request);
+    strategy?.code ?? first?.problem.achievement_standard ?? getGenerateRequestTopicCode(request);
   return {
     objective_code: objectiveCode,
-    objective_description: strategy?.title ?? first.problem.topic_name,
+    objective_description: strategy?.title ?? topicName,
     evaluation_dimensions:
       strategy?.evaluation_dimensions ??
-      buildGuessedEvaluationDimensions(request, first.problem.topic_name),
+      buildGuessedEvaluationDimensions(request, topicName),
     required_techniques: strategy?.techniques.required_at_least_one_of ?? [],
     forbidden_techniques: strategy?.techniques.forbidden ?? [],
     surface_constraints: {

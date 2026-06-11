@@ -27,6 +27,8 @@ type IntentSource = {
   item_id: string;
   question_text: string;
   difficulty_norm: "easy" | "medium" | "hard";
+  source_origin?: "corpus" | "attached";
+  generation_kind?: string;
 };
 
 const STATUS_ICON: Record<Step["status"], string> = {
@@ -118,10 +120,20 @@ function parseIntentSource(raw: unknown): IntentSource | null {
   ) {
     return null;
   }
+  const source_origin =
+    o.source_origin === "attached"
+      ? "attached"
+      : o.source_origin === "corpus"
+        ? "corpus"
+        : undefined;
+  const generation_kind =
+    typeof o.generation_kind === "string" ? o.generation_kind : undefined;
   return {
     item_id: o.item_id,
     question_text: o.question_text,
     difficulty_norm: o.difficulty_norm,
+    ...(source_origin === undefined ? {} : { source_origin }),
+    ...(generation_kind === undefined ? {} : { generation_kind }),
   };
 }
 
@@ -172,8 +184,10 @@ export function VerifyView({ schoolLevel, grade, topic, mode, srcRef }: Props) {
       mode,
       sourceItemId,
       sourceProblemText,
+      sourceOrigin: intentSource?.source_origin,
+      generationKind: intentSource?.generation_kind,
     };
-  }, [gateValid, schoolLevel, grade, topic, mode, sourceItemId, sourceProblemText]);
+  }, [gateValid, schoolLevel, grade, topic, mode, sourceItemId, sourceProblemText, intentSource]);
 
   const stream = useVerificationStream(input);
   const announceRef = useRef<HTMLDivElement | null>(null);

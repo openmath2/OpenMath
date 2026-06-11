@@ -365,10 +365,10 @@ export function ResultView({
                     {fallback ? (
                       <span
                         className="badge badge-fallback"
-                        aria-label="템플릿 폴백 — LLM 이 아닌 결정론 템플릿이 생성한 문항"
+                        aria-label="자동 생성 템플릿 — AI 출력 대신 규칙 기반 템플릿으로 만든 문항"
                       >
                         <span aria-hidden="true">⚙</span>
-                        <span>템플릿 폴백</span>
+                        <span>자동 템플릿</span>
                       </span>
                     ) : null}
                     {unverified ? (

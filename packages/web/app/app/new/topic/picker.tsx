@@ -211,7 +211,7 @@ export function TopicPicker({ schoolLevel, grade }: Props) {
                   {topicScopeLabel(selectedTopic)} · {selectedTopic.achievement}
                 </p>
                 <p className="example-panel-meta">
-                  예시 {selectedExamples.examples.length} 문항 · corpus 후보
+                  예시 {selectedExamples.examples.length} 문항 · 기출 · 교과 문제
                   {" "}
                   {selectedExamples.candidate_pool.toLocaleString()} 건 중
                   추출
@@ -244,7 +244,7 @@ export function TopicPicker({ schoolLevel, grade }: Props) {
               </ol>
 
               <footer className="example-panel-footer">
-                예시는 corpus 의 기존 문제이며, 실제 출제 시 LLM 이 동형
+                예시는 기존 기출 · 교과 문제이며, 실제 출제 시 AI 가 동형
                 문제를 새로 생성하고 SymPy 가 검증합니다.
               </footer>
             </aside>

@@ -22,6 +22,10 @@ export const EnvSchema = z.object({
    *  with a separate LanguageModel instance to decorrelate errors with generation.
    *  When unset, the solver shares the generator's resolved model. */
   SOLVER_MODEL: z.string().min(1).optional(),
+  /** Optional override for the attached-problem extractor (POST /api/extract).
+   *  Image upload needs a vision-capable model; set this to a vision model id
+   *  when the main LLM_MODEL is text-only. When unset, reuses LLM_MODEL. */
+  EXTRACT_MODEL: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),
   OPENAI_MODEL: z.string().min(1).optional(),
   CLIPROXY_BASE_URL: z.string().url().optional(),

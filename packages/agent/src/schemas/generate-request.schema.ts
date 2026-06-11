@@ -10,6 +10,7 @@
 
 import { z } from "zod";
 
+import { GenerationKindSchema } from "./generation-kind.schema.js";
 import {
   DifficultySchema,
   ProblemTypeSchema,
@@ -39,6 +40,14 @@ export const GenerateRequestSchema = z.object({
   problem_type: ProblemTypeSchema.default("objective"),
 
   source_problem_text: z.string().optional(),
+
+  /** "corpus" = 코퍼스에서 고른 기준 문제(토픽이 곧 ground truth).
+   *  "attached" = 사용자가 첨부한 문제(토픽은 추측, 첨부 문제가 ground truth).
+   *  attached 일 때 생성기는 refs 보다 source_problem_text 를 우선한다. */
+  source_origin: z.enum(["corpus", "attached"]).default("corpus"),
+  /** 첨부 플로우에서 문제 자체로부터 추론한 generation kind.
+   *  있으면 topic 파생값(generationKindForTopic)보다 우선 — 토픽 오분류로부터 종류를 보호. */
+  generation_kind: GenerationKindSchema.optional(),
 }).superRefine((request, ctx) => {
   if (request.school_level === "middle" && request.grade === null) {
     ctx.addIssue({

@@ -7,7 +7,9 @@ import { loadEnv } from "./config/index.js";
 import { DEFAULT_MODELS } from "./config/models.js";
 import { createApp } from "./server/app.js";
 import {
+  createClassifierAgent,
   createConstraintCriticAgent,
+  createExtractorAgent,
   createGeneratorAgent,
   createRefinerAgent,
   createSolverAgent,
@@ -63,22 +65,25 @@ export async function main(): Promise<void> {
         logLlmCall,
       )
     : undefined;
+  /** 메인 LLM 과 같은 modelId 면 재사용, 다르면 새 모델을 만들어 로깅 래핑. solver/extractor 공용. */
+  const buildAgentModel = (modelId: string, label: string) =>
+    llm === undefined
+      ? undefined
+      : modelId === llmModel
+        ? llm
+        : withLlmLogging(
+            resolveLanguageModel({
+              kind: llmKind,
+              modelId,
+              baseUrl: llmBaseUrl,
+              apiKey: llmApiKey ?? "openmath-local",
+              allowedHosts: ["localhost", "127.0.0.1"],
+            }),
+            label,
+            logLlmCall,
+          );
   const solverModel = env.SOLVER_MODEL ?? llmModel;
-  const solverLlm = llm === undefined
-    ? undefined
-    : solverModel === llmModel
-      ? llm
-      : withLlmLogging(
-          resolveLanguageModel({
-            kind: llmKind,
-            modelId: solverModel,
-            baseUrl: llmBaseUrl,
-            apiKey: llmApiKey ?? "openmath-local",
-            allowedHosts: ["localhost", "127.0.0.1"],
-          }),
-          `${solverModel} (solver)`,
-          logLlmCall,
-        );
+  const solverLlm = buildAgentModel(solverModel, `${solverModel} (solver)`);
   const generator = llm === undefined
     ? undefined
     : createGeneratorAgent({
@@ -111,10 +116,29 @@ export async function main(): Promise<void> {
         promptId: "independent-solver",
         prompts,
       });
+  const extractModel = env.EXTRACT_MODEL ?? llmModel;
+  const extractLlm = buildAgentModel(extractModel, `${extractModel} (extract)`);
+  const extractor = extractLlm === undefined
+    ? undefined
+    : createExtractorAgent({
+        model: extractLlm,
+        modelId: extractModel,
+        promptId: "problem-extractor",
+        prompts,
+      });
+  const classifier = llm === undefined
+    ? undefined
+    : createClassifierAgent({
+        model: llm,
+        modelId: llmModel,
+        promptId: "problem-classifier",
+        prompts,
+      });
 
   const app = createApp({
     mathEngine,
     rag,
+    extract: { extractor, classifier },
     workflow: {
       rag,
       mathEngine,

@@ -2894,4 +2894,110 @@
     .example-question { font-size: 12px; line-height: 1.5; }
     .example-panel-footer { padding-top: 6px; }
   }
+
+  /* ── attach (이 문제처럼) — 첨부 입력 + 확인 화면 ─────────── */
+  .attach-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .attach-textarea {
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.6;
+    padding: 12px 14px;
+    border: 1px solid var(--color-hairline);
+    border-radius: 8px;
+    background: var(--color-canvas-pure);
+    color: var(--color-ink);
+    width: 100%;
+    min-height: 160px;
+    resize: vertical;
+  }
+  .attach-textarea:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 1px;
+    border-color: var(--color-ink);
+  }
+  .attach-dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 28px 16px;
+    text-align: center;
+    border: 1.5px dashed var(--color-hairline);
+    border-radius: 12px;
+    background: var(--color-canvas-2);
+    color: var(--color-ink-3);
+  }
+  .attach-dropzone .hint {
+    font-size: 13px;
+    color: var(--color-ink-3);
+  }
+  .attach-image-preview {
+    max-width: 100%;
+    max-height: 320px;
+    border-radius: 8px;
+    border: 1px solid var(--color-rule);
+  }
+  .attach-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+  }
+  .attach-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .attach-field > .field-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-ink-2);
+  }
+  .attach-select {
+    font-family: var(--font-sans);
+    font-size: 15px;
+    padding: 10px 12px;
+    border: 1px solid var(--color-hairline);
+    border-radius: 8px;
+    background: var(--color-canvas-pure);
+    color: var(--color-ink);
+    width: 100%;
+    cursor: pointer;
+  }
+  .attach-select:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 1px;
+    border-color: var(--color-ink);
+  }
+  .attach-preview {
+    padding: 14px 16px;
+    border: 1px solid var(--color-rule);
+    border-radius: 10px;
+    background: var(--color-paper);
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--color-ink);
+    overflow-x: auto;
+  }
+  .attach-preview .caption {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-ink-4);
+    margin-bottom: 8px;
+  }
+  .attach-alt-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--color-ink-3);
+  }
 }

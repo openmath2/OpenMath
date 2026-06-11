@@ -30,12 +30,12 @@ import type {
 } from "../../schemas/index.js";
 
 const STEP_META: Record<StepName, { index: WireStepIndex; name: string }> = {
-  rag: { index: 1, name: "RAG 검색" },
-  intent: { index: 2, name: "의도 추출" },
+  rag: { index: 1, name: "비슷한 문제 찾기" },
+  intent: { index: 2, name: "출제 의도 분석" },
   generate: { index: 3, name: "문제 생성" },
   sympy_verify: { index: 4, name: "산술 검증 (SymPy)" },
   re_solve: { index: 5, name: "독립 재풀이" },
-  objective_map: { index: 6, name: "학습 목표 매핑" },
+  objective_map: { index: 6, name: "학습 목표 점검" },
 };
 
 function mapStepStatus(event: StepEvent): WireStepStatus {
@@ -83,6 +83,7 @@ function successSummary(step: StepName, gate: Record<string, unknown>): string |
 function ragSummary(evidence: Record<string, unknown>): string | null {
   const refs = asNumber(evidence["refs"]);
   if (refs === null) return null;
+  if (evidence["source_only"] === true) return "비슷한 예시 없음 — 첨부 문제만으로 변형";
   return `참조 ${refs}문항 확보`;
 }
 

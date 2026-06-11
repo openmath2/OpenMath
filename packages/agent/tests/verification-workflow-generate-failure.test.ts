@@ -199,3 +199,44 @@ describe("runVerificationWorkflow when generation itself fails", () => {
     expect(events.filter((event) => event.type === "preview")).toHaveLength(0);
   });
 });
+
+describe("runVerificationWorkflow with an attached problem and no corpus matches", () => {
+  it("does not abort at RAG (source-only) when refs are empty", async () => {
+    const emptyRag: RagClient = { search: async () => [] };
+    const attachedRequest: GenerateRequest = {
+      ...request,
+      source_origin: "attached",
+      source_problem_text: "x**2 - 5*x + 6 = 0 의 해를 구하시오.",
+    };
+    // 생성기 자체는 던지게 둔다 — 여기서 증명할 것은 'RAG 가 중단하지 않고 생성까지 갔다'.
+    const generate = vi.fn<GeneratorAgent["generate"]>(async () => {
+      throw new Error("stop after reaching generate");
+    });
+
+    const events: ProgressEvent[] = [];
+    for await (const event of runVerificationWorkflow(
+      {
+        rag: emptyRag,
+        mathEngine,
+        prompts,
+        strategies,
+        intentModel: new MockLanguageModelV1(),
+        generator: { generate },
+        critic,
+        refiner,
+        solver,
+      },
+      attachedRequest,
+      { deterministicFallback: "off", maxRetries: 1, perStepTimeoutMs: 1_000 },
+    )) {
+      events.push(event);
+    }
+
+    // 옛 동작이면 refs=0 에서 no_refs 로 즉시 return → generate 미호출.
+    // 새 동작: 첨부 source-only 는 중단하지 않고 진행하므로 generate 가 호출된다.
+    expect(generate).toHaveBeenCalled();
+    expect(
+      events.some((event) => event.type === "error" && event.code === "no_refs"),
+    ).toBe(false);
+  });
+});
