@@ -177,6 +177,7 @@ function createTestApp(opts: {
 
   return createApp({
     mathEngine: fakeMathEngine(),
+    extract: {},
     workflow: {
       rag: fakeRag(refs),
       mathEngine: fakeMathEngine(),

@@ -7,6 +7,7 @@ import type { MathEngineClient } from "../tools/math-engine-client.js";
 import type { RagClient } from "../tools/rag-client.js";
 import type { RunTraceWriter } from "../tools/run-trace.js";
 import type { RunOptions, VerificationWorkflowDeps } from "../workflows/verification-workflow.js";
+import { createExtractRoute, type ExtractRouteDeps } from "./routes/extract.js";
 import { createGenerateRoute } from "./routes/generate.js";
 import { createHealthRoute } from "./routes/health.js";
 import { createSourceProblemsRoute } from "./routes/source-problems.js";
@@ -15,6 +16,7 @@ export interface AppDeps {
   mathEngine: MathEngineClient;
   rag: RagClient;
   workflow: VerificationWorkflowDeps;
+  extract: ExtractRouteDeps;
   workflowOptions?: RunOptions;
   trace?: RunTraceWriter;
 }
@@ -33,6 +35,7 @@ export function createApp(deps: AppDeps): Hono {
 
   app.route("/", createHealthRoute(deps.mathEngine));
   app.route("/", createSourceProblemsRoute(deps.rag));
+  app.route("/", createExtractRoute(deps.extract));
   app.route("/", createGenerateRoute(deps.workflow, deps.workflowOptions, deps.trace));
 
   return app;

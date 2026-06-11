@@ -7,7 +7,9 @@ import { loadEnv } from "./config/index.js";
 import { DEFAULT_MODELS } from "./config/models.js";
 import { createApp } from "./server/app.js";
 import {
+  createClassifierAgent,
   createConstraintCriticAgent,
+  createExtractorAgent,
   createGeneratorAgent,
   createRefinerAgent,
   createSolverAgent,
@@ -111,10 +113,43 @@ export async function main(): Promise<void> {
         promptId: "independent-solver",
         prompts,
       });
+  const extractModel = env.EXTRACT_MODEL ?? llmModel;
+  const extractLlm = llm === undefined
+    ? undefined
+    : extractModel === llmModel
+      ? llm
+      : withLlmLogging(
+          resolveLanguageModel({
+            kind: llmKind,
+            modelId: extractModel,
+            baseUrl: llmBaseUrl,
+            apiKey: llmApiKey ?? "openmath-local",
+            allowedHosts: ["localhost", "127.0.0.1"],
+          }),
+          `${extractModel} (extract)`,
+          logLlmCall,
+        );
+  const extractor = extractLlm === undefined
+    ? undefined
+    : createExtractorAgent({
+        model: extractLlm,
+        modelId: extractModel,
+        promptId: "problem-extractor",
+        prompts,
+      });
+  const classifier = llm === undefined
+    ? undefined
+    : createClassifierAgent({
+        model: llm,
+        modelId: llmModel,
+        promptId: "problem-classifier",
+        prompts,
+      });
 
   const app = createApp({
     mathEngine,
     rag,
+    extract: { extractor, classifier },
     workflow: {
       rag,
       mathEngine,

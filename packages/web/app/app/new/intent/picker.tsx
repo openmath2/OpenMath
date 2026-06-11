@@ -145,8 +145,8 @@ export function IntentPicker({ schoolLevel, grade, topic, candidates }: Props) {
         <main className="container-app page-body">
           <h1 className="page-title">기준 문항을 불러오지 못했어요</h1>
           <p className="page-subtitle">
-            현재 단원({topic.name})에 해당하는 corpus 문항이 비어 있거나
-            agent 서버에 일시적인 문제가 있을 수 있습니다. 잠시 후 다시
+            현재 단원({topic.name})에 해당하는 예시 문항이 없거나
+            출제 서버에 일시적인 문제가 있을 수 있습니다. 잠시 후 다시
             시도해 주세요.
           </p>
           <Link href={sameIntentHref} className="btn btn-primary" prefetch={false}>
@@ -346,7 +346,7 @@ export function IntentPicker({ schoolLevel, grade, topic, candidates }: Props) {
             어떤 문제를 기준으로 만들까요?
           </h2>
           <p className="page-subtitle">
-            corpus 에서 가져온 후보 중 하나를 선택해 주세요. 구조 동형은
+            기출 · 교과 문제 중 하나를 기준으로 선택해 주세요. 구조 동형은
             풀이 구조를, 개념 동형은 학습 목표를 이 문항에서 가져옵니다.
           </p>
 

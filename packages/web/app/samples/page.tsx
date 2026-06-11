@@ -70,8 +70,8 @@ export default function SamplesPage() {
             실제로 만들어지는 문제
           </h1>
           <p className="samples-lede">
-            아래 3 문항은 OpenMath 가 RAG 검색 → 의도 추출 → 생성 →
-            SymPy 산술 검증 → 독립 재풀이 → 학습 목표 매핑의 6 단계를
+            아래 3 문항은 OpenMath 가 비슷한 문제 찾기 → 출제 의도 분석 → 문제 생성 →
+            SymPy 산술 검증 → 독립 재풀이 → 학습 목표 점검의 6 단계를
             통과시킨 예시입니다. 직접 출제하면 학년과 단원을 골라 동일한
             품질의 문항을 만들 수 있습니다.
           </p>
