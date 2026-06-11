@@ -92,13 +92,14 @@ describe("resolveClassification", () => {
     expect(r.school_level).toBe("high");
   });
 
-  it("keeps only valid alternatives and drops the matched topic", () => {
+  it("keeps only valid alternatives, dropping the matched topic, invalid codes, and duplicates", () => {
     const r = resolveClassification({
       ...base,
       alternatives: [
-        { topic_code: "9수02-09", topic_name: "이차방정식" },
-        { topic_code: "9수02-10", topic_name: "이차방정식의 활용" },
-        { topic_code: "zzz", topic_name: "없음" },
+        { topic_code: "9수02-09", topic_name: "이차방정식" }, // == matched → dropped
+        { topic_code: "9수02-10", topic_name: "이차방정식의 활용" }, // valid
+        { topic_code: "9수02-10", topic_name: "이차방정식의 활용" }, // duplicate → dropped
+        { topic_code: "zzz", topic_name: "없음" }, // invalid → dropped
       ],
     });
     expect(r.alternatives).toEqual([{ topic_code: "9수02-10", topic_name: "이차방정식의 활용" }]);

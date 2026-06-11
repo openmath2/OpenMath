@@ -78,8 +78,9 @@ export function assembleGeneratedProblem(input: {
   readonly promptVersion: string;
 }): GeneratedProblem {
   const generationKind =
-    input.request.generation_kind ??
-    generationKindForTopic(getGenerateRequestTopicCode(input.request));
+    input.request.source_origin === "attached" && input.request.generation_kind !== undefined
+      ? input.request.generation_kind
+      : generationKindForTopic(getGenerateRequestTopicCode(input.request));
   return {
     candidate_id: randomUUID(),
     mode: input.request.mode === "conceptual" ? "conceptual" : "structural",
@@ -118,8 +119,9 @@ export function createGeneratorAgent(deps: GeneratorAgentDeps): GeneratorAgent {
     async generate(input) {
       const prompt = await deps.prompts.load(deps.promptId);
       const generationKind =
-        input.request.generation_kind ??
-        generationKindForTopic(getGenerateRequestTopicCode(input.request));
+        input.request.source_origin === "attached" && input.request.generation_kind !== undefined
+          ? input.request.generation_kind
+          : generationKindForTopic(getGenerateRequestTopicCode(input.request));
       const temperature = temperatureForGeneratorAttempt(
         input.attempt,
         prompt.metadata.temperature,

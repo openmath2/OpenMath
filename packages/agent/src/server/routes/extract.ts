@@ -59,7 +59,7 @@ export function createExtractRoute(deps: ExtractRouteDeps): Hono {
         }
         const mediaType = file.type.toLowerCase();
         if (!ALLOWED_IMAGE_TYPES.has(mediaType)) {
-          return c.json({ error: "unsupported_media_type", message: "PNG · JPG · WEBP 이미지만 올릴 수 있어요." }, 415);
+          return c.json({ error: "unsupported_media_type", message: "지원하는 이미지 형식이 아니에요 (PNG · JPG · WEBP · HEIC)." }, 415);
         }
         const buffer = await file.arrayBuffer();
         if (buffer.byteLength === 0) {

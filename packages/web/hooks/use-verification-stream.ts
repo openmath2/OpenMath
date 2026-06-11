@@ -367,7 +367,7 @@ export function useVerificationStream(
   const inputKey =
     input === null
       ? null
-      : `${input.schoolLevel}|${input.grade ?? "common"}|${input.topic}|${input.topicName}|${input.mode}|${input.sourceItemId}|${input.sourceProblemText ?? ""}|${input.endpoint ?? ""}`;
+      : `${input.schoolLevel}|${input.grade ?? "common"}|${input.topic}|${input.topicName}|${input.mode}|${input.sourceItemId}|${input.sourceProblemText ?? ""}|${input.sourceOrigin ?? "corpus"}|${input.generationKind ?? ""}|${input.endpoint ?? ""}`;
 
   /* effect 본문이 input 의 *최신* 값을 읽어야 하지만 deps 로 넣으면 가드가
    * 무효화되어 부모 re-render 마다 SSE 재연결이 발생한다 (PR #7 리뷰).

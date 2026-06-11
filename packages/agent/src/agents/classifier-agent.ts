@@ -79,10 +79,12 @@ export function resolveClassification(raw: LlmClassification): Classification {
   const byCode = findCurriculumTopic(raw.topic_code);
   const matched = byCode ?? findCurriculumTopicByName(raw.topic_name);
 
-  const alternatives = raw.alternatives
-    .map((alt) => findCurriculumTopic(alt.topic_code) ?? findCurriculumTopicByName(alt.topic_name))
-    .filter((topic): topic is NonNullable<typeof topic> => topic !== undefined)
-    .map((topic) => ({ topic_code: topic.code, topic_name: topic.name }));
+  const alternatives = dedupeByCode(
+    raw.alternatives
+      .map((alt) => findCurriculumTopic(alt.topic_code) ?? findCurriculumTopicByName(alt.topic_name))
+      .filter((topic): topic is NonNullable<typeof topic> => topic !== undefined)
+      .map((topic) => ({ topic_code: topic.code, topic_name: topic.name })),
+  );
 
   if (matched === undefined) {
     // 코드·이름 모두 카탈로그 밖. 유효한 대안이 있으면 그 첫 번째로 강등 매칭한다
@@ -99,7 +101,7 @@ export function resolveClassification(raw: LlmClassification): Classification {
         problem_type: raw.problem_type,
         difficulty: raw.difficulty,
         confidence: Math.min(raw.confidence, 0.4),
-        alternatives: alternatives.slice(1),
+        alternatives: alternatives.filter((alt) => alt.topic_code !== promoted.code),
       };
     }
     // 대안도 없음 — 단원을 비워 사용자가 확인 화면에서 직접 고르게 한다.
@@ -129,4 +131,18 @@ export function resolveClassification(raw: LlmClassification): Classification {
     confidence,
     alternatives: alternatives.filter((alt) => alt.topic_code !== matched.code),
   };
+}
+
+/** 같은 topic_code 중복 제거(첫 항목 유지) — LLM 이 같은 대안을 반복해도 UI 중복을 막는다. */
+function dedupeByCode(
+  items: { topic_code: string; topic_name: string }[],
+): { topic_code: string; topic_name: string }[] {
+  const seen = new Set<string>();
+  const out: { topic_code: string; topic_name: string }[] = [];
+  for (const item of items) {
+    if (seen.has(item.topic_code)) continue;
+    seen.add(item.topic_code);
+    out.push(item);
+  }
+  return out;
 }
