@@ -86,6 +86,17 @@ describe("POST /api/generate integration", () => {
     expect(result?.data[0]?.verification_status).toBe("pass");
   });
 
+  it("fans out to count parallel problems merged into one result, one step bar", async () => {
+    const app = createTestApp({ answer: "2, 5", solverAnswer: "2, 5" });
+    const events = await postGenerate(app.fetch, 3);
+
+    expect(events.filter((event) => event.event === "step")).toHaveLength(12);
+    const result = events.find((event) => event.event === "result");
+    expect(result?.data[0]?.verification_status).toBe("pass");
+    expect(result?.data[2]?.verification_status).toBe("pass");
+    expect(result?.data[3]).toBeUndefined();
+  });
+
   it("terminates early with rag error when no refs exist", async () => {
     const app = createTestApp({ refs: [], answer: "2, 5", solverAnswer: "2, 5" });
     const events = await postGenerate(app.fetch);
@@ -174,14 +185,14 @@ function createTestApp(opts: {
   });
 }
 
-function generateRequest(): Request {
+function generateRequest(count = 1): Request {
   const body: GenerateRequest = {
     grade: 3,
     topic: "9수02-09",
     mode: "structural",
     school_level: "middle",
     dims: ["수식 전개", "해 검증"],
-    count: 5,
+    count,
     difficulty: "medium",
     problem_type: "objective",
   };
@@ -192,8 +203,11 @@ function generateRequest(): Request {
   });
 }
 
-async function postGenerate(fetch: typeof globalThis.fetch): Promise<WireSseEvent[]> {
-  const response = await fetch(generateRequest());
+async function postGenerate(
+  fetch: typeof globalThis.fetch,
+  count = 1,
+): Promise<WireSseEvent[]> {
+  const response = await fetch(generateRequest(count));
   const text = await response.text();
   return parseSse(text);
 }
