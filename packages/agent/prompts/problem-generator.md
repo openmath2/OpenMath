@@ -107,7 +107,10 @@ JSON으로만 응답.
 - structural 모드에서는 필수 기법을 모두 포함해야 한다. conceptual 모드에서는 필수·관련 기법 중 실제 사용한 것을 최소 1개 이상 포함한다.
 - 예시 출력: `{ "question_text": "서로 다른 5권의 책 중 3권을 골라 일렬로 꽂는 방법의 수는?", "expected_answer": "60", "techniques_used": ["permutation"], "proposed_solution_trace": "5권 중 3권을 순서 있게 배열하므로 5P3 = 5*4*3 = 60이다.", "verification_expression": "factorial(5)/factorial(5-3)" }`
 - `proposed_solution_trace`에 풀이 단계와 출제 의도를 한국어로 명시하되, 수식도 JSON 안전한 plain text 표기만 사용한다.
-- `verification_expression`은 정답에 도달하는 *계산식 하나*다. SymPy가 평가할 수 있는 표기만 쓴다: 팩토리얼은 `factorial(4)`, 조합은 `binomial(10, 3)`, 순열은 `factorial(5)/factorial(5-2)`, 사칙연산은 `*`, `/`, `+`, `-`, 지수는 `**`. 이 식을 평가한 값이 `expected_answer`와 정확히 일치해야 한다. 예: 정답이 `864`이고 풀이가 3!*3!*4!이면 `"verification_expression": "factorial(3)*factorial(3)*factorial(4)"`. 정답이 단일 수치/수식 값이 아닐 때(서술형, 참/거짓 등)만 생략한다. `4!` 같은 느낌표 표기, 한글, 단위는 절대 넣지 않는다.
+- `verification_expression`은 정답에 도달하는 *식 하나*다. SymPy가 파싱할 수 있는 표기만 쓴다: 팩토리얼은 `factorial(4)`, 조합은 `binomial(10, 3)`, 순열은 `factorial(5)/factorial(5-2)`, 사칙연산은 `*`, `/`, `+`, `-`, 지수는 `**`. `4!` 같은 느낌표 표기, 한글, 단위는 절대 넣지 않는다. 두 가지 경우가 있다:
+  - **정답이 숫자**(경우의 수, 확률, 통계값 등)이면: 그 숫자에 도달하는 *계산식*을 쓴다. 평가한 값이 `expected_answer`와 정확히 일치해야 한다. 예: 정답이 `864`이고 풀이가 3!*3!*4!이면 `"verification_expression": "factorial(3)*factorial(3)*factorial(4)"`.
+  - **정답이 문자식**(식의 전개·간단히, 곱셈공식, 인수분해 등)이면: 정답을 그대로 베끼지 말고, 문제 조건에서 세운 *전개하기 전의 원식*을 쓴다. 이 원식을 SymPy가 simplify하면 `expected_answer`와 기호적으로 같아야 한다 — 답을 베끼면 검증이 무의미하다. 예: "가로 x+4, 세로 x-1, 높이 x+2인 직육면체 A의 부피에서 ... 를 뺀 식"이고 정답이 `3x+8`이면, 정답이 아니라 조건의 원식 `"verification_expression": "x**3 + 5*x*(x+1) - (x+4)*(x-1)*(x+2)"`을 쓴다. 변수는 `x*(x+1)`처럼 곱셈 `*`를 반드시 명시한다(`x(x+1)` 금지).
+  - 정답이 단일 수치/수식 값이 아닐 때(서술형, 참/거짓, 그래프 설명 등)만 생략한다.
 - 결과 문제는 source problem과 달라야 하며, structural/conceptual 모드 차이가 풀이 설명에 드러나야 한다.
 
 # TODO
