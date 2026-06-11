@@ -99,11 +99,10 @@ export function createExtractRoute(deps: ExtractRouteDeps): Hono {
     try {
       classification = await classifier.classify({ extraction });
     } catch (err) {
+      // 분류 실패는 치명적이지 않다 — 추출은 성공했으니 단원을 비운 채 200 으로
+      // 확인 화면을 열어 사용자가 학년 · 단원을 직접 고르게 한다 (수동 폴백).
       console.error("[extract] classification failed:", err instanceof Error ? err.message : err);
-      return c.json(
-        { error: "classification_failed", message: "단원 자동 인식에 실패했어요. 확인 화면에서 직접 골라 주세요." },
-        502,
-      );
+      classification = manualPickClassification(extraction);
     }
 
     const response: ExtractResponse = ExtractResponseSchema.parse({
@@ -129,4 +128,19 @@ function buildWarnings(extraction: Extraction, classification: Classification): 
     warnings.push("학년 · 단원 자동 인식이 확실하지 않아요. 맞는지 확인해 주세요.");
   }
   return warnings;
+}
+
+/** 분류기가 실패했을 때의 빈 분류 — 단원을 비워 확인 화면에서 수동 선택을 유도한다. */
+function manualPickClassification(extraction: Extraction): Classification {
+  const objective = extraction.choices !== null && extraction.choices.length > 0;
+  return {
+    school_level: "middle",
+    grade: null,
+    topic_code: "",
+    topic_name: "",
+    problem_type: objective ? "objective" : "short_answer",
+    difficulty: "medium",
+    confidence: 0,
+    alternatives: [],
+  };
 }

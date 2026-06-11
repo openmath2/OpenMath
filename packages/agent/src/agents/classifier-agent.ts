@@ -83,7 +83,23 @@ export function resolveClassification(raw: LlmClassification): Classification {
     .map((topic) => ({ topic_code: topic.code, topic_name: topic.name }));
 
   if (matched === undefined) {
-    // 카탈로그 밖 — 사용자가 확인 화면에서 직접 고르도록 확신을 크게 낮춘다.
+    // 코드·이름 모두 카탈로그 밖. 유효한 대안이 있으면 그 첫 번째로 강등 매칭한다
+    // (학교급을 raw 코드 접두로만 추정하면 오분류 위험 — 대안의 실제 학교급을 쓴다).
+    const firstAlt = alternatives[0];
+    const promoted = firstAlt === undefined ? undefined : findCurriculumTopic(firstAlt.topic_code);
+    if (promoted !== undefined) {
+      return {
+        school_level: promoted.school_level,
+        grade: promoted.grade,
+        topic_code: promoted.code,
+        topic_name: promoted.name,
+        problem_type: raw.problem_type,
+        difficulty: raw.difficulty,
+        confidence: Math.min(raw.confidence, 0.4),
+        alternatives: alternatives.slice(1),
+      };
+    }
+    // 대안도 없음 — 단원을 비워 사용자가 확인 화면에서 직접 고르게 한다.
     return {
       school_level: raw.topic_code.startsWith("10") ? "high" : "middle",
       grade: null,

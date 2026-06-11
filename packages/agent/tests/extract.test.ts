@@ -101,6 +101,20 @@ describe("resolveClassification", () => {
     });
     expect(r.alternatives).toEqual([{ topic_code: "9수02-10", topic_name: "이차방정식의 활용" }]);
   });
+
+  it("promotes the first valid alternative when the primary code and name are invalid", () => {
+    const r = resolveClassification({
+      ...base,
+      topic_code: "없는코드",
+      topic_name: "양자역학",
+      alternatives: [{ topic_code: "9수02-10", topic_name: "이차방정식의 활용" }],
+    });
+    expect(r.topic_code).toBe("9수02-10");
+    expect(r.school_level).toBe("middle");
+    expect(r.grade).toBe(3);
+    expect(r.alternatives).toEqual([]);
+    expect(r.confidence).toBeLessThanOrEqual(0.4);
+  });
 });
 
 describe("POST /api/extract", () => {
@@ -139,6 +153,21 @@ describe("POST /api/extract", () => {
     const res = await app.request("/api/extract", jsonReq({ text: "x" }));
     expect(res.status).toBe(200);
     const body = (await res.json()) as ExtractResponse;
+    expect(body.warnings.some((w) => w.includes("단원"))).toBe(true);
+  });
+
+  it("opens manual confirm (200) when classification fails, not 502", async () => {
+    const throwingClassifier: ClassifierAgent = {
+      async classify() {
+        throw new Error("classifier model down");
+      },
+    };
+    const app = createExtractRoute({ extractor: okExtractor, classifier: throwingClassifier });
+    const res = await app.request("/api/extract", jsonReq({ text: "x" }));
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as ExtractResponse;
+    expect(body.extraction.question_text).toContain("이차방정식");
+    expect(body.classification.topic_code).toBe("");
     expect(body.warnings.some((w) => w.includes("단원"))).toBe(true);
   });
 
