@@ -71,7 +71,9 @@ export async function* runVerificationWorkflow(
   assertRequiredDeps(deps);
 
   const timestamp = () => new Date().toISOString();
-  const perStepTimeoutMs = options?.perStepTimeoutMs ?? 30_000;
+  const perStepTimeoutMs = options?.perStepTimeoutMs ?? 60_000;
+  const maxCriticRounds = 2;
+  const generateStepTimeoutMs = perStepTimeoutMs * (1 + 2 * maxCriticRounds);
   const deterministicFallback: DeterministicFallbackMode =
     options?.deterministicFallback ?? "first";
   const maxAttempts = options?.maxRetries ?? 3;
@@ -125,8 +127,8 @@ export async function* runVerificationWorkflow(
         critic: deps.critic,
         refiner: deps.refiner,
         mathEngine: deps.mathEngine,
-        perStepTimeoutMs,
-        maxCriticRounds: 2,
+        perStepTimeoutMs: generateStepTimeoutMs,
+        maxCriticRounds,
       },
       {
         request,

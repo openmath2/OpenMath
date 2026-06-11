@@ -33,7 +33,10 @@ export const EnvSchema = z.object({
   CORPUS_JSONL: z.string().optional(),
 
   MAX_RETRIES: z.coerce.number().int().min(1).max(10).default(3),
-  PER_STEP_TIMEOUT_MS: z.coerce.number().int().min(1000).default(30000),
+  /** 60s, not 30s: one LLM step (intent) can take ~36s on a reasoning model;
+   *  the generate step runs several LLM calls and gets a larger budget in the
+   *  workflow. Below ~45s, last-resort/off generation times out and fails. */
+  PER_STEP_TIMEOUT_MS: z.coerce.number().int().min(1000).default(60000),
 
   /** `first` = template short-circuits LLM when refs exist (current behavior).
    *  `off` = always go through LLM generator path; never substitute template.
