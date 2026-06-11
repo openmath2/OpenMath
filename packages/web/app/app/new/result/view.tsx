@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { LatexRenderer } from "@/components/math/latex-renderer";
+import { LatexAuto } from "@/components/math/latex-renderer";
 import { type Grade, type SchoolLevel, type Topic, gradeLabel } from "../topic/data";
 import { verificationStorageKey } from "@/lib/verification-storage-key";
 import type { ResultProblem } from "./types";
@@ -142,7 +142,7 @@ function toResultProblem(problem: StoredProblem, index: number): ResultProblem {
     status,
     questionLatex: problem.question_latex,
     answerLatex: problem.answer_latex,
-    solutionLatex: problem.explanation_latex ?? "검증 파이프라인에서 생성된 문항입니다.",
+    solutionLatex: problem.explanation_latex ?? null,
     failReason: status === "fail" ? "검증 실패 — 채택할 수 없습니다." : null,
     generationModel: problem.generation_model,
     refinedBy: problem.refined_by,
@@ -309,7 +309,13 @@ export function ResultView({
         </p>
 
         <div className="filter-row" role="toolbar" aria-label="결과 필터">
-          {filters.map((f) => {
+          {filters
+            .filter(
+              (f) =>
+                f.value === "all" ||
+                displayProblems.some((p) => matchesFilter(p, f.value)),
+            )
+            .map((f) => {
             const active = filter === f.value;
             return (
               <button
@@ -390,39 +396,6 @@ export function ResultView({
                           {isAdopted ? "★" : "☆"}
                         </span>
                       </button>
-                      <button
-                        type="button"
-                        className="btn-icon-circular"
-                        aria-label="다시 생성"
-                        disabled
-                        aria-describedby={`card-${p.id}-v2note`}
-                      >
-                        <span aria-hidden="true">↻</span>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-icon-circular"
-                        aria-label="수정"
-                        disabled
-                        aria-describedby={`card-${p.id}-v2note`}
-                      >
-                        <span aria-hidden="true">✎</span>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn-icon-circular"
-                        aria-label="폐기"
-                        disabled
-                        aria-describedby={`card-${p.id}-v2note`}
-                      >
-                        <span aria-hidden="true">×</span>
-                      </button>
-                      <span
-                        id={`card-${p.id}-v2note`}
-                        className="sr-only"
-                      >
-                        v2 에서 도입 예정 — 1차 MVP 에서는 비활성.
-                      </span>
                     </div>
                   </header>
 
@@ -439,30 +412,29 @@ export function ResultView({
                   ) : null}
 
                   <div className="card-body">
-                    <div className="formula-stage">
-                      <LatexRenderer
-                        latex={p.questionLatex}
-                        block
-                      />
+                    <div className="formula-stage question-stage">
+                      <LatexAuto source={p.questionLatex} />
                     </div>
                   </div>
 
                   <div className="card-meta">
                     <div className="answer">
                       <span className="answer-label">답</span>
-                      <LatexRenderer latex={p.answerLatex} />
+                      <LatexAuto source={p.answerLatex} />
                     </div>
-                    <details className="disclosure-row solution-disclosure">
-                      <summary>
-                        <span>풀이 보기</span>
-                        <span className="chevron" aria-hidden="true">
-                          ⌄
-                        </span>
-                      </summary>
-                      <div className="solution-body">
-                        <LatexRenderer latex={p.solutionLatex} />
-                      </div>
-                    </details>
+                    {p.solutionLatex !== null ? (
+                      <details className="disclosure-row solution-disclosure">
+                        <summary>
+                          <span>풀이 보기</span>
+                          <span className="chevron" aria-hidden="true">
+                            ⌄
+                          </span>
+                        </summary>
+                        <div className="solution-body">
+                          <LatexAuto source={p.solutionLatex} />
+                        </div>
+                      </details>
+                    ) : null}
                   </div>
                 </article>
               );
