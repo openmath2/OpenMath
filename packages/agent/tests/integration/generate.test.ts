@@ -74,14 +74,22 @@ describe("POST /api/generate integration", () => {
     const app = createTestApp({ answer: "2, 5", solverAnswer: "2, 5" });
     const events = await postGenerate(app.fetch);
 
-    expect(events.filter((event) => event.event === "step").map((event) => event.data.status)).toEqual([
-      "started", "completed",
-      "started", "completed",
-      "started", "completed",
-      "started", "completed",
-      "started", "completed",
-      "started", "completed",
+    // 4(sympy_verify)와 5(re_solve)는 병렬 실행 — 둘 다 시작된 뒤 순서대로 완료된다.
+    expect(
+      events
+        .filter((event) => event.event === "step")
+        .map((event) => [event.data.index, event.data.status]),
+    ).toEqual([
+      [1, "started"], [1, "completed"],
+      [2, "started"], [2, "completed"],
+      [3, "started"], [3, "completed"],
+      [4, "started"], [5, "started"],
+      [4, "completed"], [5, "completed"],
+      [6, "started"], [6, "completed"],
     ]);
+    // preview는 result와 동일하게 formatLatex 적용 후의 문제 본문이 온다.
+    const preview = events.find((event) => event.event === "preview");
+    expect(preview?.data.latex).toBe("x^{2} - 7 x + 10 = 0");
     const result = events.find((event) => event.event === "result");
     expect(result?.data[0]?.verification_status).toBe("pass");
   });

@@ -32,11 +32,21 @@ export type StepEvent = z.infer<typeof StepEventSchema>;
 export const RetryEventSchema = z.object({
   type: z.literal("retry"),
   attempt: z.number().int().min(1),
+  max_attempts: z.number().int().min(1),
   reason: z.string(),
   timestamp: z.string(),
 });
 
 export type RetryEvent = z.infer<typeof RetryEventSchema>;
+
+/** 3단계(generate) 완료 직후 후보 문제 본문 미리보기. FE의 CANDIDATE PREVIEW 스테이지가 소비. */
+export const PreviewEventSchema = z.object({
+  type: z.literal("preview"),
+  latex: z.string().min(1),
+  timestamp: z.string(),
+});
+
+export type PreviewEvent = z.infer<typeof PreviewEventSchema>;
 
 export const ResultEventSchema = z.object({
   type: z.literal("result"),
@@ -65,6 +75,7 @@ export type ErrorEvent = z.infer<typeof ErrorEventSchema>;
 export const ProgressEventSchema = z.discriminatedUnion("type", [
   StepEventSchema,
   RetryEventSchema,
+  PreviewEventSchema,
   ResultEventSchema,
   ErrorEventSchema,
 ]);

@@ -141,7 +141,7 @@ describe("generateProblem deterministicFallback behavior", () => {
 
     expect(spy).not.toHaveBeenCalled();
     expect(result.refined_by).toContain("deterministic-topic-generator");
-    expect(result.data.generation_metadata.model).toBe("deterministic-topic-generator");
+    expect(result.data?.generation_metadata.model).toBe("deterministic-topic-generator");
     expect(result.gate.status).toBe("passed");
   });
 
@@ -154,7 +154,7 @@ describe("generateProblem deterministicFallback behavior", () => {
     );
 
     expect(spy).not.toHaveBeenCalled();
-    expect(result.data.generation_metadata.model).toBe("deterministic-topic-generator");
+    expect(result.data?.generation_metadata.model).toBe("deterministic-topic-generator");
   });
 
   it("skips the deterministic template when mode='off' (goes through LLM generator)", async () => {
@@ -167,8 +167,8 @@ describe("generateProblem deterministicFallback behavior", () => {
 
     expect(spy).toHaveBeenCalledTimes(1);
     expect(result.refined_by).not.toContain("deterministic-topic-generator");
-    expect(result.data.generation_metadata.model).toBe("llm-test-model");
-    expect(result.data.candidate_id).toBe(llmCandidate.candidate_id);
+    expect(result.data?.generation_metadata.model).toBe("llm-test-model");
+    expect(result.data?.candidate_id).toBe(llmCandidate.candidate_id);
   });
 
   it("skips the deterministic template up-front when mode='last-resort'", async () => {
@@ -188,7 +188,7 @@ describe("generateProblem deterministicFallback behavior", () => {
 
     expect(spy).toHaveBeenCalledTimes(1);
     expect(result.refined_by).not.toContain("deterministic-topic-generator");
-    expect(result.data.generation_metadata.model).toBe("llm-test-model");
-    expect(result.data.candidate_id).toBe(llmCandidate.candidate_id);
+    expect(result.data?.generation_metadata.model).toBe("llm-test-model");
+    expect(result.data?.candidate_id).toBe(llmCandidate.candidate_id);
   });
 });

@@ -34,7 +34,13 @@ const STATUS_ICON: Record<Step["status"], string> = {
   active: "",
   pass: "✓",
   fail: "✗",
+  unverified: "△",
 };
+
+/* unverified 는 디자인 토큰의 warn 변형을 재사용한다 (실패 아님 — 판정 불가). */
+function rowClass(status: Step["status"]): string {
+  return status === "unverified" ? "warn" : status;
+}
 
 function StepIcon({ step }: { step: Step }) {
   if (step.status === "active") {
@@ -51,7 +57,7 @@ function StepRow({ step }: { step: Step }) {
   const summaryText = step.summary ?? defaultSummary(step.status);
   return (
     <li
-      className={`step-progress-row ${step.status}`}
+      className={`step-progress-row ${rowClass(step.status)}`}
       aria-label={`${step.index}/6 ${step.name} — ${stateLabel(step.status)}${
         summaryText ? `, ${summaryText}` : ""
       }`}
@@ -80,6 +86,8 @@ function defaultSummary(status: Step["status"]): string {
       return "통과";
     case "fail":
       return "실패";
+    case "unverified":
+      return "기호 검증 불가 — 재풀이로 확인";
   }
 }
 
@@ -93,6 +101,8 @@ function stateLabel(status: Step["status"]): string {
       return "통과";
     case "fail":
       return "실패";
+    case "unverified":
+      return "검증 불가";
   }
 }
 
@@ -223,7 +233,19 @@ export function VerifyView({ schoolLevel, grade, topic, mode, srcRef }: Props) {
   const isError = stream.status === "error";
   const isCancelled = stream.status === "cancelled";
   const isDone = stream.status === "done";
+  const isStreaming = stream.status === "streaming";
   const showPreview = stream.previewLatex !== null;
+  const showAttempt = stream.attempt !== null && isStreaming;
+  /* 스텝바(첫 런)는 끝났는데 result가 아직이면 나머지 병렬 런을 기다리는 중. */
+  const stepsSettled = stream.steps.every(
+    (step) =>
+      step.status === "pass" || step.status === "fail" || step.status === "unverified",
+  );
+  const waitingSiblingRuns =
+    isStreaming &&
+    stepsSettled &&
+    stream.runs !== null &&
+    stream.runs.completed < stream.runs.total;
 
   const verifyHref = `/app/new/verify?school=${schoolLevel}&grade=${gradeParam}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&srcRef=${encodeURIComponent(srcRef)}`;
   const resultHref = `/app/new/result?school=${schoolLevel}&grade=${gradeParam}&topic=${encodeURIComponent(topic.code)}&mode=${mode}&srcRef=${encodeURIComponent(srcRef)}`;
@@ -249,7 +271,8 @@ export function VerifyView({ schoolLevel, grade, topic, mode, srcRef }: Props) {
           검증하고 있습니다
         </h1>
         <p className="page-subtitle">
-          생성과 검증을 6 단계로 진행합니다. 보통 5 ~ 30 초 걸려요.
+          생성과 검증을 6 단계로 진행합니다. 추론 모델이 직접 풀어보며
+          검증하므로 보통 1 ~ 3 분 걸려요.
         </p>
 
         {isError && stream.error !== null ? (
@@ -289,6 +312,30 @@ export function VerifyView({ schoolLevel, grade, topic, mode, srcRef }: Props) {
           </div>
         ) : null}
 
+        {showAttempt && stream.attempt !== null ? (
+          <div className="inline-notice inline-notice-warn" role="status">
+            <span className="icon" aria-hidden="true">
+              ↻
+            </span>
+            <span className="body">
+              시도 {stream.attempt.current}/{stream.attempt.max} — 이전 후보가
+              검증을 통과하지 못해 다시 생성합니다.
+              {stream.attempt.reason ? ` (${stream.attempt.reason})` : ""}
+            </span>
+          </div>
+        ) : null}
+
+        {waitingSiblingRuns ? (
+          <div className="inline-notice inline-notice-warn" role="status">
+            <span className="icon" aria-hidden="true">
+              …
+            </span>
+            <span className="body">
+              나머지 문항을 검증하고 있어요. 곧 결과가 도착합니다.
+            </span>
+          </div>
+        ) : null}
+
         <ol
           className="step-progress-list"
           aria-label="검증 6 단계"
@@ -299,6 +346,12 @@ export function VerifyView({ schoolLevel, grade, topic, mode, srcRef }: Props) {
             <StepRow key={step.index} step={step} />
           ))}
         </ol>
+
+        {stream.runs !== null && stream.runs.total > 1 ? (
+          <p className="runs-progress" role="status">
+            문항 {stream.runs.completed}/{stream.runs.total} 생성 완료
+          </p>
+        ) : null}
 
         {showPreview && stream.previewLatex !== null ? (
           <div className="formula-stage-wrap">

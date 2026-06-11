@@ -64,7 +64,10 @@ export async function extractIntent(
         step: "intent",
         status: "passed",
         duration_ms: Date.now() - started,
-        evidence: { objective_code: intent.objective_code },
+        evidence: {
+          objective_code: intent.objective_code,
+          dimensions: intent.evaluation_dimensions.length,
+        },
       },
     };
   } catch (err) {
@@ -79,6 +82,7 @@ export async function extractIntent(
         duration_ms: Date.now() - started,
         evidence: {
           objective_code: fallback.objective_code,
+          dimensions: fallback.evaluation_dimensions.length,
           fallback: true,
           dimensions_source: dimensionsSource,
           llm_error: err instanceof Error ? err.message : String(err),

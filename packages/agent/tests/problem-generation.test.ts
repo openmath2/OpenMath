@@ -83,7 +83,7 @@ describe("generateProblem", () => {
     );
 
     expect(result.gate.status).toBe("passed");
-    expect(result.data.expected_answer).toBe("5, -2");
+    expect(result.data?.expected_answer).toBe("5, -2");
     expect(result.gate.evidence).toMatchObject({
       normalization_skipped_reasons: ["answer normalization skipped: math-engine rejected extracted equation"],
     });
@@ -121,7 +121,7 @@ describe("generateProblem", () => {
       },
     );
 
-    expect(result.data.expected_answer).toBe("②");
+    expect(result.data?.expected_answer).toBe("②");
   });
 
   it("refines integer-and-rational candidates that drift into radical calculation", async () => {
@@ -169,7 +169,7 @@ describe("generateProblem", () => {
       },
     );
 
-    expect(result.data.question_text).toBe(goodCandidate.question_text);
+    expect(result.data?.question_text).toBe(goodCandidate.question_text);
     expect(hints.join("\n")).toContain("정수와 유리수");
     expect(result.refined_by).toContain("deterministic-topic-guard");
   });
@@ -213,7 +213,101 @@ describe("generateProblem", () => {
       },
     );
 
-    expect(result.data.question_text).toBe(goodCandidate.question_text);
+    expect(result.data?.question_text).toBe(goodCandidate.question_text);
+  });
+
+  it("returns a failed gate with null data instead of throwing when generation fails", async () => {
+    const result = await generateProblem(
+      {
+        generator: {
+          generate: async () => {
+            throw new Error("provider exploded");
+          },
+        },
+        critic,
+        refiner,
+        mathEngine,
+      },
+      {
+        request: {
+          grade: 3,
+          topic: "9수02-10",
+          topic_name: "이차방정식의 활용",
+          mode: "structural",
+          school_level: "middle",
+          dims: ["A"],
+          count: 1,
+          difficulty: "medium",
+          problem_type: "objective",
+        },
+        intent: candidate.inferred_intent,
+        refs: [],
+        strategy: null,
+        attempt: 1,
+        deterministicFallback: "off",
+      },
+    );
+
+    expect(result.data).toBeNull();
+    expect(result.gate.status).toBe("failed");
+    expect(result.gate.failure_detail?.code).toBe("generation_failed");
+    expect(result.gate.failure_detail?.message).toContain("provider exploded");
+  });
+
+  it("records critic rounds and hints in gate evidence", async () => {
+    const fixedCandidate: GeneratedProblem = {
+      ...candidate,
+      question_text: "다음 방정식을 풀어라. x**2 - 9*x + 20 = 0",
+      expected_answer: "4, 5",
+    };
+    let critiqueCalls = 0;
+    const result = await generateProblem(
+      {
+        generator: { generate: async () => candidate },
+        critic: {
+          critique: async () => {
+            critiqueCalls += 1;
+            return critiqueCalls === 1
+              ? { passes: false, hints: ["문구를 더 명확히 하라"] }
+              : { passes: true, hints: [] };
+          },
+        },
+        refiner: { refine: async () => fixedCandidate },
+        mathEngine,
+      },
+      {
+        request: {
+          grade: 3,
+          topic: "9수02-10",
+          topic_name: "이차방정식의 활용",
+          mode: "structural",
+          school_level: "middle",
+          dims: ["A"],
+          count: 1,
+          difficulty: "medium",
+          problem_type: "objective",
+        },
+        intent: candidate.inferred_intent,
+        refs: [],
+        strategy: null,
+        attempt: 1,
+        deterministicFallback: "off",
+      },
+    );
+
+    expect(result.gate.evidence).toMatchObject({
+      critic_hints_total: 1,
+      critic_rounds: [
+        {
+          round: 1,
+          source: "constraint-critic",
+          passes: false,
+          hints: ["문구를 더 명확히 하라"],
+        },
+        { round: 2, source: "constraint-critic", passes: true, hints: [] },
+      ],
+    });
+    expect(result.refined_by).toEqual(["constraint-critic", "refiner", "constraint-critic"]);
   });
 
   it("refines geometry candidates that depend on an unseen figure", async () => {
@@ -255,6 +349,6 @@ describe("generateProblem", () => {
       },
     );
 
-    expect(result.data.question_text).toBe(goodCandidate.question_text);
+    expect(result.data?.question_text).toBe(goodCandidate.question_text);
   });
 });

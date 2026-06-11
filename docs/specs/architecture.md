@@ -159,7 +159,7 @@
 - **Closes**: Q-6
 
 ### D-6. 클라이언트 ↔ agent 프로토콜은 SSE
-- **결정**: Hono `streamSSE` + 클라이언트 `EventSource`. `POST /api/generate`가 `text/event-stream`으로 응답. event 종류: `step` (단계 시작/완료), `result` (최종 문제 묶음), `error` (스테이지·메시지).
+- **결정**: Hono `streamSSE` + 클라이언트 `EventSource`. `POST /api/generate`가 `text/event-stream`으로 응답. event 종류: `step` (단계 시작/완료/판정불가 + 단계 서사 summary), `preview` (3단계 직후 후보 미리보기), `attempt` (재생성 시작 — attempt/max_attempts/reason), `runs` (병렬 런 집계), `result` (최종 문제 묶음), `error` (스테이지·메시지). 상세 wire 계약: `packages/web/README.md` §SSE Consumption.
 - **대안**: (a) sync REST + 폴링 (step bar 라이브 노출 안됨), (b) job 큐 + 폴링/웹훅 (다중 사용자 동시성 1차 MVP scope 초과), (c) WebSocket (양방향 불필요).
 - **채택 사유**: D-4 `streamText` chunk + D-5 async generator emit이 SSE와 1:1 매칭. 단방향 progress 스트리밍 표준. 프론트 `EventSource` 빌트인.
 - **Closes**: Q-3

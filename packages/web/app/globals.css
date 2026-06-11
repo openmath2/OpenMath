@@ -1590,6 +1590,16 @@
     color: var(--color-warn-deep);
   }
 
+  /* runs-progress — 병렬 생성 런 집계 (검증 화면, count > 1) */
+  .runs-progress {
+    margin-top: 12px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--color-ink-3);
+    text-align: right;
+  }
+
   /* spinner-dot — DESIGN.md {component.spinner-dot} */
   .spinner-dot {
     width: 14px;

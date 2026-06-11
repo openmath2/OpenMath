@@ -38,12 +38,18 @@ export const EnvSchema = z.object({
    *  workflow. Below ~45s, last-resort/off generation times out and fails. */
   PER_STEP_TIMEOUT_MS: z.coerce.number().int().min(1000).default(60000),
 
-  /** `first` = template short-circuits LLM when refs exist (current behavior).
+  /** `first` = template short-circuits LLM when refs exist.
    *  `off` = always go through LLM generator path; never substitute template.
-   *  `last-resort` = placeholder, currently behaves like `first` (see TODO 1-1a). */
+   *  `last-resort` = LLM first; substitute the deterministic template only when the
+   *  final verification verdict is `rejected` (transparent fallback, D-11). */
   DETERMINISTIC_FALLBACK: z
     .enum(["off", "last-resort", "first"])
     .default("first"),
+
+  /** Per-run JSONL observability traces (ProgressEvent 전문 + LLM call 지연/토큰).
+   *  Files land in TRACE_DIR: run-<date>-<id>.jsonl, llm.jsonl. */
+  TRACE_ENABLED: z.enum(["true", "false"]).default("true"),
+  TRACE_DIR: z.string().default("./runs"),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

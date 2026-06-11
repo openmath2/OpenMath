@@ -1,6 +1,8 @@
 /** Verification workflow — deterministic Orchestrator (D-5 outer skeleton).
  *  Owns the user-visible 6-step progress. Streams ProgressEvent via async generator. */
 
+import { randomUUID } from "node:crypto";
+
 import type { LanguageModel } from "ai";
 
 import type {
@@ -144,37 +146,53 @@ export async function* runVerificationWorkflow(
     const candidate = generation.data;
     yield step("generate", "done", timestamp(), generation.gate);
 
-    yield step("sympy_verify", "start", timestamp());
-    const sympy = await verifyWithSympy(
-      { mathEngine: deps.mathEngine, perStepTimeoutMs },
-      { candidate },
-    );
-    yield step("sympy_verify", "done", timestamp(), sympy.gate);
+    let gates: GateResult[];
+    if (candidate === null) {
+      // 생성 실패는 failed 게이트로 강등하고 4~6단계를 skipped 처리한다.
+      // 재시도 정책이 generate 힌트로 다음 attempt를 시도할 수 있다 — 워크플로우는 죽지 않는다.
+      gates = [
+        ragGate,
+        intentStep.gate,
+        generation.gate,
+        skippedGate("sympy_verify"),
+        skippedGate("re_solve"),
+        skippedGate("objective_map"),
+      ];
+    } else {
+      yield { type: "preview", latex: candidate.question_text, timestamp: timestamp() };
 
-    yield step("re_solve", "start", timestamp());
-    const reSolve = await independentResolve(
-      { solver: deps.solver, mathEngine: deps.mathEngine, perStepTimeoutMs },
-      { candidate, sympyGate: sympy.gate },
-    );
-    yield step("re_solve", "done", timestamp(), reSolve.gate);
+      // sympy_verify(결정론)와 re_solve(LLM)는 서로 독립 — 동시 실행으로 지연을 줄인다.
+      yield step("sympy_verify", "start", timestamp());
+      yield step("re_solve", "start", timestamp());
+      const [sympy, reSolve] = await Promise.all([
+        verifyWithSympy({ mathEngine: deps.mathEngine, perStepTimeoutMs }, { candidate }),
+        independentResolve(
+          { solver: deps.solver, mathEngine: deps.mathEngine, perStepTimeoutMs },
+          { candidate },
+        ),
+      ]);
+      yield step("sympy_verify", "done", timestamp(), sympy.gate);
+      yield step("re_solve", "done", timestamp(), reSolve.gate);
 
-    yield step("objective_map", "start", timestamp());
-    const objective = await mapObjective(
-      { llm: deps.objectiveLlm, prompts: deps.prompts, perStepTimeoutMs },
-      { request, refs, candidate, intent: intentStep.data, strategy },
-    );
-    yield step("objective_map", "done", timestamp(), objective.gate);
+      yield step("objective_map", "start", timestamp());
+      const objective = await mapObjective(
+        { llm: deps.objectiveLlm, prompts: deps.prompts, perStepTimeoutMs },
+        { request, refs, candidate, intent: intentStep.data, strategy },
+      );
+      yield step("objective_map", "done", timestamp(), objective.gate);
 
-    const gates = [
-      ragGate,
-      intentStep.gate,
-      generation.gate,
-      sympy.gate,
-      reSolve.gate,
-      objective.gate,
-    ];
+      gates = [
+        ragGate,
+        intentStep.gate,
+        generation.gate,
+        sympy.gate,
+        reSolve.gate,
+        objective.gate,
+      ];
+    }
+
     const verification: Verification = {
-      candidate_id: candidate.candidate_id,
+      candidate_id: candidate?.candidate_id ?? randomUUID(),
       overall: acceptance.decide(gates, attempt),
       gates,
       attempt_count: attempt,
@@ -193,6 +211,17 @@ export async function* runVerificationWorkflow(
         candidate,
         verification,
       });
+      if (finalResult === null) {
+        yield {
+          type: "error",
+          stage: "generate",
+          code: "generation_failed",
+          message: "Problem generation failed on every attempt",
+          recoverable: false,
+          timestamp: timestamp(),
+        };
+        return { verifications };
+      }
       if (finalResult.verification !== verification) {
         verifications[verifications.length - 1] = finalResult.verification;
       }
@@ -210,27 +239,43 @@ export async function* runVerificationWorkflow(
     yield {
       type: "retry",
       attempt,
+      max_attempts: maxAttempts,
       reason: retry.refinementHint ?? "verification failed",
       timestamp: timestamp(),
     };
   }
 }
 
+function skippedGate(stepName: StepName): GateResult {
+  return {
+    step: stepName,
+    status: "skipped",
+    duration_ms: 0,
+    failure_detail: {
+      code: "skipped_generation_failed",
+      message: "Skipped because problem generation failed",
+    },
+  };
+}
+
+/** 최종 attempt의 결과 선택. candidate가 null(생성 실패)이고 결정론 템플릿도 없으면
+ *  null을 반환한다 — 호출자는 result 대신 error 이벤트를 emit해야 한다. */
 function selectFinalResult(input: {
   readonly deterministicFallback: DeterministicFallbackMode;
   readonly request: GenerateRequest;
   readonly intent: Intent;
   readonly refs: readonly RagResult[];
   readonly attempt: number;
-  readonly candidate: GeneratedProblem;
+  readonly candidate: GeneratedProblem | null;
   readonly verification: Verification;
-}): { problem: GeneratedProblem; verification: Verification } {
-  if (input.deterministicFallback !== "last-resort") {
-    return { problem: input.candidate, verification: input.verification };
-  }
-  if (input.verification.overall !== "rejected") {
-    return { problem: input.candidate, verification: input.verification };
-  }
+}): { problem: GeneratedProblem; verification: Verification } | null {
+  const keepCandidate = (): { problem: GeneratedProblem; verification: Verification } | null =>
+    input.candidate === null
+      ? null
+      : { problem: input.candidate, verification: input.verification };
+
+  if (input.deterministicFallback !== "last-resort") return keepCandidate();
+  if (input.verification.overall !== "rejected") return keepCandidate();
 
   const fallback = deterministicInitialCandidate({
     request: input.request,
@@ -238,9 +283,7 @@ function selectFinalResult(input: {
     refs: input.refs,
     attempt: input.attempt,
   });
-  if (fallback === null) {
-    return { problem: input.candidate, verification: input.verification };
-  }
+  if (fallback === null) return keepCandidate();
 
   const problem = withDeterministicGeneratorMarker(fallback);
   const verification = { ...input.verification, candidate_id: problem.candidate_id };
