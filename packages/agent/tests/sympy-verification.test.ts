@@ -270,6 +270,86 @@ describe("verifyWithSympy expression check", () => {
     });
   });
 
+  const expansionCandidate: GeneratedProblem = {
+    ...expressionCandidate,
+    generation_kind: "expression",
+    question_text:
+      "가로 x+4, 세로 x-1, 높이 x+2인 직육면체 A의 부피에서 ... 를 뺀 식을 간단히 하여라.",
+    expected_answer: "3x+8",
+    verification_expression: "x**3 + 5*x*(x+1) - (x+4)*(x-1)*(x+2)",
+  };
+
+  it("passes an expression candidate whose un-simplified verification expression is symbolically equivalent", async () => {
+    const result = await verifyWithSympy(
+      { mathEngine: createSymbolicMathEngine({ equivalent: true }) },
+      { candidate: expansionCandidate },
+    );
+    const gates = passedGates().map((gate) =>
+      gate.step === "sympy_verify" ? result.gate : gate,
+    );
+
+    expect(result.gate.status).toBe("passed");
+    expect(result.gate.evidence).toMatchObject({
+      expression_check: true,
+      symbolic_check: true,
+      verification_expression: "x**3 + 5*x*(x+1) - (x+4)*(x-1)*(x+2)",
+    });
+    expect(createAcceptancePolicy().decide(gates, 1)).toBe("verified");
+  });
+
+  it("fails when the verification expression is not symbolically equivalent to the declared answer", async () => {
+    const result = await verifyWithSympy(
+      { mathEngine: createSymbolicMathEngine({ equivalent: false }) },
+      { candidate: expansionCandidate },
+    );
+    const gates = passedGates().map((gate) =>
+      gate.step === "sympy_verify" ? result.gate : gate,
+    );
+
+    expect(result.gate.status).toBe("failed");
+    expect(result.gate.failure_detail?.code).toBe("expression_symbolic_mismatch");
+    expect(createAcceptancePolicy().decide(gates, 1)).toBe("rejected");
+  });
+
+  it("keeps a genuine engine failure on the verification expression as unverified, not symbolic-failed", async () => {
+    const explodingEngine: MathEngineClient = {
+      ...createSymbolicMathEngine({ equivalent: false }),
+      evaluate: async () => {
+        throw new Error("math-engine /evaluate failed (500): engine crashed");
+      },
+    };
+    const result = await verifyWithSympy(
+      { mathEngine: explodingEngine },
+      { candidate: expansionCandidate },
+    );
+
+    expect(result.gate.status).toBe("unverified");
+    expect(result.gate.evidence).toMatchObject({
+      reason: expect.stringContaining("could not evaluate the verification expression"),
+    });
+  });
+
+  it("requires the 422 status, not just the error text, before taking the symbolic path", async () => {
+    // 5xx 본문이 우연히 같은 문구를 담아도 422가 아니면 진짜 엔진 장애로 보고 unverified에 머문다.
+    const phraseButNot422: MathEngineClient = {
+      ...createSymbolicMathEngine({ equivalent: false }),
+      evaluate: async () => {
+        throw new Error(
+          "math-engine /evaluate failed (500): did not evaluate to a number (proxy error)",
+        );
+      },
+    };
+    const result = await verifyWithSympy(
+      { mathEngine: phraseButNot422 },
+      { candidate: expansionCandidate },
+    );
+
+    expect(result.gate.status).toBe("unverified");
+    expect(result.gate.evidence).toMatchObject({
+      reason: expect.stringContaining("could not evaluate the verification expression"),
+    });
+  });
+
   it("keeps candidates without a verification expression on the unverified fallback", async () => {
     const result = await verifyWithSympy(
       { mathEngine: createExpressionMathEngine({ value: "864" }) },
@@ -347,6 +427,24 @@ function createExpressionMathEngine(opts: {
     evaluate: async () => {
       if (opts.evaluateError === true) throw new Error("evaluate exploded");
       return { value: opts.value ?? "", numeric: opts.value ?? "" };
+    },
+    differentiate: async () => ({ derivative: "" }),
+    limit: async () => ({ limit: "" }),
+  };
+}
+
+/** /evaluate가 "숫자가 아님" 422로 거부하는 식 답 후보를 모사한다. simplify는 식 답을
+ *  정규화하지 못해(다항식 미전개) verify pair 경로로 떨어지고, verify가 SymPy 기호 동치를 대신한다. */
+function createSymbolicMathEngine(opts: { readonly equivalent: boolean }): MathEngineClient {
+  return {
+    health: async () => ({ status: "ok", engine: "sympy" }),
+    solve: async () => ({ solutions: [] }),
+    verify: async () => ({ equivalent: opts.equivalent, diff: opts.equivalent ? "0" : "3*x + 8" }),
+    simplify: async ({ expr }) => ({ simplified: expr.replace(/\s+/g, "") }),
+    evaluate: async () => {
+      throw new Error(
+        "math-engine /evaluate failed (422): Expression did not evaluate to a number: 3*x + 8",
+      );
     },
     differentiate: async () => ({ derivative: "" }),
     limit: async () => ({ limit: "" }),

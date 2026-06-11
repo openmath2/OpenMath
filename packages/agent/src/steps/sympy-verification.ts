@@ -123,9 +123,22 @@ async function verifyCandidate(
   );
 }
 
-/** 후보의 verification_expression을 /evaluate로 평가해 선언 정답과 대조한다.
- *  식이 없으면 null (호출자가 기존 unverified 폴백 유지). 평가 실패는 unverified —
- *  식은 LLM 산출물이라 구문 오류가 수학 오류를 뜻하지 않는다. */
+/** /evaluate가 식이 숫자로 떨어지지 않아 422로 거부했는지. math.py `_compute_evaluate`는
+ *  HTTP 422 + "Expression did not evaluate to a number" detail로만 이 경우를 알린다.
+ *  client는 `math-engine /evaluate failed (422): <body>` 형태로 던지므로(math-engine-client.ts),
+ *  상태코드 422와 detail 문구를 모두 요구해 진짜 엔진 장애(5xx·타임아웃 등)가 symbolic으로
+ *  오분류되지 않게 한다. 둘 중 하나라도 어긋나면 보수적으로 unverified에 머문다(false-fail 방지). */
+function isNonNumericEvaluateError(message: string): boolean {
+  return /\(422\)/.test(message) && message.includes("did not evaluate to a number");
+}
+
+/** 후보의 verification_expression을 선언 정답과 대조한다. 두 경로:
+ *  - 숫자로 떨어지는 식(경우의 수 등)은 /evaluate로 평가값을 구해 대조한다.
+ *  - 변수가 든 식(식 전개·간단히 등)은 /evaluate가 422를 던지므로, 원식 자체를
+ *    선언 정답과 기호 동치(simplify+verify)로 대조한다.
+ *  식이 없으면 null (호출자가 기존 unverified 폴백 유지). 동치 판정 자체가 불가능하면
+ *  (파싱 실패 등) unverified — 식은 LLM 산출물이라 구문 오류가 수학 오류를 뜻하지 않는다.
+ *  깔끔히 not_equivalent로 판정되면 failed(numeric·symbolic 동일). */
 async function verifyByExpression(
   mathEngine: MathEngineClient,
   candidate: GeneratedProblem,
@@ -142,25 +155,40 @@ async function verifyByExpression(
     );
   }
 
-  let evaluatedValue: string;
+  let evaluatedValue: string | null = null;
+  let evaluateError: string | null = null;
   try {
     evaluatedValue = (await mathEngine.evaluate({ expr: expression })).value;
   } catch (err) {
-    return unverifiedCheck(
-      candidate,
-      `math-engine could not evaluate the verification expression: ${err instanceof Error ? err.message : String(err)}`,
-      { verification_expression: expression },
-    );
+    evaluateError = err instanceof Error ? err.message : String(err);
+    // /evaluate가 "숫자가 아닌 식"이라며 422로 거부한 경우만 기호 동치 경로로 폴백한다.
+    // 그 외(타임아웃·5xx·파싱 오류 등)는 진짜 엔진 장애이므로 unverified로 남긴다 —
+    // 식은 LLM 산출물이라 일시적 장애를 "틀린 문제"로 reject하면 안 된다.
+    if (!isNonNumericEvaluateError(evaluateError)) {
+      return unverifiedCheck(
+        candidate,
+        `math-engine could not evaluate the verification expression: ${evaluateError}`,
+        { verification_expression: expression },
+      );
+    }
   }
 
-  const decision = await decideAnswerEquivalence(mathEngine, declared, evaluatedValue);
+  const isSymbolic = evaluatedValue === null;
+  const compared = evaluatedValue ?? expression;
+  const baseEvidence: Record<string, unknown> = isSymbolic
+    ? { expression_check: true, symbolic_check: true, verification_expression: expression }
+    : { expression_check: true, verification_expression: expression, evaluated_value: evaluatedValue };
+
+  const decision = await decideAnswerEquivalence(mathEngine, declared, compared);
   if (decision.status === "undecidable") {
     return unverifiedCheck(
       candidate,
-      `Could not compare declared answer with evaluated verification expression: ${decision.reason ?? "undecidable"}`,
-      { expression_check: true, verification_expression: expression, evaluated_value: evaluatedValue },
+      isSymbolic
+        ? `Could not symbolically compare declared answer with the verification expression${evaluateError === null ? "" : ` (evaluate: ${evaluateError})`}: ${decision.reason ?? "undecidable"}`
+        : `Could not compare declared answer with evaluated verification expression: ${decision.reason ?? "undecidable"}`,
+      baseEvidence,
       declared,
-      evaluatedValue,
+      compared,
     );
   }
   if (decision.status === "not_equivalent") {
@@ -168,27 +196,20 @@ async function verifyByExpression(
       status: "failed",
       verificationKind: candidate.generation_kind,
       expectedAnswer: declared,
-      sympyAnswer: evaluatedValue,
-      failureCode: "expression_value_mismatch",
-      failureMessage: `Verification expression evaluates to ${evaluatedValue}, which does not match the declared answer ${declared}`,
-      evidence: {
-        expression_check: true,
-        verification_expression: expression,
-        evaluated_value: evaluatedValue,
-        equivalence: decision,
-      },
+      sympyAnswer: compared,
+      failureCode: isSymbolic ? "expression_symbolic_mismatch" : "expression_value_mismatch",
+      failureMessage: isSymbolic
+        ? `Verification expression ${expression} is not symbolically equivalent to the declared answer ${declared}`
+        : `Verification expression evaluates to ${compared}, which does not match the declared answer ${declared}`,
+      evidence: { ...baseEvidence, equivalence: decision },
     };
   }
   return {
     status: "passed",
     verificationKind: candidate.generation_kind,
     expectedAnswer: declared,
-    sympyAnswer: evaluatedValue,
-    evidence: {
-      expression_check: true,
-      verification_expression: expression,
-      evaluated_value: evaluatedValue,
-    },
+    sympyAnswer: compared,
+    evidence: baseEvidence,
   };
 }
 

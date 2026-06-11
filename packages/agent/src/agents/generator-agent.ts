@@ -59,7 +59,7 @@ export const LlmGeneratedCandidateSchema = z.object({
     .min(1)
     .optional()
     .describe(
-      "SymPy-evaluable arithmetic expression whose value equals expected_answer, e.g. factorial(3)*factorial(3)*factorial(4). Omit only when the answer is not a single numeric/symbolic value",
+      "SymPy-parseable expression that deterministically reaches expected_answer. Numeric answers: an arithmetic expression whose value equals it, e.g. factorial(3)*factorial(3)*factorial(4). Algebraic answers (expand/simplify): the un-expanded source expression from the problem setup (NOT the answer copied) that SymPy-simplifies to expected_answer, e.g. x**3 + 5*x*(x+1) - (x+4)*(x-1)*(x+2). Use explicit * for multiplication. Omit only when the answer is not a single numeric/algebraic value",
     ),
 });
 
