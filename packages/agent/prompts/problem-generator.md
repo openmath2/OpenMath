@@ -13,6 +13,7 @@ variables:
   - refinementHint
   - counterexample
   - schemaError
+  - attached
 owner: 비할당
 updated: 2026-06-11
 ---
@@ -53,6 +54,12 @@ updated: 2026-06-11
 - structural: 식의 골격과 풀이 단계는 유지하되 계수·상수·근을 바꾼다.
 - conceptual: 평가 차원은 보존하되 식의 형태를 바꾼다. 예: `x**2 - a = 0` 기준이면 `(x - h)**2 - a = 0` 또는 전개형 `x**2 + b*x + c = 0`처럼 다른 표현 경로를 사용한다.
 - `{{request.difficulty}}` 난이도에 맞춘다. medium 이상에서는 `x**2 - a = 0`처럼 너무 직접적인 기본형만 내지 말고 한 단계 변형된 식을 낸다.
+
+{{#if attached}}
+# 첨부 문제 우선 (중요)
+
+기준 문제는 사용자가 직접 첨부한 문제다. 아래 References(참조문항)가 첨부 문제와 다르면 **무조건 첨부 문제를 따른다**. References 는 표현·형식 힌트로만 쓰고, 풀이 구조와 평가 요소는 첨부 문제에서 가져온다. References 가 비어 있거나 동떨어져 있어도 정상이다 — 첨부 문제 하나만으로 동형 문제를 만든다.
+{{/if}}
 
 # Intent
 

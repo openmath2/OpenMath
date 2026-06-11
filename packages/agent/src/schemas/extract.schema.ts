@@ -11,6 +11,7 @@
 
 import { z } from "zod";
 
+import { GenerationKindSchema } from "./generation-kind.schema.js";
 import {
   DifficultySchema,
   ProblemTypeSchema,
@@ -58,6 +59,9 @@ export const ClassificationSchema = z.object({
   topic_name: z.string(),
   problem_type: ProblemTypeSchema,
   difficulty: DifficultySchema,
+  /** 문제 자체에서 추론한 풀이 종류. 생성기가 토픽 파생값보다 우선 사용(토픽 오분류 보호).
+   *  분류 실패 폴백 시에만 생략 → 토픽 파생값으로 복귀. */
+  generation_kind: GenerationKindSchema.optional(),
   confidence: z.number().min(0).max(1),
   alternatives: z.array(ClassificationAlternativeSchema).default([]),
 });

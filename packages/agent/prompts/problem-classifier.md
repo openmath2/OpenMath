@@ -31,6 +31,7 @@ updated: 2026-06-11
 
 - `topic_code`: 위 카탈로그에 **존재하는 코드**만 사용한다. 카탈로그 밖의 코드를 만들지 말 것.
 - `topic_name`: 그 코드의 단원 이름(카탈로그 표기 그대로).
+- `generation_kind`: 문제의 **풀이 종류**를 8개 중에서 고른다 — `equation`(방정식 해), `inequality`(부등식), `system`(연립방정식), `expression`(식 계산·전개·인수분해·근호), `function`(함수·그래프), `geometry`(도형·삼각비), `probability`(경우의 수·확률), `statistics`(통계). 단원이 애매해도 이 종류는 **문제 형태로** 판단한다.
 - `problem_type`: `objective`(객관식·보기 있음) / `short_answer`(짧은 답) / `essay`(서술형) / `subjective`(주관식) 중 하나.
 - `difficulty`: `easy` / `medium` / `hard` 중 하나. 단원 표준 난이도 기준.
 - `confidence`: 분류 확신(0~1). 여러 단원에 걸치거나 교육과정 밖으로 보이면 낮춘다.

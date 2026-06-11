@@ -62,6 +62,7 @@ describe("resolveClassification", () => {
   const base: LlmClassification = {
     topic_code: "9수02-09",
     topic_name: "이차방정식",
+    generation_kind: "equation",
     problem_type: "short_answer",
     difficulty: "medium",
     confidence: 0.9,
@@ -75,6 +76,7 @@ describe("resolveClassification", () => {
     expect(r.grade).toBe(3);
     expect(r.topic_name).toBe("이차방정식");
     expect(r.confidence).toBe(0.9);
+    expect(r.generation_kind).toBe("equation");
   });
 
   it("recovers via name when the code is wrong, lowering confidence", () => {

@@ -105,7 +105,7 @@ describe("SSE wire adapter", () => {
       event: "step",
       data: {
         index: 6,
-        name: "학습 목표 매핑",
+        name: "학습 목표 점검",
         status: "failed",
         summary: "intent_topic_mismatch: Intent does not match requested topic",
       },
@@ -296,7 +296,7 @@ describe("SSE wire adapter", () => {
         event: "step",
         data: JSON.stringify({
           index: 1,
-          name: "RAG 검색",
+          name: "비슷한 문제 찾기",
           status: "completed",
           summary: null,
         }),

@@ -23,6 +23,8 @@ export type Classification = {
   topic_name: string;
   problem_type: string;
   difficulty: "easy" | "medium" | "hard";
+  /** 문제에서 추론한 풀이 종류. 생성 시 토픽 파생값보다 우선(토픽 오분류 보호). */
+  generation_kind?: string;
   confidence: number;
   alternatives: { topic_code: string; topic_name: string }[];
 };

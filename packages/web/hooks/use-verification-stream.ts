@@ -25,12 +25,12 @@ import { verificationStorageKey } from "@/lib/verification-storage-key";
  * ──────────────────────────────────────────────────────────── */
 
 const STEP_NAMES: readonly string[] = [
-  "RAG 검색",
-  "의도 추출",
+  "비슷한 문제 찾기",
+  "출제 의도 분석",
   "문제 생성",
   "산술 검증 (SymPy)",
   "독립 재풀이",
-  "학습 목표 매핑",
+  "학습 목표 점검",
 ] as const;
 
 export type StepStatus = "pending" | "active" | "pass" | "fail" | "unverified";
@@ -106,6 +106,10 @@ export type StreamInput = {
   mode: "structural" | "conceptual";
   sourceItemId: string;
   sourceProblemText?: string;
+  /** "attached" 면 첨부 문제 플로우 — 생성기가 refs 보다 첨부 문제를 우선한다. 기본 corpus. */
+  sourceOrigin?: "corpus" | "attached";
+  /** 첨부 문제에서 추론한 generation kind. 있으면 토픽 파생값보다 우선. */
+  generationKind?: string;
   /** override agent endpoint. defaults to NEXT_PUBLIC_AGENT_URL or localhost:31415 */
   endpoint?: string;
 };
@@ -408,6 +412,8 @@ export function useVerificationStream(
         mode: current.mode,
         source_item_id: current.sourceItemId,
         source_problem_text: current.sourceProblemText,
+        source_origin: current.sourceOrigin,
+        generation_kind: current.generationKind,
       }),
       signal: controller.signal,
       openWhenHidden: true,

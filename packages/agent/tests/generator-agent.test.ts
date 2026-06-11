@@ -164,6 +164,45 @@ describe("createGeneratorAgent", () => {
       prompt: expect.stringContaining("question_text is required"),
     });
   });
+
+  it("prefers request.generation_kind over the topic-derived kind (attached flow)", async () => {
+    aiMock.generateObject.mockResolvedValue({ object: modelObject });
+    const render = vi.fn(() => "rendered prompt");
+    const agent = createGeneratorAgent({
+      model: {} as LanguageModel,
+      modelId: "test-model",
+      promptId: "problem-generator",
+      prompts: promptLoader(render),
+    });
+
+    const generated = await agent.generate({
+      request: { ...request, source_origin: "attached", generation_kind: "geometry" },
+      intent,
+      refs: [],
+      strategy: null,
+      attempt: 1,
+    });
+
+    // 토픽 9수02-10 은 equation 으로 파생되지만, 첨부에서 추론한 kind 가 우선한다.
+    expect(generated.generation_kind).toBe("geometry");
+    expect(render.mock.calls[0]?.[0]).toMatchObject({ attached: true, generationKind: "geometry" });
+  });
+
+  it("falls back to the topic-derived kind when generation_kind is absent (corpus flow)", async () => {
+    aiMock.generateObject.mockResolvedValue({ object: modelObject });
+    const render = vi.fn(() => "rendered prompt");
+    const agent = createGeneratorAgent({
+      model: {} as LanguageModel,
+      modelId: "test-model",
+      promptId: "problem-generator",
+      prompts: promptLoader(render),
+    });
+
+    const generated = await agent.generate({ request, intent, refs: [], strategy: null, attempt: 1 });
+
+    expect(generated.generation_kind).toBe("equation");
+    expect(render.mock.calls[0]?.[0]).toMatchObject({ attached: false });
+  });
 });
 
 function promptLoader(render: LoadedPrompt["render"]): PromptLoader {

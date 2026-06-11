@@ -117,7 +117,9 @@ export function AttachView() {
     setQuestionText(res.extraction.question_text);
     setSchoolLevel(level);
     setGrade(seededGrade);
-    setTopicCode(scope.some((t) => t.code === c.topic_code) ? c.topic_code : "");
+    // 가드 C: 자동 인식 확신이 낮으면 단원을 미리 고르지 않고 사용자가 직접 확인하게 한다.
+    const confidentTopic = c.confidence >= 0.5 && scope.some((t) => t.code === c.topic_code);
+    setTopicCode(confidentTopic ? c.topic_code : "");
     setIsoMode("structural");
   };
 
@@ -178,6 +180,8 @@ export function AttachView() {
           item_id: itemId,
           question_text: questionText.trim(),
           difficulty_norm: difficulty,
+          source_origin: "attached",
+          generation_kind: result?.classification.generation_kind,
         }),
       );
     } catch (err) {
