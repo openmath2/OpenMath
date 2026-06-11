@@ -97,6 +97,7 @@ const mathEngine: MathEngineClient = {
   solve: async () => ({ solutions: ["2", "3"] }),
   verify: async () => ({ equivalent: true, diff: "0" }),
   simplify: async ({ expr }) => ({ simplified: expr }),
+  evaluate: async () => ({ value: "", numeric: "" }),
   differentiate: async () => ({ derivative: "" }),
   limit: async () => ({ limit: "" }),
 };

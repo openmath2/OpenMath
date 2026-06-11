@@ -41,10 +41,6 @@ type VerificationCheck = {
   readonly evidence?: Record<string, unknown>;
 };
 
-type SymbolicCheckability =
-  | { readonly checkable: true }
-  | { readonly checkable: false; readonly reason: string; readonly evidence?: Record<string, unknown> };
-
 const NO_EXTRACTABLE_EQUATION_REASON =
   "Question text does not contain an extractable equation for SymPy";
 const NO_EXTRACTABLE_EQUATION_EVIDENCE: Record<string, unknown> = {
@@ -71,15 +67,18 @@ export async function verifyWithSympy(
       },
     };
   } catch (err) {
+    // 엔진 장애/타임아웃은 수학적 판정이 아니다 — failed로 두면 acceptance가
+    // 인프라 장애를 "틀린 문제"로 reject한다. unverified로 강등해 warning에 머문다.
+    const message = err instanceof Error ? err.message : String(err);
     return {
       gate: {
         step: "sympy_verify",
-        status: "failed",
+        status: "unverified",
         duration_ms: Date.now() - started,
-        evidence: { engine: "sympy" },
+        evidence: { engine: "sympy", reason: `math-engine error: ${message}` },
         failure_detail: {
           code: "sympy_error",
-          message: err instanceof Error ? err.message : String(err),
+          message,
         },
       },
     };
@@ -90,52 +89,121 @@ async function verifyCandidate(
   mathEngine: MathEngineClient,
   candidate: GeneratedProblem,
 ): Promise<VerificationCheck> {
-  const checkability = classifySymbolicCheckability(candidate);
-  if (!checkability.checkable) {
-    return unverifiedCheck(candidate, checkability.reason, checkability.evidence);
-  }
-
   if (candidate.generation_kind === "equation") {
-    if (isChoiceStyleCandidate(candidate)) {
-      return verifyChoiceCandidate(mathEngine, candidate);
+    const equation = extractEquationText(candidate.question_text);
+    if (equation !== null) {
+      if (isChoiceStyleCandidate(candidate)) {
+        if (resolveChoiceOptions(candidate).length === 0) {
+          return unverifiedCheck(
+            candidate,
+            "Multiple-choice equation has no parseable expected_choices/options",
+            { equation },
+          );
+        }
+        return verifyChoiceCandidate(mathEngine, candidate);
+      }
+      return verifyEquationCandidate(mathEngine, candidate);
     }
-    return verifyEquationCandidate(mathEngine, candidate);
+    // 식 추출 실패 (서술형 방정식 문제 등) — 검증식이 있으면 평가 경로로 폴백.
+    const byExpression = await verifyByExpression(mathEngine, candidate);
+    if (byExpression !== null) return byExpression;
+    return unverifiedCheck(
+      candidate,
+      NO_EXTRACTABLE_EQUATION_REASON,
+      NO_EXTRACTABLE_EQUATION_EVIDENCE,
+    );
   }
 
+  const byExpression = await verifyByExpression(mathEngine, candidate);
+  if (byExpression !== null) return byExpression;
   return unverifiedCheck(
     candidate,
-    `No deterministic SymPy verifier is implemented for generation_kind=${candidate.generation_kind}`,
+    "SymPy verification requires a checkable equation; non-equation candidates rely on independent re-solve",
+    { generation_kind: candidate.generation_kind },
   );
 }
 
-function classifySymbolicCheckability(candidate: GeneratedProblem): SymbolicCheckability {
-  if (candidate.generation_kind !== "equation") {
-    return {
-      checkable: false,
-      reason:
-        "SymPy verification requires a checkable equation; non-equation candidates rely on independent re-solve",
-      evidence: { generation_kind: candidate.generation_kind },
-    };
+/** 후보의 verification_expression을 /evaluate로 평가해 선언 정답과 대조한다.
+ *  식이 없으면 null (호출자가 기존 unverified 폴백 유지). 평가 실패는 unverified —
+ *  식은 LLM 산출물이라 구문 오류가 수학 오류를 뜻하지 않는다. */
+async function verifyByExpression(
+  mathEngine: MathEngineClient,
+  candidate: GeneratedProblem,
+): Promise<VerificationCheck | null> {
+  const expression = candidate.verification_expression;
+  if (expression === undefined) return null;
+
+  const declared = declaredAnswerBody(candidate);
+  if (declared === null) {
+    return unverifiedCheck(
+      candidate,
+      "Declared expected_answer does not identify one of the provided choices",
+      { verification_expression: expression, expected_answer: candidate.expected_answer },
+    );
   }
 
-  const equation = extractEquationText(candidate.question_text);
-  if (equation === null) {
-    return {
-      checkable: false,
-      reason: NO_EXTRACTABLE_EQUATION_REASON,
-      evidence: NO_EXTRACTABLE_EQUATION_EVIDENCE,
-    };
+  let evaluatedValue: string;
+  try {
+    evaluatedValue = (await mathEngine.evaluate({ expr: expression })).value;
+  } catch (err) {
+    return unverifiedCheck(
+      candidate,
+      `math-engine could not evaluate the verification expression: ${err instanceof Error ? err.message : String(err)}`,
+      { verification_expression: expression },
+    );
   }
 
-  if (isChoiceStyleCandidate(candidate) && resolveChoiceOptions(candidate).length === 0) {
+  const decision = await decideAnswerEquivalence(mathEngine, declared, evaluatedValue);
+  if (decision.status === "undecidable") {
+    return unverifiedCheck(
+      candidate,
+      `Could not compare declared answer with evaluated verification expression: ${decision.reason ?? "undecidable"}`,
+      { expression_check: true, verification_expression: expression, evaluated_value: evaluatedValue },
+      declared,
+      evaluatedValue,
+    );
+  }
+  if (decision.status === "not_equivalent") {
     return {
-      checkable: false,
-      reason: "Multiple-choice equation has no parseable expected_choices/options",
-      evidence: { equation },
+      status: "failed",
+      verificationKind: candidate.generation_kind,
+      expectedAnswer: declared,
+      sympyAnswer: evaluatedValue,
+      failureCode: "expression_value_mismatch",
+      failureMessage: `Verification expression evaluates to ${evaluatedValue}, which does not match the declared answer ${declared}`,
+      evidence: {
+        expression_check: true,
+        verification_expression: expression,
+        evaluated_value: evaluatedValue,
+        equivalence: decision,
+      },
     };
   }
+  return {
+    status: "passed",
+    verificationKind: candidate.generation_kind,
+    expectedAnswer: declared,
+    sympyAnswer: evaluatedValue,
+    evidence: {
+      expression_check: true,
+      verification_expression: expression,
+      evaluated_value: evaluatedValue,
+    },
+  };
+}
 
-  return { checkable: true };
+/** 검증식 대조 대상이 되는 선언 정답 본문. 객관식이면 정답 보기의 본문,
+ *  아니면 choice prefix(`① ` 등)를 벗긴 expected_answer. */
+function declaredAnswerBody(candidate: GeneratedProblem): string | null {
+  if (isChoiceStyleCandidate(candidate)) {
+    const choices = resolveChoiceOptions(candidate);
+    if (choices.length > 0) {
+      const correct = selectDeclaredCorrectChoice(candidate, choices);
+      return correct === null ? null : correct.body;
+    }
+  }
+  const stripped = stripChoicePrefix(candidate.expected_answer);
+  return stripped.length > 0 ? stripped : candidate.expected_answer;
 }
 
 async function verifyEquationCandidate(

@@ -54,6 +54,13 @@ export const LlmGeneratedCandidateSchema = z.object({
     .string()
     .min(1)
     .describe("Korean solution trace explaining the structural/conceptual transform"),
+  verification_expression: z
+    .string()
+    .min(1)
+    .optional()
+    .describe(
+      "SymPy-evaluable arithmetic expression whose value equals expected_answer, e.g. factorial(3)*factorial(3)*factorial(4). Omit only when the answer is not a single numeric/symbolic value",
+    ),
 });
 
 export type LlmGeneratedCandidate = z.infer<typeof LlmGeneratedCandidateSchema>;
@@ -79,6 +86,9 @@ export function assembleGeneratedProblem(input: {
     expected_answer: input.object.expected_answer,
     techniques_used: input.object.techniques_used ?? [],
     proposed_solution_trace: input.object.proposed_solution_trace,
+    ...(input.object.verification_expression === undefined
+      ? {}
+      : { verification_expression: input.object.verification_expression }),
     source_refs: input.refs.map((ref) => ref.item_id),
     inferred_intent: input.intent,
     generation_metadata: {

@@ -542,6 +542,31 @@ async def simplify_expression(req: SimplifyRequest):
     return await _run_compute(_compute_simplify, req.expr)
 
 
+class EvaluateRequest(BaseModel):
+    expr: str
+
+
+class EvaluateResponse(BaseModel):
+    value: str
+    numeric: str
+
+
+def _compute_evaluate(expr: str) -> dict[str, Any]:
+    parsed = parse_math(expr)
+    evaluated = simplify(parsed.doit() if hasattr(parsed, "doit") else parsed)
+    if not evaluated.is_number:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Expression did not evaluate to a number: {evaluated}",
+        )
+    return {"value": str(evaluated), "numeric": str(evaluated.evalf())}
+
+
+@router.post("/evaluate", response_model=EvaluateResponse)
+async def evaluate_expression(req: EvaluateRequest):
+    return await _run_compute(_compute_evaluate, req.expr)
+
+
 class DifferentiateRequest(BaseModel):
     expr: str
     variable: str = "x"

@@ -89,6 +89,49 @@ describe("createGeneratorAgent", () => {
     );
   });
 
+  it("passes the LLM verification expression through to the generated problem", async () => {
+    aiMock.generateObject.mockResolvedValue({
+      object: { ...modelObject, verification_expression: "factorial(3)*factorial(4)" },
+    });
+    const agent = createGeneratorAgent({
+      model: {} as LanguageModel,
+      modelId: "test-model",
+      promptId: "problem-generator",
+      prompts: promptLoader(vi.fn(() => "rendered prompt")),
+    });
+
+    const generated = await agent.generate({
+      request,
+      intent,
+      refs: [],
+      strategy: null,
+      attempt: 1,
+    });
+
+    expect(generated.verification_expression).toBe("factorial(3)*factorial(4)");
+  });
+
+  it("omits verification_expression when the LLM does not provide one", async () => {
+    aiMock.generateObject.mockResolvedValue({ object: modelObject });
+    const agent = createGeneratorAgent({
+      model: {} as LanguageModel,
+      modelId: "test-model",
+      promptId: "problem-generator",
+      prompts: promptLoader(vi.fn(() => "rendered prompt")),
+    });
+
+    const generated = await agent.generate({
+      request,
+      intent,
+      refs: [],
+      strategy: null,
+      attempt: 1,
+    });
+
+    expect(generated.verification_expression).toBeUndefined();
+    expect("verification_expression" in generated).toBe(false);
+  });
+
   it("immediately retries a schema failure once with a schema hint", async () => {
     const schemaError = new Error("question_text is required");
     schemaError.name = "NoObjectGeneratedError";

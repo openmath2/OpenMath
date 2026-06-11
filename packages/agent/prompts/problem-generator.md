@@ -1,6 +1,6 @@
 ---
 id: problem-generator
-version: 0.1.2
+version: 0.2.0
 model: gpt-4o
 temperature: 0.35
 max_tokens: 2000
@@ -14,7 +14,7 @@ variables:
   - counterexample
   - schemaError
 owner: 비할당
-updated: 2026-06-10
+updated: 2026-06-11
 ---
 
 # Role
@@ -105,8 +105,9 @@ JSON으로만 응답.
 - `expected_answer`는 정답만 간결하게 쓴다. 방정식 해는 `2, 5`, 통계값은 `평균 12`, 확률은 `3/8`, 기하는 `60도`처럼 쓴다.
 - `techniques_used`는 실제 사용한 풀이 기법 id 배열이다. Strategy 어휘에 있는 `factoring`, `quadratic_formula`, `completing_the_square` 같은 snake_case id를 우선 사용하고, 공백·한글 설명 문장은 넣지 않는다.
 - structural 모드에서는 필수 기법을 모두 포함해야 한다. conceptual 모드에서는 필수·관련 기법 중 실제 사용한 것을 최소 1개 이상 포함한다.
-- 예시 출력: `{ "question_text": "다항식 (x + 3)(x - 5)를 전개하시오.", "expected_answer": "x**2 - 2*x - 15", "techniques_used": ["polynomial_expansion"], "proposed_solution_trace": "분배법칙으로 각 항을 곱해 동류항을 정리한다." }`
+- 예시 출력: `{ "question_text": "서로 다른 5권의 책 중 3권을 골라 일렬로 꽂는 방법의 수는?", "expected_answer": "60", "techniques_used": ["permutation"], "proposed_solution_trace": "5권 중 3권을 순서 있게 배열하므로 5P3 = 5*4*3 = 60이다.", "verification_expression": "factorial(5)/factorial(5-3)" }`
 - `proposed_solution_trace`에 풀이 단계와 출제 의도를 한국어로 명시하되, 수식도 JSON 안전한 plain text 표기만 사용한다.
+- `verification_expression`은 정답에 도달하는 *계산식 하나*다. SymPy가 평가할 수 있는 표기만 쓴다: 팩토리얼은 `factorial(4)`, 조합은 `binomial(10, 3)`, 순열은 `factorial(5)/factorial(5-2)`, 사칙연산은 `*`, `/`, `+`, `-`, 지수는 `**`. 이 식을 평가한 값이 `expected_answer`와 정확히 일치해야 한다. 예: 정답이 `864`이고 풀이가 3!*3!*4!이면 `"verification_expression": "factorial(3)*factorial(3)*factorial(4)"`. 정답이 단일 수치/수식 값이 아닐 때(서술형, 참/거짓 등)만 생략한다. `4!` 같은 느낌표 표기, 한글, 단위는 절대 넣지 않는다.
 - 결과 문제는 source problem과 달라야 하며, structural/conceptual 모드 차이가 풀이 설명에 드러나야 한다.
 
 # TODO
