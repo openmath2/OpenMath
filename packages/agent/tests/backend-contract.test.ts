@@ -112,20 +112,20 @@ describe("SSE wire adapter", () => {
     });
   });
 
-  it("sanitizes retry reasons and internal errors", () => {
+  it("maps retry events to attempt events and sanitizes internal errors", () => {
     const retry = toWireSseEvent({
       type: "retry",
       attempt: 2,
-      reason: "internal stack/path/token should not leak",
+      max_attempts: 3,
+      reason: "SymPy 검산 불일치: 기대답 2, 엔진 결과 3 — 계수를 다시 검산하라",
       timestamp: "2026-05-21T00:00:00.000Z",
     });
     expect(retry).toEqual({
-      event: "step",
+      event: "attempt",
       data: {
-        index: 3,
-        name: "문제 생성",
-        status: "started",
-        summary: "재시도 2",
+        attempt: 2,
+        max_attempts: 3,
+        reason: "SymPy 검산 불일치: 기대답 2, 엔진 결과 3 — 계수를 다시 검산하라",
       },
     });
 
@@ -144,6 +144,69 @@ describe("SSE wire adapter", () => {
         message: "검증 파이프라인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
       },
     });
+  });
+
+  it("maps preview events and unverified gates onto the wire", () => {
+    const preview = toWireSseEvent({
+      type: "preview",
+      latex: "x**2 - 5*x + 6 = 0",
+      timestamp: "2026-05-21T00:00:00.000Z",
+    });
+    expect(preview).toEqual({
+      event: "preview",
+      data: { latex: "x**2 - 5*x + 6 = 0" },
+    });
+
+    const unverified = toWireSseEvent({
+      type: "step",
+      step: "sympy_verify",
+      status: "done",
+      timestamp: "2026-05-21T00:00:00.000Z",
+      data: {
+        gate: {
+          step: "sympy_verify",
+          status: "unverified",
+          duration_ms: 42,
+          evidence: { engine: "sympy", verification_kind: "geometry" },
+          failure_detail: {
+            code: "sympy_unverified",
+            message: "No deterministic SymPy verifier for geometry",
+          },
+        },
+      },
+    });
+    expect(unverified.event).toBe("step");
+    if (unverified.event !== "step") throw new Error("expected step event");
+    expect(unverified.data.status).toBe("unverified");
+    expect(unverified.data.summary).toContain("기호 검증 불가");
+  });
+
+  it("narrates successful gates in step summaries", () => {
+    const wire = toWireSseEvent({
+      type: "step",
+      step: "generate",
+      status: "done",
+      timestamp: "2026-05-21T00:00:00.000Z",
+      data: {
+        gate: {
+          step: "generate",
+          status: "passed",
+          duration_ms: 12_300,
+          evidence: {
+            candidate_id: "00000000-0000-0000-0000-000000000001",
+            model: "gpt-5.5(xhigh)",
+            refined_by: ["constraint-critic", "refiner", "constraint-critic"],
+            critic_hints_total: 2,
+          },
+        },
+      },
+    });
+    expect(wire.event).toBe("step");
+    if (wire.event !== "step") throw new Error("expected step event");
+    expect(wire.data.status).toBe("completed");
+    expect(wire.data.summary).toBe(
+      "후보 생성 (gpt-5.5(xhigh)) · Critic 2라운드 · 수정 1회 · 지적 2건 반영 · 12.3초",
+    );
   });
 
   it("flattens domain result events for the frontend", () => {

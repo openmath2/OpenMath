@@ -21,6 +21,8 @@ export const WireStepStatusSchema = z.enum([
   "started",
   "completed",
   "failed",
+  /** 결정론 검증을 수행할 수 없었음 (예: SymPy가 못 푸는 유형). 실패가 아니라 "판정 불가". */
+  "unverified",
 ]);
 export type WireStepStatus = z.infer<typeof WireStepStatusSchema>;
 
@@ -31,6 +33,21 @@ export const WireStepEventSchema = z.object({
   summary: z.string().nullable().optional(),
 });
 export type WireStepEvent = z.infer<typeof WireStepEventSchema>;
+
+/** 검증 실패 후 재생성 시작을 알림. FE는 3~6단계를 리셋하고 시도 배너를 띄운다. */
+export const WireAttemptEventSchema = z.object({
+  attempt: z.number().int().min(1),
+  max_attempts: z.number().int().min(1),
+  reason: z.string().nullable(),
+});
+export type WireAttemptEvent = z.infer<typeof WireAttemptEventSchema>;
+
+/** 병렬 생성 런 진행 상황 (count > 1 요청). 스텝바는 첫 런만 보여주므로 나머지 런의 완료를 집계로 알림. */
+export const WireRunsEventSchema = z.object({
+  completed: z.number().int().min(0),
+  total: z.number().int().min(1),
+});
+export type WireRunsEvent = z.infer<typeof WireRunsEventSchema>;
 
 export const WirePreviewEventSchema = z.object({
   latex: z.string().min(1),
@@ -97,10 +114,12 @@ export const WireErrorEventSchema = z.object({
 });
 export type WireErrorEvent = z.infer<typeof WireErrorEventSchema>;
 
-export type WireEventName = "step" | "preview" | "result" | "error";
+export type WireEventName = "step" | "preview" | "attempt" | "runs" | "result" | "error";
 
 export type WireSseEvent =
   | { event: "step"; data: WireStepEvent }
   | { event: "preview"; data: WirePreviewEvent }
+  | { event: "attempt"; data: WireAttemptEvent }
+  | { event: "runs"; data: WireRunsEvent }
   | { event: "result"; data: WireResultEvent }
   | { event: "error"; data: WireErrorEvent };

@@ -65,8 +65,12 @@ npx @google/design.md lint DESIGN.md
 현재 구현은 (A) `@microsoft/fetch-event-source` 채택. `useChat` (Vercel AI SDK) 은 AI SDK 의 `data-*` 메시지 스트림 프로토콜 전용이라 임의 SSE 이벤트 이름 (`step_started`, `pipeline_completed`) 과 호환 안 됨.
 
 이벤트 종류 (`docs/specs/architecture.md` D-6):
-- `step` — `{ index: 1-6, name: string, status: 'started' | 'completed' | 'failed' }`
-- `preview` — `{ latex: string }` (중간 후보 LaTeX 미리보기)
+- `step` — `{ index: 1-6, name: string, status: 'started' | 'completed' | 'failed' | 'unverified', summary?: string }`
+  - `summary` 는 성공 시에도 단계 서사가 온다 (예: `후보 생성 (gpt-5.5) · Critic 1라운드 · 3.2초`)
+  - `unverified` = 결정론 검증 불가 (실패 아님; 독립 재풀이로만 확인)
+- `preview` — `{ latex: string }` (3/6 완료 직후 후보 문제 미리보기)
+- `attempt` — `{ attempt, max_attempts, reason }` (검증 실패로 재생성 시작; FE 는 3~6 단계 리셋)
+- `runs` — `{ completed, total }` (병렬 생성 런 집계; count > 1 일 때만)
 - `result` — `GeneratedProblem[]` (검증 통과한 문항 묶음)
 - `error` — `{ stage: string, message: string }`
 

@@ -37,7 +37,7 @@ export interface GeneratorAgentDeps {
   prompts: PromptLoader;
 }
 
-const LlmGeneratedCandidateSchema = z.object({
+export const LlmGeneratedCandidateSchema = z.object({
   question_text: z
     .string()
     .min(1)
@@ -56,7 +56,41 @@ const LlmGeneratedCandidateSchema = z.object({
     .describe("Korean solution trace explaining the structural/conceptual transform"),
 });
 
-type LlmGeneratedCandidate = z.infer<typeof LlmGeneratedCandidateSchema>;
+export type LlmGeneratedCandidate = z.infer<typeof LlmGeneratedCandidateSchema>;
+
+/** LLM raw output + 호출 컨텍스트 → 도메인 GeneratedProblem. Generator와 Refiner가 공유. */
+export function assembleGeneratedProblem(input: {
+  readonly request: GenerateRequest;
+  readonly intent: Intent;
+  readonly refs: RagResult[];
+  readonly attempt: number;
+  readonly object: LlmGeneratedCandidate;
+  readonly modelId: string;
+  readonly temperature: number;
+  readonly promptId: string;
+  readonly promptVersion: string;
+}): GeneratedProblem {
+  const generationKind = generationKindForTopic(getGenerateRequestTopicCode(input.request));
+  return {
+    candidate_id: randomUUID(),
+    mode: input.request.mode === "conceptual" ? "conceptual" : "structural",
+    generation_kind: generationKind,
+    question_text: input.object.question_text,
+    expected_answer: input.object.expected_answer,
+    techniques_used: input.object.techniques_used ?? [],
+    proposed_solution_trace: input.object.proposed_solution_trace,
+    source_refs: input.refs.map((ref) => ref.item_id),
+    inferred_intent: input.intent,
+    generation_metadata: {
+      model: input.modelId,
+      temperature: input.temperature,
+      prompt_id: input.promptId,
+      prompt_version: input.promptVersion,
+      attempt: input.attempt,
+      generated_at: new Date().toISOString(),
+    },
+  };
+}
 
 export function temperatureForGeneratorAttempt(
   attempt: number,
@@ -95,30 +129,22 @@ export function createGeneratorAgent(deps: GeneratorAgentDeps): GeneratorAgent {
         },
       });
 
-      return {
-        candidate_id: randomUUID(),
-        mode: input.request.mode === "conceptual" ? "conceptual" : "structural",
-        generation_kind: generationKind,
-        question_text: object.question_text,
-        expected_answer: object.expected_answer,
-        techniques_used: object.techniques_used ?? [],
-        proposed_solution_trace: object.proposed_solution_trace,
-        source_refs: input.refs.map((ref) => ref.item_id),
-        inferred_intent: input.intent,
-        generation_metadata: {
-          model: deps.modelId,
-          temperature,
-          prompt_id: prompt.metadata.id,
-          prompt_version: prompt.metadata.version,
-          attempt: input.attempt,
-          generated_at: new Date().toISOString(),
-        },
-      };
+      return assembleGeneratedProblem({
+        request: input.request,
+        intent: input.intent,
+        refs: input.refs,
+        attempt: input.attempt,
+        object,
+        modelId: deps.modelId,
+        temperature,
+        promptId: prompt.metadata.id,
+        promptVersion: prompt.metadata.version,
+      });
     },
   };
 }
 
-interface GenerateCandidateObjectInput {
+export interface GenerateCandidateObjectInput {
   model: LanguageModel;
   prompt: string;
   temperature: number;
@@ -126,7 +152,8 @@ interface GenerateCandidateObjectInput {
   retryPromptForSchemaError(schemaError: string): string;
 }
 
-async function generateCandidateObject(
+/** generateObject + schema-repair 1회 재시도. Generator와 Refiner가 공유. */
+export async function generateCandidateObject(
   input: GenerateCandidateObjectInput,
 ): Promise<LlmGeneratedCandidate> {
   try {

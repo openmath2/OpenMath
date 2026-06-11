@@ -45,8 +45,17 @@ export interface ProblemGenerationInput {
   deterministicFallback?: DeterministicFallbackMode;
 }
 
+export interface CriticRoundRecord {
+  round: number;
+  source: "constraint-critic" | "deterministic-topic-guard";
+  passes: boolean;
+  hints: string[];
+}
+
 export interface ProblemGenerationOutput {
-  data: GeneratedProblem;
+  /** null = 생성 자체가 실패 (timeout, provider error). 게이트는 failed로 남고
+   *  오케스트레이터가 재시도 여부를 결정한다 — 워크플로우를 죽이지 않는다. */
+  data: GeneratedProblem | null;
   gate: GateResult;
   refined_by: string[];
 }
@@ -58,6 +67,7 @@ export async function generateProblem(
   const started = Date.now();
   const refinedBy: string[] = [];
   const normalizationSkippedReasons: string[] = [];
+  const criticRounds: CriticRoundRecord[] = [];
   try {
     const candidate = await withTimeout(async (signal) => {
       const fallbackMode: DeterministicFallbackMode = input.deterministicFallback ?? "first";
@@ -85,6 +95,12 @@ export async function generateProblem(
         const guardHints = deterministicTopicGuardHints(input.request, current);
         if (guardHints.length > 0) {
           refinedBy.push("deterministic-topic-guard");
+          criticRounds.push({
+            round: round + 1,
+            source: "deterministic-topic-guard",
+            passes: false,
+            hints: guardHints,
+          });
           const replacement = deterministicGuardReplacement(input.request, current);
           if (replacement !== null) {
             current = replacement;
@@ -112,6 +128,12 @@ export async function generateProblem(
           signal,
         });
         refinedBy.push("constraint-critic");
+        criticRounds.push({
+          round: round + 1,
+          source: "constraint-critic",
+          passes: critique.passes,
+          hints: critique.hints,
+        });
         if (critique.passes || critique.hints.length === 0) return current;
         current = await deps.refiner.refine({
           prior: current,
@@ -147,6 +169,8 @@ export async function generateProblem(
           expected_answer: candidate.expected_answer,
           model: candidate.generation_metadata.model,
           refined_by: refinedBy,
+          critic_rounds: criticRounds,
+          critic_hints_total: criticRounds.reduce((sum, record) => sum + record.hints.length, 0),
           ...(normalizationSkippedReasons.length === 0
             ? {}
             : { normalization_skipped_reasons: normalizationSkippedReasons }),
@@ -156,11 +180,15 @@ export async function generateProblem(
     };
   } catch (err) {
     return {
-      data: await Promise.reject(err),
+      data: null,
       gate: {
         step: "generate",
         status: "failed",
         duration_ms: Date.now() - started,
+        evidence: {
+          refined_by: refinedBy,
+          critic_rounds: criticRounds,
+        },
         failure_detail: {
           code: "generation_failed",
           message: err instanceof Error ? err.message : String(err),

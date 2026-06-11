@@ -44,3 +44,6 @@ packages/agent/data/corpus/*.summary.json
 
 # Local browser QA artifacts
 .playwright-mcp/
+
+# Agent run observability traces (TRACE_DIR)
+packages/agent/runs/

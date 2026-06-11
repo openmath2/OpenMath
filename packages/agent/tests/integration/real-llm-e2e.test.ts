@@ -176,7 +176,7 @@ async function buildRealWorkflow(): Promise<RealWorkflowBundle> {
     model: llm,
     modelId: llmModelId,
     promptId: "refiner",
-    generator,
+    prompts,
   });
   const solver = createSolverAgent({
     model: solverLlm,

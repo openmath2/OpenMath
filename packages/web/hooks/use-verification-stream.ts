@@ -9,8 +9,14 @@ import { verificationStorageKey } from "@/lib/verification-storage-key";
 
 /* ─────────────────────────────────────────────────────────────
  * SSE 컨트랙트 (packages/web/README.md §"SSE Consumption" + D-6)
- *   event: "step"    — { index: 1..6, name: string, status: "started" | "completed" | "failed", summary?: string }
- *   event: "preview" — { latex: string }   ← 3/6 완료 후 첫 후보 미리보기 (확장)
+ *   event: "step"    — { index: 1..6, name: string,
+ *                        status: "started" | "completed" | "failed" | "unverified",
+ *                        summary?: string }
+ *                       summary 는 성공 시에도 단계 서사("후보 생성 (gpt-5.5) · Critic 1라운드 · 3.2초")가 온다.
+ *                       "unverified" = 결정론 검증 불가(실패 아님) — 독립 재풀이로만 확인됨.
+ *   event: "preview" — { latex: string }   ← 3/6 완료 직후 후보 문제 미리보기
+ *   event: "attempt" — { attempt, max_attempts, reason } ← 검증 실패로 재생성 시작. 3~6단계 리셋.
+ *   event: "runs"    — { completed, total } ← 병렬 생성 런 집계 (count > 1)
  *   event: "result"  — GeneratedProblem[]  ← 통과한 문항 묶음 (최종)
  *   event: "error"   — { stage: string, message: string }
  *
@@ -27,13 +33,24 @@ const STEP_NAMES: readonly string[] = [
   "학습 목표 매핑",
 ] as const;
 
-export type StepStatus = "pending" | "active" | "pass" | "fail";
+export type StepStatus = "pending" | "active" | "pass" | "fail" | "unverified";
 
 export type Step = {
   index: number;
   name: string;
   status: StepStatus;
   summary: string | null;
+};
+
+export type AttemptInfo = {
+  current: number;
+  max: number;
+  reason: string | null;
+};
+
+export type RunsInfo = {
+  completed: number;
+  total: number;
 };
 
 export type GeneratedProblem = {
@@ -75,6 +92,10 @@ export type StreamState = {
   previewLatex: string | null;
   candidates: GeneratedProblem[];
   error: string | null;
+  /** 재생성 시도 정보 (시도 2/3 …). 첫 시도 중에는 null. */
+  attempt: AttemptInfo | null;
+  /** 병렬 생성 런 집계 (count > 1 일 때만 수신). */
+  runs: RunsInfo | null;
 };
 
 export type StreamInput = {
@@ -101,6 +122,8 @@ function makeInitialState(): StreamState {
     previewLatex: null,
     candidates: [],
     error: null,
+    attempt: null,
+    runs: null,
   };
 }
 
@@ -109,20 +132,23 @@ type Action =
   | {
       type: "STEP";
       index: number;
-      status: "started" | "completed" | "failed";
+      status: WireStepStatus;
       summary: string | null;
     }
   | { type: "PREVIEW"; latex: string }
+  | { type: "ATTEMPT"; attempt: AttemptInfo }
+  | { type: "RUNS"; runs: RunsInfo }
   | { type: "RESULT"; candidates: GeneratedProblem[] }
   | { type: "ERROR"; message: string }
   | { type: "CANCELLED" }
   | { type: "CLOSED" };
 
-type WireStepStatus = "started" | "completed" | "failed";
+type WireStepStatus = "started" | "completed" | "failed" | "unverified";
 
 function mapStepStatus(s: WireStepStatus): StepStatus {
   if (s === "started") return "active";
   if (s === "completed") return "pass";
+  if (s === "unverified") return "unverified";
   return "fail";
 }
 
@@ -144,6 +170,16 @@ function reducer(state: StreamState, action: Action): StreamState {
     }
     case "PREVIEW":
       return { ...state, previewLatex: action.latex };
+    case "ATTEMPT": {
+      /* 재생성 시작 — 3~6단계는 이전 시도의 결과이므로 pending으로 리셋.
+       * 1~2단계(RAG/의도)는 재사용되므로 유지. preview는 새 후보가 오면 교체된다. */
+      const steps = state.steps.map((s) =>
+        s.index >= 3 ? { ...s, status: "pending" as const, summary: null } : s,
+      );
+      return { ...state, steps, attempt: action.attempt };
+    }
+    case "RUNS":
+      return { ...state, runs: action.runs };
     case "RESULT":
       return { ...state, candidates: action.candidates, status: "done" };
     case "ERROR":
@@ -179,7 +215,7 @@ function asString(v: unknown): string | null {
 
 function parseStep(raw: unknown): {
   index: number;
-  status: "started" | "completed" | "failed";
+  status: WireStepStatus;
   summary: string | null;
 } | null {
   const o = asObject(raw);
@@ -187,7 +223,12 @@ function parseStep(raw: unknown): {
   const index = asNumber(o.index);
   const status = asString(o.status);
   if (index === null || index < 1 || index > 6) return null;
-  if (status !== "started" && status !== "completed" && status !== "failed") {
+  if (
+    status !== "started" &&
+    status !== "completed" &&
+    status !== "failed" &&
+    status !== "unverified"
+  ) {
     return null;
   }
   return {
@@ -201,6 +242,24 @@ function parsePreview(raw: unknown): string | null {
   const o = asObject(raw);
   if (o === null) return null;
   return asString(o.latex);
+}
+
+function parseAttempt(raw: unknown): AttemptInfo | null {
+  const o = asObject(raw);
+  if (o === null) return null;
+  const current = asNumber(o.attempt);
+  const max = asNumber(o.max_attempts);
+  if (current === null || max === null) return null;
+  return { current, max, reason: asString(o.reason) };
+}
+
+function parseRuns(raw: unknown): RunsInfo | null {
+  const o = asObject(raw);
+  if (o === null) return null;
+  const completed = asNumber(o.completed);
+  const total = asNumber(o.total);
+  if (completed === null || total === null) return null;
+  return { completed, total };
 }
 
 function parseGate(raw: unknown): { step: string; status: string } | null {
@@ -395,6 +454,20 @@ export function useVerificationStream(
             const latex = parsePreview(payload);
             if (latex !== null) {
               dispatchRef.current({ type: "PREVIEW", latex });
+            }
+            break;
+          }
+          case "attempt": {
+            const attempt = parseAttempt(payload);
+            if (attempt !== null) {
+              dispatchRef.current({ type: "ATTEMPT", attempt });
+            }
+            break;
+          }
+          case "runs": {
+            const runs = parseRuns(payload);
+            if (runs !== null) {
+              dispatchRef.current({ type: "RUNS", runs });
             }
             break;
           }

@@ -6,13 +6,18 @@ import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 
 import { GenerateRequestSchema } from "../../schemas/index.js";
+import type { RunTraceWriter } from "../../tools/run-trace.js";
 import { pipeParallelProgressToSse } from "../sse/progress-stream.js";
 import type { RunOptions, VerificationWorkflowDeps } from "../../workflows/verification-workflow.js";
 import { runVerificationWorkflow } from "../../workflows/verification-workflow.js";
 
 const MAX_PARALLEL_GENERATIONS = 3;
 
-export function createGenerateRoute(deps: VerificationWorkflowDeps, options?: RunOptions): Hono {
+export function createGenerateRoute(
+  deps: VerificationWorkflowDeps,
+  options?: RunOptions,
+  trace?: RunTraceWriter,
+): Hono {
   const app = new Hono();
 
   app.post(
@@ -25,7 +30,7 @@ export function createGenerateRoute(deps: VerificationWorkflowDeps, options?: Ru
         const runs = Array.from({ length: count }, () =>
           runVerificationWorkflow(deps, request, options),
         );
-        await pipeParallelProgressToSse(stream, runs);
+        await pipeParallelProgressToSse(stream, runs, { trace, request });
       });
     },
   );

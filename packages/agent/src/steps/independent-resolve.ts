@@ -15,7 +15,8 @@ export interface IndependentResolveDeps {
 
 export interface IndependentResolveInput {
   candidate: GeneratedProblem;
-  sympyGate: GateResult;
+  /** 참고용 evidence로만 쓰인다. sympy_verify와 병렬 실행 시 생략. */
+  sympyGate?: GateResult;
 }
 
 export interface IndependentResolveOutput {
@@ -50,7 +51,7 @@ export async function independentResolve(
           confidence: attempt.confidence,
           derived_answer: attempt.derived_answer,
           expected_answer: input.candidate.expected_answer,
-          sympy_status: input.sympyGate.status,
+          ...(input.sympyGate === undefined ? {} : { sympy_status: input.sympyGate.status }),
           ...(answerDebug.skippedReasons.length === 0
             ? {}
             : { answer_equivalence_skipped_reasons: answerDebug.skippedReasons }),

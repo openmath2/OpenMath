@@ -14,14 +14,21 @@ import {
 } from "./agents/index.js";
 import {
   createFsPromptLoader,
+  createFsRunTraceWriter,
   createFsStrategyLoader,
   createInMemoryRagClient,
   createMathEngineClient,
   resolveLanguageModel,
+  withLlmLogging,
+  type LlmCallRecord,
 } from "./tools/index.js";
 
 export async function main(): Promise<void> {
   const env = loadEnv();
+  const trace = createFsRunTraceWriter({
+    dir: resolve(env.TRACE_DIR),
+    enabled: env.TRACE_ENABLED === "true",
+  });
   const mathEngine = createMathEngineClient({
     baseUrl: env.MATH_ENGINE_URL,
     timeoutMs: env.PER_STEP_TIMEOUT_MS,
@@ -40,27 +47,38 @@ export async function main(): Promise<void> {
   const llmBaseUrl = env.LLM_BASE_URL ?? env.CLIPROXY_BASE_URL;
   const llmApiKey = env.LLM_API_KEY ?? env.CLIPROXY_API_KEY ?? env.OPENAI_API_KEY;
   const llmModel = env.LLM_MODEL ?? env.CLIPROXY_MODEL ?? env.OPENAI_MODEL ?? DEFAULT_MODELS.generator;
+  const logLlmCall = (record: LlmCallRecord): void => {
+    void trace.append("llm", record);
+  };
   const llm = llmBaseUrl !== undefined || llmApiKey !== undefined
-    ? resolveLanguageModel({
-        kind: llmKind,
-        modelId: llmModel,
-        baseUrl: llmBaseUrl,
-        apiKey: llmApiKey ?? "openmath-local",
-        allowedHosts: ["localhost", "127.0.0.1"],
-      })
+    ? withLlmLogging(
+        resolveLanguageModel({
+          kind: llmKind,
+          modelId: llmModel,
+          baseUrl: llmBaseUrl,
+          apiKey: llmApiKey ?? "openmath-local",
+          allowedHosts: ["localhost", "127.0.0.1"],
+        }),
+        llmModel,
+        logLlmCall,
+      )
     : undefined;
   const solverModel = env.SOLVER_MODEL ?? llmModel;
   const solverLlm = llm === undefined
     ? undefined
     : solverModel === llmModel
       ? llm
-      : resolveLanguageModel({
-          kind: llmKind,
-          modelId: solverModel,
-          baseUrl: llmBaseUrl,
-          apiKey: llmApiKey ?? "openmath-local",
-          allowedHosts: ["localhost", "127.0.0.1"],
-        });
+      : withLlmLogging(
+          resolveLanguageModel({
+            kind: llmKind,
+            modelId: solverModel,
+            baseUrl: llmBaseUrl,
+            apiKey: llmApiKey ?? "openmath-local",
+            allowedHosts: ["localhost", "127.0.0.1"],
+          }),
+          `${solverModel} (solver)`,
+          logLlmCall,
+        );
   const generator = llm === undefined
     ? undefined
     : createGeneratorAgent({
@@ -77,13 +95,13 @@ export async function main(): Promise<void> {
         promptId: "constraint-critic",
         prompts,
       });
-  const refiner = llm === undefined || generator === undefined
+  const refiner = llm === undefined
     ? undefined
     : createRefinerAgent({
         model: llm,
         modelId: llmModel,
         promptId: "refiner",
-        generator,
+        prompts,
       });
   const solver = solverLlm === undefined
     ? undefined
@@ -114,11 +132,15 @@ export async function main(): Promise<void> {
       perStepTimeoutMs: env.PER_STEP_TIMEOUT_MS,
       deterministicFallback: env.DETERMINISTIC_FALLBACK,
     },
+    trace,
   });
 
   serve({ fetch: app.fetch, port: env.PORT });
   console.log(
     `[openmath/agent] Listening on http://localhost:${env.PORT} (math-engine ${env.MATH_ENGINE_URL})`,
+  );
+  console.log(
+    `[openmath/agent] generator=${llmModel} solver=${solverModel} fallback=${env.DETERMINISTIC_FALLBACK} trace=${env.TRACE_ENABLED === "true" ? resolve(env.TRACE_DIR) : "off"}`,
   );
 }
 

@@ -5,6 +5,7 @@ import { cors } from "hono/cors";
 
 import type { MathEngineClient } from "../tools/math-engine-client.js";
 import type { RagClient } from "../tools/rag-client.js";
+import type { RunTraceWriter } from "../tools/run-trace.js";
 import type { RunOptions, VerificationWorkflowDeps } from "../workflows/verification-workflow.js";
 import { createGenerateRoute } from "./routes/generate.js";
 import { createHealthRoute } from "./routes/health.js";
@@ -15,6 +16,7 @@ export interface AppDeps {
   rag: RagClient;
   workflow: VerificationWorkflowDeps;
   workflowOptions?: RunOptions;
+  trace?: RunTraceWriter;
 }
 
 export function createApp(deps: AppDeps): Hono {
@@ -31,7 +33,7 @@ export function createApp(deps: AppDeps): Hono {
 
   app.route("/", createHealthRoute(deps.mathEngine));
   app.route("/", createSourceProblemsRoute(deps.rag));
-  app.route("/", createGenerateRoute(deps.workflow, deps.workflowOptions));
+  app.route("/", createGenerateRoute(deps.workflow, deps.workflowOptions, deps.trace));
 
   return app;
 }
