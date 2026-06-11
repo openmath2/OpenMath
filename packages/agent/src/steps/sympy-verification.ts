@@ -123,10 +123,13 @@ async function verifyCandidate(
   );
 }
 
-/** /evaluate가 식이 숫자로 떨어지지 않아 422로 거부했는지 — math.py `_compute_evaluate`의
- *  "Expression did not evaluate to a number" 시그널. 이 경우만 기호 동치 경로로 폴백한다. */
+/** /evaluate가 식이 숫자로 떨어지지 않아 422로 거부했는지. math.py `_compute_evaluate`는
+ *  HTTP 422 + "Expression did not evaluate to a number" detail로만 이 경우를 알린다.
+ *  client는 `math-engine /evaluate failed (422): <body>` 형태로 던지므로(math-engine-client.ts),
+ *  상태코드 422와 detail 문구를 모두 요구해 진짜 엔진 장애(5xx·타임아웃 등)가 symbolic으로
+ *  오분류되지 않게 한다. 둘 중 하나라도 어긋나면 보수적으로 unverified에 머문다(false-fail 방지). */
 function isNonNumericEvaluateError(message: string): boolean {
-  return message.includes("did not evaluate to a number");
+  return /\(422\)/.test(message) && message.includes("did not evaluate to a number");
 }
 
 /** 후보의 verification_expression을 선언 정답과 대조한다. 두 경로:

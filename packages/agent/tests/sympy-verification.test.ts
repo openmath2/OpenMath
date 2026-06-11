@@ -329,6 +329,27 @@ describe("verifyWithSympy expression check", () => {
     });
   });
 
+  it("requires the 422 status, not just the error text, before taking the symbolic path", async () => {
+    // 5xx 본문이 우연히 같은 문구를 담아도 422가 아니면 진짜 엔진 장애로 보고 unverified에 머문다.
+    const phraseButNot422: MathEngineClient = {
+      ...createSymbolicMathEngine({ equivalent: false }),
+      evaluate: async () => {
+        throw new Error(
+          "math-engine /evaluate failed (500): did not evaluate to a number (proxy error)",
+        );
+      },
+    };
+    const result = await verifyWithSympy(
+      { mathEngine: phraseButNot422 },
+      { candidate: expansionCandidate },
+    );
+
+    expect(result.gate.status).toBe("unverified");
+    expect(result.gate.evidence).toMatchObject({
+      reason: expect.stringContaining("could not evaluate the verification expression"),
+    });
+  });
+
   it("keeps candidates without a verification expression on the unverified fallback", async () => {
     const result = await verifyWithSympy(
       { mathEngine: createExpressionMathEngine({ value: "864" }) },
