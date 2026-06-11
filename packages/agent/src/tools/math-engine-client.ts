@@ -32,6 +32,16 @@ export interface SimplifyResponse {
   simplified: string;
 }
 
+export interface EvaluateRequest {
+  expr: string;
+}
+export interface EvaluateResponse {
+  /** 정확값 (SymPy canonical 문자열, 예: "864", "3/8", "2*sqrt(2)") */
+  value: string;
+  /** 십진 근사값 (evalf) */
+  numeric: string;
+}
+
 export interface DifferentiateRequest {
   expr: string;
   variable?: string;
@@ -59,6 +69,7 @@ export interface MathEngineClient {
   solve(req: SolveRequest): Promise<SolveResponse>;
   verify(req: VerifyRequest): Promise<VerifyResponse>;
   simplify(req: SimplifyRequest): Promise<SimplifyResponse>;
+  evaluate(req: EvaluateRequest): Promise<EvaluateResponse>;
   differentiate(req: DifferentiateRequest): Promise<DifferentiateResponse>;
   limit(req: LimitRequest): Promise<LimitResponse>;
 }
@@ -134,6 +145,8 @@ export function createMathEngineClient(
       ),
     simplify: (req) =>
       post("/simplify", { expr: toSympyInput(req.expr) }, parseSimplifyResponse),
+    evaluate: (req) =>
+      post("/evaluate", { expr: toSympyInput(req.expr) }, parseEvaluateResponse),
     differentiate: (req) =>
       post(
         "/differentiate",
@@ -229,6 +242,11 @@ function parseVerifyResponse(value: unknown): VerifyResponse {
 function parseSimplifyResponse(value: unknown): SimplifyResponse {
   const obj = asObject(value);
   return { simplified: readString(obj, "simplified") };
+}
+
+function parseEvaluateResponse(value: unknown): EvaluateResponse {
+  const obj = asObject(value);
+  return { value: readString(obj, "value"), numeric: readString(obj, "numeric") };
 }
 
 function parseDifferentiateResponse(value: unknown): DifferentiateResponse {

@@ -78,6 +78,35 @@ describe("math-engine client request boundary", () => {
     const body = SolveBodySchema.parse(JSON.parse(receivedBodies[0] ?? ""));
     expect(body.equation).toBe("(x - 2)*(x + 7) = 3*x + 10");
   });
+
+  it("posts verification expressions to /evaluate and parses the exact value", async () => {
+    const receivedPaths: string[] = [];
+    const receivedBodies: string[] = [];
+    const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+      receivedPaths.push(req.url ?? "");
+      receivedBodies.push(await readRequestBody(req));
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ value: "864", numeric: "864.000000000000" }));
+    });
+    servers.push(server);
+    await listen(server);
+
+    const address = server.address();
+    if (address === null || typeof address === "string") {
+      throw new Error("test server address must be a TCP address");
+    }
+    const client = createMathEngineClient({
+      baseUrl: `http://127.0.0.1:${address.port}`,
+    });
+
+    const result = await client.evaluate({ expr: "factorial(3)*factorial(3)*factorial(4)" });
+
+    expect(receivedPaths).toEqual(["/evaluate"]);
+    expect(JSON.parse(receivedBodies[0] ?? "")).toEqual({
+      expr: "factorial(3)*factorial(3)*factorial(4)",
+    });
+    expect(result).toEqual({ value: "864", numeric: "864.000000000000" });
+  });
 });
 
 function listen(server: ReturnType<typeof createServer>): Promise<void> {

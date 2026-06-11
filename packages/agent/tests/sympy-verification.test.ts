@@ -44,6 +44,7 @@ describe("verifyWithSympy", () => {
         }
         return { simplified: expr.replace(/\s+/g, "") };
       },
+      evaluate: async () => ({ value: "", numeric: "" }),
       differentiate: async () => ({ derivative: "" }),
       limit: async () => ({ limit: "" }),
     };
@@ -68,6 +69,7 @@ describe("verifyWithSympy", () => {
         if (/[가-힣]/u.test(expr)) throw new Error(`textual answer: ${expr}`);
         return { simplified: expr };
       },
+      evaluate: async () => ({ value: "", numeric: "" }),
       differentiate: async () => ({ derivative: "" }),
       limit: async () => ({ limit: "" }),
     };
@@ -115,6 +117,7 @@ describe("verifyWithSympy", () => {
       },
       verify: async () => ({ equivalent: true, diff: "0" }),
       simplify: async ({ expr }) => ({ simplified: expr.replace(/\s+/g, "") }),
+      evaluate: async () => ({ value: "", numeric: "" }),
       differentiate: async () => ({ derivative: "" }),
       limit: async () => ({ limit: "" }),
     };
@@ -197,6 +200,159 @@ describe("verifyWithSympy", () => {
   });
 });
 
+describe("verifyWithSympy expression check", () => {
+  const countingCandidate: GeneratedProblem = {
+    ...expressionCandidate,
+    generation_kind: "probability",
+    question_text:
+      "공격수 3명을 공격 자리에, 수비수 3명을 수비 자리에 배치하고 나머지 4명을 남은 자리에 배치하는 방법의 수는?",
+    expected_answer: "864",
+    verification_expression: "factorial(3)*factorial(3)*factorial(4)",
+  };
+
+  it("passes a counting candidate whose verification expression evaluates to the declared answer", async () => {
+    const result = await verifyWithSympy(
+      { mathEngine: createExpressionMathEngine({ value: "864" }) },
+      { candidate: countingCandidate },
+    );
+    const gates = passedGates().map((gate) =>
+      gate.step === "sympy_verify" ? result.gate : gate,
+    );
+
+    expect(result.gate.status).toBe("passed");
+    expect(result.gate.evidence).toMatchObject({
+      expression_check: true,
+      verification_expression: "factorial(3)*factorial(3)*factorial(4)",
+      sympy_answer: "864",
+    });
+    expect(createAcceptancePolicy().decide(gates, 1)).toBe("verified");
+  });
+
+  it("fails when the verification expression value mismatches the declared answer", async () => {
+    const result = await verifyWithSympy(
+      { mathEngine: createExpressionMathEngine({ value: "868" }) },
+      { candidate: countingCandidate },
+    );
+    const gates = passedGates().map((gate) =>
+      gate.step === "sympy_verify" ? result.gate : gate,
+    );
+
+    expect(result.gate.status).toBe("failed");
+    expect(result.gate.failure_detail?.code).toBe("expression_value_mismatch");
+    expect(createAcceptancePolicy().decide(gates, 1)).toBe("rejected");
+  });
+
+  it("resolves multiple-choice declared answers to the choice body before comparing", async () => {
+    const result = await verifyWithSympy(
+      { mathEngine: createExpressionMathEngine({ value: "864" }) },
+      {
+        candidate: {
+          ...countingCandidate,
+          expected_answer: "① 864",
+          expected_choices: ["① 864", "② 868", "③ 872", "④ 876", "⑤ 880"],
+        },
+      },
+    );
+
+    expect(result.gate.status).toBe("passed");
+    expect(result.gate.evidence).toMatchObject({ expected_answer: "864", sympy_answer: "864" });
+  });
+
+  it("marks evaluation engine failures as unverified, not failed", async () => {
+    const result = await verifyWithSympy(
+      { mathEngine: createExpressionMathEngine({ evaluateError: true }) },
+      { candidate: countingCandidate },
+    );
+
+    expect(result.gate.status).toBe("unverified");
+    expect(result.gate.evidence).toMatchObject({
+      reason: expect.stringContaining("could not evaluate the verification expression"),
+    });
+  });
+
+  it("keeps candidates without a verification expression on the unverified fallback", async () => {
+    const result = await verifyWithSympy(
+      { mathEngine: createExpressionMathEngine({ value: "864" }) },
+      {
+        candidate: {
+          ...countingCandidate,
+          verification_expression: undefined,
+        },
+      },
+    );
+
+    expect(result.gate.status).toBe("unverified");
+    expect(result.gate.evidence).toMatchObject({
+      reason: expect.stringContaining("requires a checkable equation"),
+    });
+  });
+
+  it("falls back to expression verification for equation word problems without extractable equations", async () => {
+    const result = await verifyWithSympy(
+      { mathEngine: createExpressionMathEngine({ value: "6" }) },
+      {
+        candidate: {
+          ...countingCandidate,
+          generation_kind: "equation",
+          question_text: "어떤 수의 두 배에 세 배를 곱하면 얼마인지 구하시오.",
+          expected_answer: "6",
+          verification_expression: "2*3",
+        },
+      },
+    );
+
+    expect(result.gate.status).toBe("passed");
+    expect(result.gate.evidence).toMatchObject({ expression_check: true });
+  });
+
+  it("degrades engine timeouts to unverified so acceptance keeps a warning verdict", async () => {
+    const hangingEngine: MathEngineClient = {
+      ...createExpressionMathEngine({ value: "" }),
+      solve: () => new Promise(() => {}),
+    };
+
+    const result = await verifyWithSympy(
+      { mathEngine: hangingEngine, perStepTimeoutMs: 10 },
+      {
+        candidate: {
+          ...expressionCandidate,
+          generation_kind: "equation",
+          question_text: "다음 방정식을 풀어라. x - 2 = 0",
+          expected_answer: "2",
+        },
+      },
+    );
+    const gates = passedGates().map((gate) =>
+      gate.step === "sympy_verify" ? result.gate : gate,
+    );
+
+    expect(result.gate.status).toBe("unverified");
+    expect(result.gate.failure_detail?.code).toBe("sympy_error");
+    expect(createAcceptancePolicy().decide(gates, 1)).toBe("warning");
+  });
+});
+
+function createExpressionMathEngine(opts: {
+  readonly value?: string;
+  readonly evaluateError?: boolean;
+}): MathEngineClient {
+  return {
+    health: async () => ({ status: "ok", engine: "sympy" }),
+    solve: async () => ({ solutions: [] }),
+    verify: async ({ expr1, expr2 }) => ({
+      equivalent: expr1.replace(/\s+/g, "") === expr2.replace(/\s+/g, ""),
+      diff: "0",
+    }),
+    simplify: async ({ expr }) => ({ simplified: expr.replace(/\s+/g, "") }),
+    evaluate: async () => {
+      if (opts.evaluateError === true) throw new Error("evaluate exploded");
+      return { value: opts.value ?? "", numeric: opts.value ?? "" };
+    },
+    differentiate: async () => ({ derivative: "" }),
+    limit: async () => ({ limit: "" }),
+  };
+}
+
 function createEquationMathEngine(opts: { readonly solutions: string[] }): MathEngineClient {
   return {
     health: async () => ({ status: "ok", engine: "sympy" }),
@@ -206,6 +362,7 @@ function createEquationMathEngine(opts: { readonly solutions: string[] }): MathE
       diff: "0",
     }),
     simplify: async ({ expr }) => ({ simplified: expr.replace(/\s+/g, "") }),
+    evaluate: async () => ({ value: "", numeric: "" }),
     differentiate: async () => ({ derivative: "" }),
     limit: async () => ({ limit: "" }),
   };

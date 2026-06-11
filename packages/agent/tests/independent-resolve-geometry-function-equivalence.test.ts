@@ -37,6 +37,7 @@ const mathEngine: MathEngineClient = {
   solve: async () => ({ solutions: [] }),
   verify: async () => ({ equivalent: false, diff: "not checked" }),
   simplify: async ({ expr }) => ({ simplified: expr.replace(/\s+/g, "") }),
+  evaluate: async () => ({ value: "", numeric: "" }),
   differentiate: async () => ({ derivative: "" }),
   limit: async () => ({ limit: "" }),
 };
