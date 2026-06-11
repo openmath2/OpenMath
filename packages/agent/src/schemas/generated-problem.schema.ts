@@ -40,9 +40,12 @@ export const GeneratedProblemSchema = z.object({
   expected_choices: z.array(z.string()).optional(), // objective일 때
   techniques_used: z.array(z.string()).default([]),
   proposed_solution_trace: z.string(),
-  /** 정답에 도달하는 SymPy 평가식 (예: "factorial(3)*factorial(3)*factorial(4)").
-   *  sympy_verify가 math-engine /evaluate로 평가해 expected_answer와 대조한다 —
-   *  equation이 아닌 kind(경우의 수 등)도 결정론 검증이 가능해진다. */
+  /** 정답에 도달하는 SymPy 식. sympy_verify가 expected_answer와 결정론적으로 대조한다.
+   *  - 숫자 답(경우의 수 등): 평가식 (예: "factorial(3)*factorial(3)*factorial(4)") →
+   *    /evaluate로 수치 평가 후 대조.
+   *  - 식 답(전개·간단히 등): 정답과 독립인 *미전개 원식*
+   *    (예: "x**3 + 5*x*(x+1) - (x+4)*(x-1)*(x+2)") → simplify+verify로 기호 동치 대조.
+   *  equation이 아닌 kind도 이 식으로 결정론 검증이 가능해진다. */
   verification_expression: z.string().min(1).optional(),
 
   source_refs: z.array(z.string()), // SourceProblem.item_id[]

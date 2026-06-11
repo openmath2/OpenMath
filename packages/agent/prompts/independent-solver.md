@@ -35,7 +35,7 @@ updated: 2026-06-11
 - `derived_answer: string` (문제 유형에 맞는 최종 정답. 방정식 해는 `2, -5`, 확률은 `3/8`, 통계값은 `평균 12`, 기하는 `60도`처럼 간결히 쓴다)
 - `trace: string`
 - `confidence: "high" | "medium" | "low"`
-- `verification_expression: string` (선택) — 당신의 풀이가 정답에 도달하는 *계산식 하나*. SymPy 평가 가능 표기만: `factorial(4)`, `binomial(10, 3)`, `factorial(5)/factorial(5-2)`, `*`, `/`, `+`, `-`, `**`. 이 식의 값이 `derived_answer`와 일치해야 한다. 정답이 단일 수치/수식 값이 아니면 생략. `4!` 표기, 한글, 단위 금지.
+- `verification_expression: string` (선택) — 당신의 풀이가 정답에 도달하는 *식 하나*. SymPy 파싱 가능 표기만: `factorial(4)`, `binomial(10, 3)`, `factorial(5)/factorial(5-2)`, `*`, `/`, `+`, `-`, `**`. `4!` 표기, 한글, 단위 금지. 정답이 **숫자**면 그 값에 도달하는 계산식을 쓰고(평가값이 `derived_answer`와 일치), 정답이 **문자식**(전개·간단히 등)이면 답을 베끼지 말고 문제 조건의 *전개 전 원식*을 써서 simplify하면 `derived_answer`와 기호적으로 같게 한다. 변수 곱셈은 `x*(x+1)`처럼 `*`를 명시한다. 정답이 단일 수치/수식 값이 아니면 생략.
 
 # Constraints
 

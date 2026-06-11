@@ -124,6 +124,9 @@ function sympySummary(
     return `기호 검증 불가${kindLabel} — 독립 재풀이로 확인`;
   }
   const sympyAnswer = asString(evidence["sympy_answer"]);
+  if (evidence["symbolic_check"] === true) {
+    return "검증식 기호 동치 확인";
+  }
   if (evidence["expression_check"] === true) {
     return sympyAnswer === null ? "검증식 평가 일치" : `검증식 평가 일치 (값: ${sympyAnswer})`;
   }
