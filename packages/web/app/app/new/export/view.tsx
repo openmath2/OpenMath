@@ -1,10 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { LatexAuto } from "@/components/math/latex-renderer";
 import { type Grade, type SchoolLevel, type Topic, gradeLabel } from "../topic/data";
 import { verificationStorageKey } from "@/lib/verification-storage-key";
+import {
+  CHOICE_MARKERS,
+  answerChoiceIndex,
+  splitChoices,
+} from "@/lib/exam-choices";
 import type { ResultProblem } from "../result/types";
 
 function buildDefaultTitle(
@@ -104,57 +109,214 @@ function toResultProblem(problem: StoredProblem, index: number): ResultProblem {
     status,
     questionLatex: problem.question_latex,
     answerLatex: problem.answer_latex,
-    solutionLatex: problem.explanation_latex ?? "검증 파이프라인에서 생성된 문항입니다.",
+    solutionLatex: problem.explanation_latex ?? null,
     failReason: status === "fail" ? "검증 실패 — 채택할 수 없습니다." : null,
   };
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * ExamSheet — 한국 시험지 표준 조판.
+ *   1면: 제목 박스(과목 라벨 + 제목 + 발행 정보) → 인적사항 표
+ *        → 2단 컬럼(가운데 괘선) 문항. 객관식은 ①~⑤ 보기를 분리 조판.
+ *   별지: "빠른 정답" 표 (인쇄 시 새 페이지).
+ * preview / print 가 같은 마크업·px 스타일을 공유한다 — 미리보기는
+ * ScaledSheet 가 축소만 하고, 인쇄는 @page 마진 안에 1:1 로 흐른다.
+ * ──────────────────────────────────────────────────────────── */
+
+/* 보기 5개가 길면 한 줄 배치가 깨지므로 세로 스택으로 전환 */
+const CHOICE_STACK_THRESHOLD = 40;
+
+type AnswerEntry = {
+  id: string;
+  label: number;
+  /* 보기와 일치하면 ①~⑤ 마커, 아니면 원본 정답 문자열 */
+  marker: string | null;
+  raw: string;
+};
+
+function answerEntries(problems: ResultProblem[]): AnswerEntry[] {
+  return problems.map((p, i) => {
+    const { choices } = splitChoices(p.questionLatex);
+    const idx = choices === null ? null : answerChoiceIndex(p.answerLatex, choices);
+    return {
+      id: p.id,
+      label: i + 1,
+      marker: idx === null ? null : (CHOICE_MARKERS[idx] ?? null),
+      raw: p.answerLatex,
+    };
+  });
+}
+
+function chunk<T>(arr: readonly T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
+function ExamProblem({ problem, label }: { problem: ResultProblem; label: number }) {
+  const { body, choices } = splitChoices(problem.questionLatex);
+  const stacked =
+    choices !== null && choices.join("").length > CHOICE_STACK_THRESHOLD;
+  return (
+    <li className="exam-q">
+      <p className="exam-q-text">
+        <span className="exam-q-num">{label}.</span>{" "}
+        <LatexAuto source={body} />
+      </p>
+      {choices !== null ? (
+        <ol className={stacked ? "exam-choices stacked" : "exam-choices"}>
+          {choices.map((choice, k) => (
+            <li key={k}>
+              <span className="exam-choice-marker" aria-hidden="true">
+                {CHOICE_MARKERS[k]}
+              </span>
+              <span className="exam-choice-body">
+                <LatexAuto source={choice} />
+              </span>
+            </li>
+          ))}
+        </ol>
+      ) : null}
+    </li>
+  );
+}
+
+/* 빠른 정답 — 한 줄 5문항씩, 문항 행(음영) + 정답 행 반복.
+ * 마지막 줄은 빈 칸으로 채워 격자를 고르게 유지한다.
+ */
+const ANSWERS_PER_ROW = 5;
+
+function AnswerTable({ entries }: { entries: AnswerEntry[] }) {
+  const rows = chunk(entries, ANSWERS_PER_ROW);
+  return (
+    <table className="exam-answers-table">
+      <tbody>
+        {rows.map((row, ri) => {
+          const pad = Array.from({ length: ANSWERS_PER_ROW - row.length });
+          return (
+            <Fragment key={ri}>
+              <tr className="num-row">
+                {row.map((e) => (
+                  <th key={e.id} scope="col">
+                    {e.label}
+                  </th>
+                ))}
+                {pad.map((_, k) => (
+                  <th key={`pad-${k}`} aria-hidden="true" />
+                ))}
+              </tr>
+              <tr className="ans-row">
+                {row.map((e) => (
+                  <td key={e.id}>
+                    {e.marker !== null ? e.marker : <LatexAuto source={e.raw} />}
+                  </td>
+                ))}
+                {pad.map((_, k) => (
+                  <td key={`pad-${k}`} aria-hidden="true" />
+                ))}
+              </tr>
+            </Fragment>
+          );
+        })}
+      </tbody>
+    </table>
+  );
 }
 
 function ExamSheet({
   options,
   problems,
   date,
+  subject,
 }: {
   options: Options;
   problems: ResultProblem[];
   date: string;
+  subject: string;
 }) {
+  const title = options.title.length > 0 ? options.title : "수학 시험지";
+  const issueParts: string[] = [];
+  if (options.showDate && date.length > 0) issueParts.push(date);
+  issueParts.push(`총 ${problems.length}문항`);
   return (
     <article className="exam-sheet">
-      <header className="exam-header">
-        <h2>{options.title.length > 0 ? options.title : "수학 시험지"}</h2>
-        {options.showDate && date.length > 0 ? (
-          <p className="meta">{date}</p>
-        ) : null}
-        <div className="name-fields">
-          <span>이름: __________</span>
-          <span>반: ____</span>
-          <span>번호: ____</span>
-        </div>
-      </header>
-      <ol className="exam-problems">
-        {problems.map((p, i) => (
-          <li key={p.id} className="exam-problem">
-            <span className="num">{i + 1}.</span>
-            <span className="body">
-              <LatexAuto source={p.questionLatex} />
-            </span>
-          </li>
-        ))}
-      </ol>
+      <section className="exam-page">
+        <header className="exam-head">
+          <div className="exam-head-box">
+            <p className="exam-subject">{subject}</p>
+            <h2 className="exam-title">{title}</h2>
+            <p className="exam-issue">{issueParts.join("  ·  ")}</p>
+          </div>
+          <div className="exam-id-row" aria-label="인적사항 기입란">
+            <span className="label">학년 · 반</span>
+            <span className="blank" />
+            <span className="label">번호</span>
+            <span className="blank" />
+            <span className="label">이름</span>
+            <span className="blank wide" />
+            <span className="label">점수</span>
+            <span className="blank" />
+          </div>
+        </header>
+        <ol className="exam-cols">
+          {problems.map((p, i) => (
+            <ExamProblem key={p.id} problem={p} label={i + 1} />
+          ))}
+        </ol>
+      </section>
       {options.includeAnswers && problems.length > 0 ? (
-        <section className="exam-answers">
-          <h3>정답</h3>
-          <ol>
-            {problems.map((p, i) => (
-              <li key={p.id}>
-                <span>{i + 1}. </span>
-                <LatexAuto source={p.answerLatex} />
-              </li>
-            ))}
-          </ol>
+        <section className="exam-page exam-answer-page">
+          <h3 className="exam-answers-title">빠른 정답</h3>
+          <p className="exam-answers-sub">{title}</p>
+          <AnswerTable entries={answerEntries(problems)} />
         </section>
       ) : null}
     </article>
+  );
+}
+
+/* ─── ScaledSheet — A4(794px) 시트를 미리보기 폭에 맞춰 축소 ───
+ * transform: scale 은 레이아웃 높이에 반영되지 않으므로 실측 높이에
+ * 배율을 곱해 wrapper 높이를 고정한다.
+ */
+const A4_WIDTH_PX = 794;
+
+function ScaledSheet({ children }: { children: React.ReactNode }) {
+  const outerRef = useRef<HTMLDivElement | null>(null);
+  const innerRef = useRef<HTMLDivElement | null>(null);
+  const [scale, setScale] = useState<number>(0.6);
+  const [height, setHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const update = (): void => {
+      const outer = outerRef.current;
+      const inner = innerRef.current;
+      if (outer === null || inner === null) return;
+      const next = Math.min(1, outer.clientWidth / A4_WIDTH_PX);
+      setScale(next);
+      setHeight(inner.offsetHeight * next);
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    if (outerRef.current !== null) observer.observe(outerRef.current);
+    if (innerRef.current !== null) observer.observe(innerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={outerRef}
+      className="sheet-scaler"
+      style={height === null ? undefined : { height: `${height}px` }}
+    >
+      <div
+        ref={innerRef}
+        className="sheet-scaler-inner"
+        style={{ transform: `scale(${scale})` }}
+      >
+        {children}
+      </div>
+    </div>
   );
 }
 
@@ -220,9 +382,16 @@ export function ExportView({
 
   /* afterprint — 사용자가 시스템 print dialog 를 닫은 시점.
    * 저장/취소 여부는 브라우저 API 가 노출하지 않으므로 일괄 "완료" 로 표기.
+   * 인쇄 동안 document.title 을 시험지 제목으로 바꿔 PDF 파일명으로 쓰고,
+   * 끝나면 원래 탭 제목으로 되돌린다.
    */
+  const tabTitleRef = useRef<string | null>(null);
   useEffect(() => {
     const onAfterPrint = (): void => {
+      if (tabTitleRef.current !== null) {
+        document.title = tabTitleRef.current;
+        tabTitleRef.current = null;
+      }
       setDownloaded(true);
     };
     window.addEventListener("afterprint", onAfterPrint);
@@ -285,10 +454,18 @@ export function ExportView({
 
   const onDownload = (): void => {
     setDownloaded(false);
-    /* 브라우저 print API — 시스템 dialog 에서 "PDF 로 저장" 선택. */
+    /* 브라우저 print API — 시스템 dialog 에서 "PDF 로 저장" 선택.
+     * 저장 파일명은 document.title 을 따르므로 잠시 시험지 제목으로 교체.
+     */
+    const fileTitle = options.title.trim();
+    if (fileTitle.length > 0) {
+      tabTitleRef.current = document.title;
+      document.title = fileTitle;
+    }
     window.print();
   };
   const backHref = resultHref(schoolLevel, grade, topic, mode, sourceItemId);
+  const examSubject = `${gradeLabel(grade, schoolLevel)} · ${topic.name}`;
 
   /* 옵션 변경 핸들러 */
   const setTitle = (v: string): void =>
@@ -344,11 +521,14 @@ export function ExportView({
 
         <div className="export-layout">
           <div className="pdf-preview-thumbnail">
-            <ExamSheet
-              options={options}
-              problems={orderedProblems}
-              date={date}
-            />
+            <ScaledSheet>
+              <ExamSheet
+                options={options}
+                problems={orderedProblems}
+                date={date}
+                subject={examSubject}
+              />
+            </ScaledSheet>
           </div>
 
           <div className="options-pane" aria-label="시험지 옵션">
@@ -528,6 +708,7 @@ export function ExportView({
           options={options}
           problems={orderedProblems}
           date={date}
+          subject={examSubject}
         />
       </div>
     </>

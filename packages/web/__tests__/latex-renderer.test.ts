@@ -179,4 +179,24 @@ describe("segmentAuto", () => {
       { kind: "text", value: "1단계: 경우를 나눈다\n2단계: 곱한다" },
     ]);
   });
+
+  it("splits a particle glued to a math run (수식+조사)", () => {
+    expect(segmentAuto("값이 2a(b-c)+b^{2}+c^{2}+12와 같다.")).toEqual([
+      { kind: "text", value: "값이 " },
+      { kind: "inline", latex: "2a(b-c)+b^{2}+c^{2}+12" },
+      { kind: "text", value: "와 같다." },
+    ]);
+  });
+
+  it("treats a glued inequality like b>c인 as math + particle", () => {
+    expect(segmentAuto("b>c인 양수")).toEqual([
+      { kind: "inline", latex: "b>c" },
+      { kind: "text", value: "인 양수" },
+    ]);
+  });
+
+  it("leaves ordinary digit-prefixed words as text (10명의, 5곳에)", () => {
+    const source = "서로 다른 10명의 학생을 5곳에 배치한다.";
+    expect(segmentAuto(source)).toEqual([{ kind: "text", value: source }]);
+  });
 });
