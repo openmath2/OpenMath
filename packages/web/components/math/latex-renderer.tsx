@@ -181,3 +181,86 @@ export function LatexMixed({ source }: LatexMixedProps) {
     </>
   );
 }
+
+/* ───── LatexAuto — 구분자 없는 산문+수식 자동 분할 ─────
+ * 에이전트가 보내는 문항 본문은 한글 산문 사이에 구분자 없는 수식
+ * 조각("x^{2} - 3 x = 10", "\sqrt{7}")이 섞인 형태다. 전체를 KaTeX
+ * math mode 로 넘기면 한글 공백이 전부 사라지므로, ASCII 단어 묶음
+ * 중 수식 신호(\명령, ^{, _{, =, 피연산자 사이 연산자)가 있는 구간만
+ * 수식으로 렌더하고 나머지는 일반 텍스트로 둔다.
+ * `$...$` / `\(...\)` 구분자가 있으면 splitDelimited 에 위임.
+ */
+
+const MATH_WORD = /^[A-Za-z0-9\\^_{}+\-*/=<>().,:%|']+$/;
+const MATH_SIGNAL = /\\[a-zA-Z]+|[\^_]\{|=|[0-9A-Za-z)] ?[+\-*/] ?[0-9A-Za-z(]/;
+const TRAILING_PUNCT = /[.,]+$/;
+
+export function segmentAuto(source: string): Segment[] {
+  if (/\$|\\\(|\\\[/.test(source)) return splitDelimited(source);
+  const out: Segment[] = [];
+  let text = "";
+  const flushText = (): void => {
+    if (text.length > 0) {
+      out.push({ kind: "text", value: text });
+      text = "";
+    }
+  };
+  const tokens = source.split(/(\s+)/);
+  let i = 0;
+  while (i < tokens.length) {
+    const token = tokens[i] ?? "";
+    if (token.length === 0 || !MATH_WORD.test(token)) {
+      text += token;
+      i += 1;
+      continue;
+    }
+    // 한 칸 공백으로 이어진 수식 후보 단어들을 하나의 구간으로 묶는다
+    let end = i;
+    const words = [token];
+    while (
+      end + 2 < tokens.length &&
+      tokens[end + 1] === " " &&
+      MATH_WORD.test(tokens[end + 2] ?? "")
+    ) {
+      words.push(tokens[end + 2] ?? "");
+      end += 2;
+    }
+    const group = words.join(" ");
+    const tail = group.match(TRAILING_PUNCT)?.[0] ?? "";
+    const body = tail.length > 0 ? group.slice(0, -tail.length) : group;
+    if (body.length > 0 && MATH_SIGNAL.test(body)) {
+      flushText();
+      out.push({ kind: "inline", latex: body });
+      text += tail;
+    } else {
+      text += group;
+    }
+    i = end + 1;
+  }
+  flushText();
+  return out;
+}
+
+type LatexAutoProps = {
+  source: string;
+};
+
+export function LatexAuto({ source }: LatexAutoProps) {
+  const segments = segmentAuto(source);
+  return (
+    <>
+      {segments.map((seg, idx) => {
+        if (seg.kind === "text") {
+          return <Fragment key={idx}>{seg.value}</Fragment>;
+        }
+        return (
+          <LatexRenderer
+            key={idx}
+            latex={seg.latex}
+            block={seg.kind === "block"}
+          />
+        );
+      })}
+    </>
+  );
+}

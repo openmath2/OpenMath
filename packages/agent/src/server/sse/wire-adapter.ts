@@ -10,6 +10,7 @@
  * 생략한다 — summary는 항상 best-effort.
  */
 
+import { formatLatex } from "../../tools/latex-formatter.js";
 import type {
   GateResult,
   GeneratedProblem,
@@ -234,10 +235,13 @@ export function toWireResultProblem(
   problem: GeneratedProblem,
   verification: Verification,
 ): WireResultProblem {
+  const solution = problem.proposed_solution_trace.trim();
   return {
     id: problem.candidate_id,
     question_latex: problem.question_text,
     answer_latex: problem.expected_answer,
+    // 풀이 trace 는 sympy 표기 그대로 오므로 표현 경계에서 LaTeX 로 변환
+    ...(solution.length === 0 ? {} : { explanation_latex: formatLatex(solution) }),
     isomorphism: problem.mode,
     preserved_dimensions: preservedDimensions(problem),
     source_refs: problem.source_refs,

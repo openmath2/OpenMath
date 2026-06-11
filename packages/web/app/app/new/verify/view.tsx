@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { LatexRenderer } from "@/components/math/latex-renderer";
+import { LatexAuto } from "@/components/math/latex-renderer";
 import {
   type Grade,
   type SchoolLevel,
@@ -355,9 +355,9 @@ export function VerifyView({ schoolLevel, grade, topic, mode, srcRef }: Props) {
 
         {showPreview && stream.previewLatex !== null ? (
           <div className="formula-stage-wrap">
-            <div className="formula-stage">
+            <div className="formula-stage question-stage">
               <span className="caption">CANDIDATE PREVIEW</span>
-              <LatexRenderer latex={stream.previewLatex} block />
+              <LatexAuto source={stream.previewLatex} />
             </div>
           </div>
         ) : null}

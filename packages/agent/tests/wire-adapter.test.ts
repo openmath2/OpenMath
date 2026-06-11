@@ -155,6 +155,24 @@ describe("toWireResultProblem — verification + provenance projection", () => {
       "이차식을 인수분해하여 해를 구한다",
     ]);
     expect(wire.source_refs).toEqual(["seed-9수02-09-001"]);
+    expect(wire.explanation_latex).toBe("(x - 2)(x - 3) = 0");
+  });
+
+  it("formats the solution trace to KaTeX-safe LaTeX in explanation_latex", () => {
+    const problem: GeneratedProblem = {
+      ...baseProblem,
+      proposed_solution_trace: "판별식: x**2 - 5*x + 6 = 0, sqrt(4) = 2",
+    };
+    const wire = toWireResultProblem(problem, makeVerification());
+    expect(wire.explanation_latex).toBe("판별식: x^{2} - 5 x + 6 = 0, \\sqrt{4} = 2");
+  });
+
+  it("omits explanation_latex when the solution trace is blank", () => {
+    const problem: GeneratedProblem = {
+      ...baseProblem,
+      proposed_solution_trace: "   ",
+    };
+    const wire = toWireResultProblem(problem, makeVerification());
     expect(wire.explanation_latex).toBeUndefined();
   });
 

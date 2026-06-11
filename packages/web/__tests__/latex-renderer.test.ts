@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  segmentAuto,
   splitDelimited,
   type Segment,
 } from "../components/math/latex-renderer";
@@ -124,5 +125,58 @@ describe("splitDelimited", () => {
       { kind: "block", latex: " x " },
     ];
     expect(splitDelimited("\\$ \\[ x \\]")).toEqual(expected);
+  });
+});
+
+describe("segmentAuto", () => {
+  it("keeps pure Korean prose as a single text segment", () => {
+    const source = "어느 축구 동호회에서 12명의 선수를 배치하려고 한다.";
+    const expected: Segment[] = [{ kind: "text", value: source }];
+    expect(segmentAuto(source)).toEqual(expected);
+  });
+
+  it("extracts an undelimited equation run between Korean prose", () => {
+    expect(segmentAuto("방정식 x^{2} - 5 x + 6 = 0 의 해를 구하시오.")).toEqual([
+      { kind: "text", value: "방정식 " },
+      { kind: "inline", latex: "x^{2} - 5 x + 6 = 0" },
+      { kind: "text", value: " 의 해를 구하시오." },
+    ]);
+  });
+
+  it("extracts a LaTeX command run like \\sqrt{7}", () => {
+    expect(segmentAuto("한 변의 길이가 \\sqrt{7} 인 정사각형")).toEqual([
+      { kind: "text", value: "한 변의 길이가 " },
+      { kind: "inline", latex: "\\sqrt{7}" },
+      { kind: "text", value: " 인 정사각형" },
+    ]);
+  });
+
+  it("leaves enumerations like 'A, B, C, D' and bare numbers as text", () => {
+    const source = "학생 A, B, C, D 4명을 앞줄에 세운다. 답은 3456 이다.";
+    const expected: Segment[] = [{ kind: "text", value: source }];
+    expect(segmentAuto(source)).toEqual(expected);
+  });
+
+  it("splits trailing sentence punctuation out of a math run", () => {
+    expect(segmentAuto("따라서 x = 3, 검산 끝.")).toEqual([
+      { kind: "text", value: "따라서 " },
+      { kind: "inline", latex: "x = 3" },
+      { kind: "text", value: ", 검산 끝." },
+    ]);
+  });
+
+  it("delegates to splitDelimited when $ delimiters are present", () => {
+    expect(segmentAuto("답은 $x = 3$ 이다")).toEqual([
+      { kind: "text", value: "답은 " },
+      { kind: "inline", latex: "x = 3" },
+      { kind: "text", value: " 이다" },
+    ]);
+  });
+
+  it("preserves newlines in solution traces as text", () => {
+    const segments = segmentAuto("1단계: 경우를 나눈다\n2단계: 곱한다");
+    expect(segments).toEqual([
+      { kind: "text", value: "1단계: 경우를 나눈다\n2단계: 곱한다" },
+    ]);
   });
 });

@@ -263,7 +263,7 @@ describe("SSE wire adapter", () => {
     expect(wire.data[0]?.id).toBe(problem.candidate_id);
     expect(wire.data[0]?.verification_status).toBe("pass");
     expect(wire.data[0]?.source_refs).toEqual(["seed-9수02-09-001"]);
-    expect(wire.data[0]?.explanation_latex).toBeUndefined();
+    expect(wire.data[0]?.explanation_latex).toBe("(x - 2)(x - 3) = 0");
     expect(wire.data[0]?.preserved_dimensions).toEqual([
       "이차식을 인수분해하여 해를 구한다",
     ]);

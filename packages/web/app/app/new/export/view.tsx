@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { LatexRenderer } from "@/components/math/latex-renderer";
+import { LatexAuto } from "@/components/math/latex-renderer";
 import { type Grade, type SchoolLevel, type Topic, gradeLabel } from "../topic/data";
 import { verificationStorageKey } from "@/lib/verification-storage-key";
 import type { ResultProblem } from "../result/types";
@@ -136,7 +136,7 @@ function ExamSheet({
           <li key={p.id} className="exam-problem">
             <span className="num">{i + 1}.</span>
             <span className="body">
-              <LatexRenderer latex={p.questionLatex} />
+              <LatexAuto source={p.questionLatex} />
             </span>
           </li>
         ))}
@@ -148,7 +148,7 @@ function ExamSheet({
             {problems.map((p, i) => (
               <li key={p.id}>
                 <span>{i + 1}. </span>
-                <LatexRenderer latex={p.answerLatex} />
+                <LatexAuto source={p.answerLatex} />
               </li>
             ))}
           </ol>

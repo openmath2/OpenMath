@@ -7,7 +7,7 @@ export type ResultProblem = {
   status: ResultStatus;
   questionLatex: string;
   answerLatex: string;
-  solutionLatex: string;
+  solutionLatex: string | null;
   failReason: string | null;
   generationModel?: string;
   refinedBy?: string[];
